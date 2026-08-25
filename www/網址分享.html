@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>課堂常用網址分享</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Noto+Sans+TC:wght@500;700&display=swap');
+
+    :root {
+      --text-main: #334155;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Quicksand', 'Noto Sans TC', -apple-system, sans-serif;
+      background-color: #FDF8F5;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 209, 220, 0.45) 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, rgba(186, 230, 253, 0.5) 0%, transparent 40%),
+        radial-gradient(circle at 50% 60%, rgba(233, 213, 255, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, rgba(193, 240, 219, 0.45) 0%, transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(254, 240, 138, 0.4) 0%, transparent 40%);
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      padding-bottom: 80px;
+      color: var(--text-main);
+    }
+
+    /* 頁首導覽列 */
+    header {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 28px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .header-badge {
+      background: linear-gradient(135deg, #FFD1DC, #BAE6FD);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 20px;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* 馬卡龍按鈕 */
+    .btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-mint { background: linear-gradient(135deg, #ECFDF5, #C1F0DB); color: #065F46; border: 1.5px solid #6EE7B7; }
+    .btn-blue { background: linear-gradient(135deg, #F0F9FF, #BAE6FD); color: #0369A1; border: 1.5px solid #7DD3FC; }
+    .btn-purple { background: linear-gradient(135deg, #FAF5FF, #E9D5FF); color: #6B21A8; border: 1.5px solid #D8B4FE; }
+
+    /* 按鈕卡片容器 */
+    #button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 28px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* 馬卡龍連結圖卡 */
+    .url-button {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 200px;
+      height: 200px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      word-break: break-word;
+      border: 2.5px solid #ffffff;
+      box-sizing: border-box;
+    }
+
+    .url-button:hover {
+      transform: translateY(-8px) scale(1.04);
+    }
+
+    .url-button:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .url-button .url-icon {
+      font-size: 38px;
+      margin-bottom: 12px;
+      transition: transform 0.3s;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+
+    .url-button:hover .url-icon {
+      transform: scale(1.2) rotate(6deg);
+    }
+
+    .url-button .url-text {
+      line-height: 1.35;
+      font-size: 17px;
+    }
+
+    /* 序號角標 */
+    .url-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 12px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 載入中 / 錯誤訊息 */
+    .loading, .error {
+      background: var(--card-bg);
+      padding: 24px 36px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .error { color: #dc2626; border: 2px solid #fecaca; }
+
+    /* 頁尾版權與作者資訊 */
+    .footer-text {
+      position: fixed;
+      bottom: 16px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      z-index: 1200;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .footer-text a {
+      color: #8B5CF6;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .footer-text .cc-license {
+      color: #94A3B8;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: center;
+      }
+      .url-button {
+        width: 45%;
+        min-width: 140px;
+        height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span class="header-badge">🔗</span>
+      <span>課堂常用連結</span>
+    </h1>
+  </header>
+
+  <div id="button-container">
+    <div class="loading">正在載入連結清單，請稍候...</div>
+  </div>
+
+  <!-- 頁尾版權與作者資訊 -->
+  <div class="footer-text">
+    Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener noreferrer">阿剛老師</a>
+    <span class="cc-license"> ｜ 創用 CC 姓名標示-非商業性-相同方式分享 (CC BY-NC-SA 4.0) 授權</span>
+  </div>
+
+  <script>
+    // 馬卡龍粉彩主題色系庫 (每組：主漸層色1, 主漸層色2, 文字色, 邊框陰影色, Emoji 陣列)
+    const macaronThemes = [
+      {
+        bg: ['#FFE4E6', '#FECDD3'],
+        text: '#9F1239',
+        shadow: 'rgba(244, 63, 94, 0.25)',
+        badgeColor: '#E11D48',
+        icons: ['🌸', '🍓', '🍰', '🍧', '🎀', '🦩', '🌷']
+      },
+      {
+        bg: ['#D1FAE5', '#A7F3D0'],
+        text: '#065F46',
+        shadow: 'rgba(16, 185, 129, 0.25)',
+        badgeColor: '#059669',
+        icons: ['🍀', '🥑', '🌱', '🍈', '🍵', '🌿', '🍏']
+      },
+      {
+        bg: ['#FEF3C7', '#FDE68A'],
+        text: '#92400E',
+        shadow: 'rgba(245, 158, 11, 0.25)',
+        badgeColor: '#D97706',
+        icons: ['⭐', '🍋', '🧀', '🥞', '🌻', '🍯', '🐥']
+      },
+      {
+        bg: ['#E0F2FE', '#BAE6FD'],
+        text: '#0369A1',
+        shadow: 'rgba(56, 189, 248, 0.25)',
+        badgeColor: '#0284C7',
+        icons: ['🐳', '🐬', '🌊', '🧊', '💎', '✈️', '🌧️']
+      },
+      {
+        bg: ['#EDE9FE', '#DDD6FE'],
+        text: '#6B21A8',
+        shadow: 'rgba(168, 85, 247, 0.25)',
+        badgeColor: '#7C3AED',
+        icons: ['🍇', '🔮', '🦄', '🫐', '🎆', '💜', '🪄']
+      },
+      {
+        bg: ['#FFEDD5', '#FED7AA'],
+        text: '#9A3412',
+        shadow: 'rgba(249, 115, 22, 0.25)',
+        badgeColor: '#EA580C',
+        icons: ['🍊', '🥐', '🦊', '🍂', '🥕', '🍑', '🥞']
+      },
+      {
+        bg: ['#FCE7F3', '#FBCFE8'],
+        text: '#831843',
+        shadow: 'rgba(236, 72, 153, 0.25)',
+        badgeColor: '#DB2777',
+        icons: ['💖', '🧁', '🍨', '🦄', '🌺', '🍭', '🦩']
+      },
+      {
+        bg: ['#CCFBF1', '#99F6E4'],
+        text: '#115E59',
+        shadow: 'rgba(20, 184, 166, 0.25)',
+        badgeColor: '#0D9488',
+        icons: [' Mint ', '🌴', '🏝️', '🧩', '🪶', '🩵', '🎐']
+      }
+    ];
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      const buttonContainer = document.getElementById('button-container');
+      
+      try {
+        const response = await fetch('url.txt?t=' + new Date().getTime());
+        if (!response.ok) {
+          throw new Error('無法載入 url.txt，請確認檔案存在。');
+        }
+        
+        const text = await response.text();
+        buttonContainer.innerHTML = '';
+        
+        const lines = text.split('\n');
+        let validCount = 0;
+
+        lines.forEach((line) => {
+          line = line.trim();
+          if (!line) return;
+          
+          const parts = line.split(',');
+          const url = parts[0].trim();
+          const name = parts.length > 1 ? parts.slice(1).join(',').trim() : url;
+          
+          if (url) {
+            validCount++;
+            // 依序輪替馬卡龍色系
+            const theme = macaronThemes[(validCount - 1) % macaronThemes.length];
+            const icon = theme.icons[(validCount - 1) % theme.icons.length];
+            
+            const button = document.createElement('a');
+            button.href = url;
+            button.target = '_blank';
+            button.rel = 'noopener noreferrer';
+            button.className = 'url-button';
+            button.title = `${name}\n${url}`;
+            
+            button.style.background = `linear-gradient(135deg, ${theme.bg[0]}, ${theme.bg[1]})`;
+            button.style.color = theme.text;
+            button.style.boxShadow = `0 10px 20px -5px ${theme.shadow}, 0 4px 6px -2px rgba(0,0,0,0.05)`;
+
+            button.innerHTML = `
+              <div class="url-badge" style="color: ${theme.badgeColor};">${validCount}</div>
+              <div class="url-icon">${icon}</div>
+              <div class="url-text">${name}</div>
+            `;
+            
+            buttonContainer.appendChild(button);
+          }
+        });
+        
+        if (validCount === 0) {
+          buttonContainer.innerHTML = `
+            <div class="loading">
+              目前尚無設定分享網址。<br><br>
+              <a href="設定分享網址.html" class="btn btn-purple">點此新增網址</a>
+            </div>`;
+        }
+        
+      } catch (error) {
+        buttonContainer.innerHTML = `<div class="error">載入失敗：${error.message}</div>`;
+        console.error('載入錯誤:', error);
+      }
+    });
+  </script>
+</body>
+</html>
