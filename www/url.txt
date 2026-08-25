@@ -1,0 +1,3 @@
+https://www.google.com,Google
+https://adl.edu.tw,因材網
+https://cloud.edu.tw,教育雲
