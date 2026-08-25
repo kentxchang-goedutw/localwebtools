@@ -22,6 +22,28 @@ if %errorlevel% equ 0 (
     )
 )
 
+rem ------------------------------------------------------
+rem 1b. Reject the Microsoft Store "python.exe" / "python3.exe" app
+rem     execution alias. It reports a real version number and looks
+rem     fine, but it runs in a sandbox that blocks pip/ensurepip from
+rem     writing packages, so treat it the same as "Python not found"
+rem     and install the real thing instead.
+rem ------------------------------------------------------
+if not "%PYEXE%"=="" (
+    set "RESOLVED_PY="
+    for /f "delims=" %%P in ('%PYEXE% -c "import sys;print(sys.executable)" 2^>nul') do set "RESOLVED_PY=%%P"
+    echo !RESOLVED_PY! | findstr /I "WindowsApps" >nul 2>nul
+    if !errorlevel! equ 0 (
+        echo [INFO] Detected the Microsoft Store Python app-execution alias:
+        echo   !RESOLVED_PY!
+        echo This version is sandboxed and cannot reliably install pip
+        echo packages. Ignoring it and installing the official Python
+        echo from python.org instead...
+        echo.
+        set "PYEXE="
+    )
+)
+
 if "%PYEXE%"=="" (
     echo [INFO] Python not found. Attempting automatic install...
     echo.
@@ -98,10 +120,13 @@ if "!PIP_OK!"=="0" (
 
 if "!PIP_OK!"=="0" (
     echo.
-    echo [ERROR] Could not install pip on this Python installation.
-    echo This can happen with a restricted/minimal Python install, or
-    echo if this network blocks access to bootstrap.pypa.io / PyPI.
-    echo Please reinstall Python from https://www.python.org/downloads/
+    echo [ERROR] Could not install pip on this Python installation:
+    echo   !RESOLVED_PY!
+    echo This usually means either ^(a^) this network blocks access to
+    echo bootstrap.pypa.io / PyPI, or ^(b^) this is a restricted Python
+    echo build ^(e.g. installed from the Microsoft Store^) that cannot
+    echo write packages even though it reports a version number.
+    echo Please install the official Python from https://www.python.org/downloads/
     echo ^(make sure "pip" stays checked during install^), then run this
     echo launcher again.
     echo.
