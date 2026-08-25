@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心智圖上傳與創作工具</title>
+  
+  <!-- jsMind & 相關套件樣式與腳本 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/style/jsmind.css">
+  <script src="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/js/jsmind.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/js/jsmind.draggable-node.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, sans-serif;
+      overflow: hidden;
+      background: #f8fafc;
+      color: #334155;
+    }
+    
+    /* ── 上方常駐上傳與功能工具列 ─────────────────────────────── */
+    #top_toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      z-index: 200;
+      border-bottom: 2px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+
+    /* 工具列控制項 */
+    .tb-select, .tb-input {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 12px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .tb-select:focus, .tb-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+    .tb-input {
+      width: 140px;
+    }
+
+    /* 工具列按鈕 */
+    .tb-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .tb-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+    .tb-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-new { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .btn-upload { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-png { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+    .btn-html { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .btn-json { background: linear-gradient(135deg, #64748b, #475569); }
+
+    /* ── 右側懸浮操作按鈕群 (FAB) ─────────────────────────────── */
+    #fab_container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 150;
+    }
+    .fab {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      font-size: 20px;
+      line-height: 44px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: all 0.2s;
+    }
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    }
+    #btn_add_child { background: linear-gradient(45deg, #ff8a65, #f4511e); }
+    #btn_add_sibling { background: linear-gradient(45deg, #4db6ac, #00897b); }
+    #btn_delete { background: linear-gradient(45deg, #f06292, #e91e63); }
+    #btn_add_link { background: linear-gradient(45deg, #4dd0e1, #00acc1); }
+    #btn_add_image { background: linear-gradient(45deg, #ffab40, #ff6f00); }
+    #btn_reorder { background: linear-gradient(45deg, #546e7a, #37474f); }
+    #btn_toggle_all { background: linear-gradient(45deg, #ab47bc, #8e24aa); }
+    #btn_presentation { background: linear-gradient(45deg, #5c6bc0, #3f51b5); }
+    #btn_slide_video { background: linear-gradient(45deg, #e53935, #b71c1c); }
+
+    /* ── 心智圖容器 ─────────────────────────────────────────── */
+    #jsmind_container {
+      position: absolute;
+      top: 64px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ecf0f1;
+      cursor: grab;
+      overflow: hidden;
+    }
+    .jsmind-inner {
+      overflow: visible !important;
+      transform-origin: 0 0;
+    }
+    #jsmind_container.grabbing {
+      cursor: grabbing;
+    }
+    #attribution {
+      position: absolute;
+      bottom: 12px;
+      right: 15px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 13px;
+      z-index: 10;
+    }
+    #attribution a {
+      color: #ffd54f;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* ── 通知提示列 ─────────────────────────────────────────── */
+    #notification_layer {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 28px;
+      border-radius: 25px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      z-index: 2500;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      transition: top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #notification_layer.show { top: 75px; }
+    #notification_layer.success { background-color: #10b981; }
+    #notification_layer.error { background-color: #ef4444; }
+
+    /* ── 彈出視窗 (Modal) ────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 28px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 540px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+    .modal-content h2 {
+      margin-top: 0;
+      color: #1e293b;
+      font-size: 20px;
+    }
+    .modal-body { overflow-y: auto; }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      flex-shrink: 0;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: #38bdf8;
+    }
+
+    /* ── 簡報模式 ───────────────────────────────────────────── */
+    .presentation-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      display: none;
+      z-index: 2000;
+    }
+    .presentation-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      color: white;
+    }
+    .presentation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: rgba(0,0,0,0.25);
+    }
+    .presentation-breadcrumb { font-size: 14px; opacity: 0.7; }
+    .presentation-controls { display: flex; align-items: center; gap: 15px; }
+    .presentation-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .presentation-btn:hover { background: rgba(255,255,255,0.35); }
+    .presentation-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .slide-counter { font-size: 15px; min-width: 60px; text-align: center; }
+    .presentation-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      text-align: center;
+      position: relative;
+    }
+    .presentation-breadcrumb-corner {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      font-size: 16px;
+      opacity: 0.6;
+      line-height: 1.4;
+      max-width: 300px;
+    }
+    .presentation-title {
+      font-size: 5.5em;
+      font-weight: bold;
+      line-height: 1.15;
+      text-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+      max-width: 90%;
+      word-wrap: break-word;
+      transition: opacity 0.8s ease-in-out;
+      opacity: 1;
+    }
+    .presentation-title.fade-out { opacity: 0 !important; }
+    .presentation-title.fade-in { opacity: 0 !important; }
+    .presentation-children { display: none; }
+
+    /* ── 投影片影片匯出 ─────────────────────────────────────── */
+    #sv_preview_overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: none; flex-direction: column; z-index: 3000;
+    }
+    #sv_preview_stage {
+      flex: 1; overflow: hidden; position: relative; display: flex;
+      align-items: stretch; justify-content: stretch;
+    }
+    #sv_preview_inner {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      box-sizing: border-box;
+    }
+    #sv_preview_controls {
+      padding: 14px 28px; background: rgba(8,8,8,0.97);
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+      gap: 12px;
+    }
+    #sv_slide_title {
+      color: #777; font-size: 13px; max-width: 280px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #sv_counter { color: #ccc; font-size: 14px; min-width: 72px; text-align: center; }
+    .sv-nav-btn {
+      background: rgba(255,255,255,0.14); border: none; color: #fff;
+      padding: 8px 18px; border-radius: 8px; cursor: pointer;
+      font-size: 15px; transition: background 0.18s;
+    }
+    .sv-nav-btn:hover { background: rgba(255,255,255,0.26); }
+    .sv-nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+    .sv-action-btn {
+      padding: 9px 20px; border: none; border-radius: 20px;
+      font-size: 14px; color: #fff; cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .sv-action-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(0,0,0,0.5); }
+
+    #sv_progress_overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.93); display: none;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 18px; z-index: 4000;
+    }
+    #sv_progress_icon { font-size: 56px; animation: sv-pulse 1.4s ease-in-out infinite; }
+    @keyframes sv-pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+    #sv_progress_text { color: #fff; font-size: 18px; text-align: center; }
+    #sv_progress_sub  { color: #777; font-size: 13px; text-align: center; }
+
+    #sv_color_swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .sv-swatch {
+      width: 34px; height: 34px; border-radius: 7px; cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.15);
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .sv-swatch:hover { transform: scale(1.12); }
+    .sv-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); }
+
+    @media (max-width: 900px) {
+      #top_toolbar {
+        height: auto;
+        padding: 8px 12px;
+      }
+      #jsmind_container {
+        top: 100px;
+      }
+      .toolbar-title { display: none; }
+      .presentation-title { font-size: 3.5em; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════
+       上方常駐上傳與操作工具列
+  ════════════════════════════════════════════════════════ -->
+  <div id="top_toolbar">
+    <div class="toolbar-left">
+      <div class="toolbar-title">🧠 心智圖創作</div>
+      <button id="btn_new_map" class="tb-btn btn-new" title="開新心智圖">✨ 開新心智圖</button>
+      <select id="question_select" class="tb-select">
+        <option value="問題1">問題 1</option>
+        <option value="問題2">問題 2</option>
+        <option value="問題3">問題 3</option>
+        <option value="問題4">問題 4</option>
+        <option value="問題5">問題 5</option>
+        <option value="問題6">問題 6</option>
+        <option value="問題7">問題 7</option>
+        <option value="問題8">問題 8</option>
+        <option value="問題9">問題 9</option>
+        <option value="問題10">問題 10</option>
+      </select>
+      <input id="name_input" type="text" class="tb-input" placeholder="請輸入姓名或座號">
+      <button id="btn_upload_map" class="tb-btn btn-upload">🚀 上傳心智圖</button>
+    </div>
+
+    <div class="toolbar-right">
+      <button id="btn_download_png" class="tb-btn btn-png">📥 下載 PNG</button>
+      <button id="btn_download_html" class="tb-btn btn-html">🌐 下載 HTML</button>
+      <button id="btn_export_json" class="tb-btn btn-json" title="匯出 JSON 資料">📤 匯出</button>
+      <button id="btn_import_json" class="tb-btn btn-json" title="匯入 JSON 資料">📥 匯入</button>
+      <input type="file" id="json_file_input" accept=".json" style="display:none;">
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       右側浮動操作按鈕群 (FAB)
+  ════════════════════════════════════════════════════════ -->
+  <div id="fab_container">
+    <button id="btn_add_child" class="fab" title="新增子節點">+</button>
+    <button id="btn_add_sibling" class="fab" title="新增同階節點">~</button>
+    <button id="btn_delete" class="fab" title="刪除節點">-</button>
+    <button id="btn_add_link" class="fab" title="新增/編輯超連結">🔗</button>
+    <button id="btn_add_image" class="fab" title="新增/編輯圖片">🖼️</button>
+    <button id="btn_reorder" class="fab" title="切換左右/單側排列">↔</button>
+    <button id="btn_toggle_all" class="fab" title="展開/收合所有節點">⚡</button>
+    <button id="btn_presentation" class="fab" title="簡報模式">📺</button>
+    <button id="btn_slide_video" class="fab" title="匯出投影片影片">🎬</button>
+  </div>
+
+  <!-- 心智圖主容器 -->
+  <div id="jsmind_container"></div>
+  <div id="attribution">Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener">阿剛老師</a></div>
+  <div id="notification_layer"></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       簡報模式 Overlay
+  ════════════════════════════════════════════════════════ -->
+  <div id="presentation_overlay" class="presentation-overlay">
+    <div class="presentation-content">
+      <div class="presentation-header">
+        <div class="presentation-breadcrumb"></div>
+        <div class="presentation-controls">
+          <button class="presentation-btn" id="btn_prev_slide">◀</button>
+          <span class="slide-counter"></span>
+          <button class="presentation-btn" id="btn_next_slide">▶</button>
+          <button class="presentation-btn" id="btn_exit_presentation">✕</button>
+        </div>
+      </div>
+      <div class="presentation-main">
+        <div class="presentation-breadcrumb-corner"></div>
+        <div class="presentation-title"></div>
+        <div class="presentation-children"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       超連結設定 Modal
+  ════════════════════════════════════════════════════════ -->
+  <div id="link_modal_overlay" class="modal-overlay">
+    <div class="modal-content">
+      <h2>設定節點超連結</h2>
+      <p style="color:#64748b; font-size:14px;">請輸入或貼上連結網址（留空則清除連結）：</p>
+      <input type="text" id="link_url_input" class="modal-input" placeholder="https://example.com">
+      <div class="modal-buttons">
+        <button id="btn_cancel_link" class="tb-btn btn-json">取消</button>
+        <button id="btn_save_link" class="tb-btn btn-upload">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       圖片網址設定 Modal
+  ════════════════════════════════════════════════════════ -->
+  <div id="image_url_modal_overlay" class="modal-overlay">
+    <div class="modal-content">
+      <h2>設定節點圖片</h2>
+      <p style="color:#64748b; font-size:14px;">請輸入圖片網址（留空則清除圖片）：</p>
+      <input type="text" id="image_url_input" class="modal-input" placeholder="https://example.com/image.png">
+      <div class="modal-buttons">
+        <button id="btn_cancel_image_url" class="tb-btn btn-json">取消</button>
+        <button id="btn_save_image_url" class="tb-btn btn-upload">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       投影片影片匯出設定 Modal
+  ════════════════════════════════════════════════════════ -->
+  <div id="sv_modal_overlay" class="modal-overlay">
+    <div class="modal-content" style="max-width:490px;">
+      <h2>🎬 匯出投影片影片</h2>
+      <div class="modal-body">
+        <p style="color:#64748b; font-size:13px; line-height:1.6;">
+          將心智圖轉為逐頁投影片影片：根節點與主分支各為標題頁，子分支逐行淡入出現。
+        </p>
+
+        <!-- 背景顏色 -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block;margin-bottom:6px;font-weight:bold;color:#334155;font-size:14px;">背景顏色</label>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <input type="color" id="sv_bg_color" value="#000000"
+              style="width:52px;height:40px;border:1px solid #ccc;border-radius:8px;cursor:pointer;padding:2px;">
+            <span id="sv_bg_hex" style="font-size:14px;color:#555;font-family:monospace;">#000000</span>
+          </div>
+          <div id="sv_color_swatches">
+            <div class="sv-swatch active" style="background:#000000" data-color="#000000" title="純黑"></div>
+            <div class="sv-swatch" style="background:#0d1117" data-color="#0d1117" title="深藍黑"></div>
+            <div class="sv-swatch" style="background:#1a1a2e" data-color="#1a1a2e" title="深靛藍"></div>
+            <div class="sv-swatch" style="background:#2c2c54" data-color="#2c2c54" title="深紫"></div>
+            <div class="sv-swatch" style="background:#ffffff;border-color:#ddd;" data-color="#ffffff" title="純白"></div>
+          </div>
+        </div>
+
+        <!-- 每頁時間 -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block;margin-bottom:6px;font-weight:bold;color:#334155;font-size:14px;">每頁顯示時間</label>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <input type="range" id="sv_duration_range" min="2" max="20" step="0.5" value="6" style="flex:1;accent-color:#5c6bc0;">
+            <input type="number" id="sv_duration" value="6" min="2" max="20" step="0.5"
+              style="width:68px;padding:6px;border:1px solid #ccc;border-radius:6px;font-size:14px;text-align:center;">
+            <span style="color:#666;font-size:13px;">秒</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button id="btn_sv_cancel" class="tb-btn btn-json">取消</button>
+        <button id="btn_sv_open_preview" class="tb-btn btn-html">▶ 預覽投影片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 投影片全螢幕預覽 Overlay -->
+  <div id="sv_preview_overlay">
+    <div id="sv_preview_stage">
+      <div id="sv_preview_inner"></div>
+    </div>
+    <div id="sv_preview_controls">
+      <div id="sv_slide_title"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="btn_sv_prev" class="sv-nav-btn">◀</button>
+        <span id="sv_counter" style="color:#ccc;font-size:14px;min-width:72px;text-align:center;">1 / 1</span>
+        <button id="btn_sv_next" class="sv-nav-btn">▶</button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button id="btn_sv_back" class="sv-action-btn" style="background:rgba(255,255,255,0.18);">← 返回</button>
+        <button id="btn_sv_export" class="sv-action-btn" style="background:linear-gradient(45deg,#e53935,#b71c1c);">🎬 開始匯出影片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 匯出進度 Overlay -->
+  <div id="sv_progress_overlay">
+    <div id="sv_progress_icon">🎬</div>
+    <div id="sv_progress_text">正在匯出影片...</div>
+    <div id="sv_progress_sub">請勿關閉視窗，完成後將自動下載</div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       心智圖主要 JS 邏輯
+  ════════════════════════════════════════════════════════ -->
+  <script>
+    let jm = null;
+    let notificationTimer = null;
+    let linkEditingNodeId = null;
+    let imageEditingNodeId = null;
+    let isReordered = false;
+    let allExpanded = true;
+
+    // 簡報變數
+    let presentationSlides = [];
+    let currentSlideIndex = 0;
+    let isInPresentationMode = false;
+
+    // 投影片影片匯出變數
+    let slideList = [];
+    let previewIndex = 0;
+    let animTimers = [];
+    let currentBg = '#000000';
+    let fontScale = 1.0;
+    const C = {
+      h1: '#FFD700',
+      h2: '#64B5F6',
+      h3: '#81C784',
+      h4: '#EEEEEE'
+    };
+
+    // 本地儲存鍵名
+    const STORAGE_KEY = 'mindmap_data_v2';
+
+    // 提示訊息
+    function showNotification(message, isError = false) {
+      const notificationLayer = document.getElementById('notification_layer');
+      clearTimeout(notificationTimer);
+      notificationLayer.textContent = message;
+      notificationLayer.className = isError ? 'error' : 'success';
+      notificationLayer.classList.add('show');
+      notificationTimer = setTimeout(() => {
+        notificationLayer.classList.remove('show');
+      }, isError ? 5000 : 3000);
+    }
+
+    // 取得深度與套用層級顏色
+    function getDepth(node) {
+      let d = 0, c = node;
+      while (c.parent) { d++; c = c.parent; }
+      return d;
+    }
+
+    function applyLayerColors() {
+      if (!jm || !jm.mind || !jm.mind.nodes) return;
+      const palette = ['#e53935', '#1e88e5', '#fb8c00', '#9c27b0', '#8e24aa'];
+      Object.values(jm.mind.nodes).forEach(n => {
+        const d = getDepth(n);
+        if (d > 0) {
+          jm.set_node_color(n.id, palette[(d - 1) % palette.length], null);
+        }
+      });
+    }
+
+    const getCleanTopic = (topic) => {
+      if (!topic) return '';
+      return topic.replace(/<(a|span)[^>]*>.*?<\/\1>\s*/g, '');
+    };
+
+    const buildTopic = (nodeData, cleanTopic) => {
+      if (nodeData && nodeData.image_url) {
+        return `<a href="${nodeData.image_url}" target="_blank" onclick="event.stopPropagation()" data-image-url="${nodeData.image_url}">🖼️</a> ${cleanTopic}`;
+      }
+      if (nodeData && nodeData.hyperlink) {
+        return `<a href="${nodeData.hyperlink}" target="_blank" onclick="event.stopPropagation()" data-hyperlink="${nodeData.hyperlink}">🔗</a> ${cleanTopic}`;
+      }
+      return cleanTopic;
+    };
+
+    // 展開所有節點
+    function expandAllNodes() {
+      if (!jm) return;
+      const rootNode = jm.get_root();
+      const expandNode = (node) => {
+        if (node && !node.isroot) {
+          jm.expand_node(node.id);
+        }
+        if (node && node.children) {
+          node.children.forEach(child => expandNode(child));
+        }
+      };
+      expandNode(rootNode);
+    }
+
+    // 縮放與平移支援
+    function enablePanAndZoom(container) {
+      const panel = container.querySelector('.jsmind-inner') || container;
+      let isPanning = false, startX = 0, startY = 0;
+      let scale = 1, panX = 0, panY = 0;
+      let lastTouchDistance = 0;
+
+      const updateTransform = () => {
+        panel.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      };
+
+      container.addEventListener('mousedown', (e) => {
+        if (e.target.closest('jmnode') || e.target.closest('button')) return;
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        container.classList.add('grabbing');
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isPanning) {
+          isPanning = false;
+          container.classList.remove('grabbing');
+        }
+      });
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+        const newScale = Math.min(Math.max(scale * zoomFactor, 0.4), 3.0);
+        scale = newScale;
+        updateTransform();
+      }, { passive: false });
+
+      // 觸控雙指縮放與拖曳
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          if (e.target.closest('jmnode')) return;
+          isPanning = true;
+          startX = e.touches[0].clientX - panX;
+          startY = e.touches[0].clientY - panY;
+        } else if (e.touches.length === 2) {
+          isPanning = false;
+          lastTouchDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (isPanning && e.touches.length === 1) {
+          panX = e.touches[0].clientX - startX;
+          panY = e.touches[0].clientY - startY;
+          updateTransform();
+        } else if (e.touches.length === 2) {
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          if (lastTouchDistance > 0) {
+            const factor = dist / lastTouchDistance;
+            scale = Math.min(Math.max(scale * factor, 0.4), 3.0);
+            updateTransform();
+          }
+          lastTouchDistance = dist;
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchend', () => {
+        isPanning = false;
+        lastTouchDistance = 0;
+      });
+    }
+
+    // 本地資料儲存與讀取
+    function saveToLocalStorage() {
+      if (!jm) return;
+      try {
+        const data = jm.get_data('node_tree');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('儲存至 localStorage 失敗:', e);
+      }
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error('從 localStorage 讀取失敗:', e);
+      }
+      return null;
+    }
+
+    // 初始化心智圖
+    function initMindMap() {
+      jm = new jsMind({
+        container: 'jsmind_container',
+        theme: 'greensea',
+        editable: true,
+        support_html: true,
+        view: { engine: 'canvas', draggable: true }
+      });
+
+      const savedData = loadFromLocalStorage();
+      if (savedData && savedData.data) {
+        jm.show(savedData);
+      } else {
+        jm.show({
+          meta: { name: 'classroom_mindmap' },
+          format: 'node_tree',
+          data: { id: 'root', topic: '中心主題', children: [] }
+        });
+      }
+
+      applyLayerColors();
+      jm.add_event_listener(() => {
+        applyLayerColors();
+        saveToLocalStorage();
+      });
+
+      enablePanAndZoom(document.getElementById('jsmind_container'));
+    }
+
+    // ── 上傳心智圖至伺服器（截圖 + 資料上傳）──
+    function uploadMindmap() {
+      const nameInput = document.getElementById('name_input');
+      const nameValue = nameInput.value.trim();
+      const question = document.getElementById('question_select').value;
+
+      if (!nameValue) {
+        alert('請先輸入學生姓名或座號！');
+        nameInput.focus();
+        return;
+      }
+
+      showNotification('正在展開節點並生成心智圖截圖...');
+      expandAllNodes();
+
+      setTimeout(() => {
+        const container = document.getElementById('jsmind_container');
+        const jsmindInner = container.querySelector('.jsmind-inner');
+        if (!jsmindInner) {
+          showNotification('找不到心智圖內容', true);
+          return;
+        }
+
+        const originalOverflow = container.style.overflow;
+        const originalWidth = container.style.width;
+        const originalHeight = container.style.height;
+        const originalTransform = jsmindInner.style.transform;
+
+        try {
+          jsmindInner.style.transform = 'none';
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          const nodes = jsmindInner.querySelectorAll('jmnode, jmnodes');
+          nodes.forEach(node => {
+            const rect = node.getBoundingClientRect();
+            const innerRect = jsmindInner.getBoundingClientRect();
+            minX = Math.min(minX, rect.left - innerRect.left);
+            minY = Math.min(minY, rect.top - innerRect.top);
+            maxX = Math.max(maxX, rect.left - innerRect.left + rect.width);
+            maxY = Math.max(maxY, rect.top - innerRect.top + rect.height);
+          });
+
+          const padding = 40;
+          const contentWidth = maxX - minX + padding * 2;
+          const contentHeight = maxY - minY + padding * 2;
+
+          container.style.overflow = 'visible';
+          container.style.width = contentWidth + 'px';
+          container.style.height = contentHeight + 'px';
+          jsmindInner.style.transform = `translate(${padding - minX}px, ${padding - minY}px)`;
+
+          requestAnimationFrame(() => {
+            html2canvas(jsmindInner, {
+              backgroundColor: '#ecf0f1',
+              scale: 2,
+              logging: false,
+              useCORS: true,
+              allowTaint: true,
+              width: contentWidth,
+              height: contentHeight
+            }).then(canvas => {
+              // 恢復樣式
+              container.style.overflow = originalOverflow;
+              container.style.width = originalWidth;
+              container.style.height = originalHeight;
+              jsmindInner.style.transform = originalTransform;
+
+              canvas.toBlob(blob => {
+                let imgFileName = nameValue;
+                if (!imgFileName.toLowerCase().endsWith('.png')) {
+                  imgFileName += '.png';
+                }
+
+                // 上傳心智圖 PNG 圖片截圖
+                const formData = new FormData();
+                formData.append('question', question);
+                formData.append('name', imgFileName);
+                formData.append('file', blob, imgFileName);
+
+                fetch('/upload', {
+                  method: 'POST',
+                  body: formData
+                })
+                .then(res => {
+                  if (!res.ok) throw new Error('伺服器回應錯誤');
+                  return res.text();
+                })
+                .then(() => {
+                  showNotification('🎉 心智圖作業截圖已成功上傳！');
+                  alert('🎉 心智圖作業截圖已成功繳交至伺服器！');
+                })
+                .catch(err => {
+                  console.error('上傳失敗:', err);
+                  showNotification('上傳失敗：' + err.message, true);
+                  alert('上傳過程中發生錯誤：' + err.message);
+                });
+              }, 'image/png');
+            }).catch(err => {
+              container.style.overflow = originalOverflow;
+              container.style.width = originalWidth;
+              container.style.height = originalHeight;
+              jsmindInner.style.transform = originalTransform;
+              console.error('截圖錯誤:', err);
+              showNotification('截圖失敗，請稍後再試', true);
+            });
+          });
+        } catch (error) {
+          container.style.overflow = originalOverflow;
+          container.style.width = originalWidth;
+          container.style.height = originalHeight;
+          jsmindInner.style.transform = originalTransform;
+          showNotification('準備截圖時發生錯誤', true);
+        }
+      }, 400);
+    }
+
+    // ── 下載 PNG 圖片 ──
+    function downloadPNG() {
+      const mindData = jm.get_data('node_tree');
+      const title = (mindData.data.topic || 'mindmap').replace(/<[^>]+>/g, '').trim() || '心智圖';
+      showNotification('正在生成 PNG 圖片...');
+      expandAllNodes();
+
+      setTimeout(() => {
+        const container = document.getElementById('jsmind_container');
+        const jsmindInner = container.querySelector('.jsmind-inner');
+        if (!jsmindInner) return;
+
+        const originalOverflow = container.style.overflow;
+        const originalWidth = container.style.width;
+        const originalHeight = container.style.height;
+        const originalTransform = jsmindInner.style.transform;
+
+        try {
+          jsmindInner.style.transform = 'none';
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          const nodes = jsmindInner.querySelectorAll('jmnode, jmnodes');
+          nodes.forEach(node => {
+            const rect = node.getBoundingClientRect();
+            const innerRect = jsmindInner.getBoundingClientRect();
+            minX = Math.min(minX, rect.left - innerRect.left);
+            minY = Math.min(minY, rect.top - innerRect.top);
+            maxX = Math.max(maxX, rect.left - innerRect.left + rect.width);
+            maxY = Math.max(maxY, rect.top - innerRect.top + rect.height);
+          });
+
+          const padding = 40;
+          const contentWidth = maxX - minX + padding * 2;
+          const contentHeight = maxY - minY + padding * 2;
+
+          container.style.overflow = 'visible';
+          container.style.width = contentWidth + 'px';
+          container.style.height = contentHeight + 'px';
+          jsmindInner.style.transform = `translate(${padding - minX}px, ${padding - minY}px)`;
+
+          requestAnimationFrame(() => {
+            html2canvas(jsmindInner, {
+              backgroundColor: '#ecf0f1',
+              scale: 2,
+              logging: false,
+              useCORS: true,
+              allowTaint: true,
+              width: contentWidth,
+              height: contentHeight
+            }).then(canvas => {
+              container.style.overflow = originalOverflow;
+              container.style.width = originalWidth;
+              container.style.height = originalHeight;
+              jsmindInner.style.transform = originalTransform;
+
+              canvas.toBlob(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = title + '.png';
+                link.click();
+                showNotification('PNG 圖片已下載！');
+              }, 'image/png');
+            });
+          });
+        } catch (e) {
+          container.style.overflow = originalOverflow;
+          container.style.width = originalWidth;
+          container.style.height = originalHeight;
+          jsmindInner.style.transform = originalTransform;
+          showNotification('PNG 下載失敗', true);
+        }
+      }, 400);
+    }
+
+    // ── 下載離線 HTML ──
+    function downloadHTML() {
+      const data = jm.get_data();
+      const title = (data.data.topic || 'mindmap').replace(/<[^>]+>/g, '').trim() || '心智圖';
+      const panAndZoomFnString = enablePanAndZoom.toString();
+
+      const html = `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>${title}</title><style>html,body{height:100%;margin:0;overflow:hidden;}#jsmind_container{width:100%;height:100vh;background:#ecf0f1;cursor:grab;overflow:hidden;}.jsmind-inner{overflow:visible!important;transform-origin:0 0;}#jsmind_container.grabbing{cursor:grabbing;}#attribution{position:absolute;bottom:10px;right:10px;padding:4px 8px;background:rgba(0,0,0,0.5);color:#fff;border-radius:4px;font-size:12px;z-index:10;}#attribution a{color:#ffd54f;text-decoration:none;}</style><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/style/jsmind.css"></head><body><div id="jsmind_container"></div><div id="attribution">Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener">阿剛老師</a></div><script src="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/js/jsmind.js"><\/script><script src="https://cdn.jsdelivr.net/npm/jsmind@0.6.1/js/jsmind.draggable-node.js"><\/script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script><script>const jm2=new jsMind({container:'jsmind_container',theme:'greensea',editable:false,support_html:true,view:{engine:'canvas',draggable:true}});jm2.show(${JSON.stringify(data)});${panAndZoomFnString};enablePanAndZoom(document.getElementById('jsmind_container'));<\/script></body></html>`;
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = title + '.html';
+      link.click();
+      showNotification('HTML 網頁已下載！');
+    }
+
+    // ── 簡報模式邏輯 ──
+    const generatePresentationSlides = (mindData) => {
+      const slides = [];
+      const rootNode = mindData.data;
+      const traverseNode = (node, breadcrumb = [], parentNode = null) => {
+        const cleanTopic = getCleanTopic(node.topic);
+        slides.push({
+          title: cleanTopic,
+          parentNode: parentNode,
+          breadcrumb: [...breadcrumb],
+          node: node
+        });
+        if (node.children && node.children.length > 0) {
+          const currentBreadcrumb = [...breadcrumb, cleanTopic];
+          node.children.forEach(child => {
+            traverseNode(child, currentBreadcrumb, node);
+          });
+        }
+      };
+      traverseNode(rootNode);
+      return slides;
+    };
+
+    const showPresentationSlide = (index, direction = 'none') => {
+      if (index < 0 || index >= presentationSlides.length) return;
+      const slide = presentationSlides[index];
+      const overlay = document.getElementById('presentation_overlay');
+      const breadcrumbCorner = overlay.querySelector('.presentation-breadcrumb-corner');
+      const title = overlay.querySelector('.presentation-title');
+      const counter = overlay.querySelector('.slide-counter');
+      const prevBtn = document.getElementById('btn_prev_slide');
+      const nextBtn = document.getElementById('btn_next_slide');
+
+      breadcrumbCorner.innerHTML = slide.parentNode ? slide.parentNode.topic : '';
+      let titleText = slide.node.topic || slide.title;
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = titleText;
+      const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+      const formattedText = cleanText.replace(/([。、，；：！？])/g, '$1<br>');
+
+      if (direction !== 'none') {
+        title.className = 'presentation-title fade-out';
+        setTimeout(() => {
+          title.innerHTML = formattedText;
+          title.className = 'presentation-title fade-in';
+          setTimeout(() => {
+            title.className = 'presentation-title';
+          }, 50);
+        }, 800);
+      } else {
+        title.innerHTML = formattedText;
+        title.className = 'presentation-title';
+      }
+
+      counter.textContent = `${index + 1} / ${presentationSlides.length}`;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === presentationSlides.length - 1;
+      currentSlideIndex = index;
+    };
+
+    const startPresentationMode = () => {
+      const mindData = jm.get_data('node_tree');
+      if (!mindData || !mindData.data) {
+        showNotification('沒有可以播放的心智圖資料', true);
+        return;
+      }
+      presentationSlides = generatePresentationSlides(mindData);
+      if (presentationSlides.length === 0) {
+        showNotification('心智圖沒有內容', true);
+        return;
+      }
+      isInPresentationMode = true;
+      currentSlideIndex = 0;
+      document.getElementById('presentation_overlay').style.display = 'block';
+      showPresentationSlide(0);
+    };
+
+    const exitPresentationMode = () => {
+      isInPresentationMode = false;
+      document.getElementById('presentation_overlay').style.display = 'none';
+    };
+
+    const nextSlide = () => {
+      if (currentSlideIndex < presentationSlides.length - 1) {
+        showPresentationSlide(currentSlideIndex + 1, 'slide');
+      }
+    };
+
+    const prevSlide = () => {
+      if (currentSlideIndex > 0) {
+        showPresentationSlide(currentSlideIndex - 1, 'slide');
+      }
+    };
+
+    // ── 投影片影片匯出核心邏輯 ──
+    function buildSlides() {
+      if (!jm || !jm.mind || !jm.mind.root) {
+        alert('無法取得心智圖資料');
+        return [];
+      }
+      const root = jm.mind.root;
+      const slides = [];
+      slides.push({
+        type: 'h1',
+        title: getCleanTopic(root.topic),
+        lines: [{ level: 'h1', text: getCleanTopic(root.topic) }]
+      });
+
+      const h2s = root.children || [];
+      for (let i = 0; i < h2s.length; i++) {
+        const h2 = h2s[i];
+        slides.push({
+          type: 'h2',
+          title: getCleanTopic(h2.topic),
+          lines: [{ level: 'h2', text: getCleanTopic(h2.topic) }]
+        });
+
+        const h3s = h2.children || [];
+        for (let j = 0; j < h3s.length; j++) {
+          const h3 = h3s[j];
+          const lines = [{ level: 'h3', text: getCleanTopic(h3.topic) }];
+          const h4s = h3.children || [];
+          for (let k = 0; k < h4s.length; k++) {
+            lines.push({ level: 'h4', text: '• ' + getCleanTopic(h4s[k].topic) });
+          }
+          slides.push({ type: 'content', title: getCleanTopic(h3.topic), lines: lines });
+        }
+      }
+      return slides;
+    }
+
+    function clearAnims() {
+      for (let i = 0; i < animTimers.length; i++) clearTimeout(animTimers[i]);
+      animTimers = [];
+    }
+
+    function renderSlidePreview(slide, container, bgColor) {
+      clearAnims();
+      container.innerHTML = '';
+      container.style.background = bgColor || '#000';
+
+      const isCenter = (slide.type === 'h1' || slide.type === 'h2');
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText =
+        'width:100%;height:100%;display:flex;flex-direction:column;box-sizing:border-box;' +
+        'justify-content:center;align-items:center;' +
+        (isCenter ? 'padding:40px 12%;' : 'padding:55px 9%;') +
+        'gap:' + (isCenter ? '0' : '14px') + ';';
+      container.appendChild(wrapper);
+
+      const lineEls = [];
+      for (let i = 0; i < slide.lines.length; i++) {
+        const line = slide.lines[i];
+        const el = document.createElement('div');
+        el.textContent = line.text;
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.65s ease';
+
+        const s = fontScale;
+        if (line.level === 'h1') {
+          el.style.color = C.h1;
+          el.style.fontSize = 'clamp(' + (2 * s) + 'rem,' + (6.5 * s) + 'vw,' + (5.2 * s) + 'rem)';
+          el.style.fontWeight = '900';
+          el.style.textAlign = 'center';
+          el.style.textShadow = '0 0 48px rgba(255,215,0,0.55),0 2px 10px rgba(0,0,0,0.9)';
+          el.style.lineHeight = '1.22';
+        } else if (line.level === 'h2') {
+          el.style.color = C.h2;
+          el.style.fontSize = 'clamp(' + (1.7 * s) + 'rem,' + (5.2 * s) + 'vw,' + (4.2 * s) + 'rem)';
+          el.style.fontWeight = '800';
+          el.style.textAlign = 'center';
+          el.style.textShadow = '0 0 36px rgba(100,181,246,0.5),0 2px 8px rgba(0,0,0,0.9)';
+          el.style.lineHeight = '1.28';
+        } else if (line.level === 'h3') {
+          el.style.color = C.h3;
+          el.style.fontSize = 'clamp(' + (1.3 * s) + 'rem,' + (3.3 * s) + 'vw,' + (2.8 * s) + 'rem)';
+          el.style.fontWeight = '700';
+          el.style.textAlign = 'center';
+          el.style.textShadow = '0 0 22px rgba(129,199,132,0.4)';
+          el.style.lineHeight = '1.35';
+          el.style.width = '100%';
+        } else {
+          el.style.color = C.h4;
+          el.style.fontSize = 'clamp(' + (0.95 * s) + 'rem,' + (2.3 * s) + 'vw,' + (1.85 * s) + 'rem)';
+          el.style.lineHeight = '1.58';
+          el.style.textAlign = 'center';
+          el.style.width = '100%';
+        }
+
+        wrapper.appendChild(el);
+        lineEls.push(el);
+      }
+
+      for (let n = 0; n < lineEls.length; n++) {
+        ((el, delay) => {
+          const t = setTimeout(() => { el.style.opacity = '1'; }, delay);
+          animTimers.push(t);
+        })(lineEls[n], n * 490 + 90);
+      }
+    }
+
+    function updatePreview() {
+      const slide = slideList[previewIndex];
+      const container = document.getElementById('sv_preview_inner');
+      renderSlidePreview(slide, container, currentBg);
+      document.getElementById('sv_counter').textContent = (previewIndex + 1) + ' / ' + slideList.length;
+      document.getElementById('sv_slide_title').textContent = slide.title || '';
+      document.getElementById('btn_sv_prev').disabled = (previewIndex === 0);
+      document.getElementById('btn_sv_next').disabled = (previewIndex === slideList.length - 1);
+    }
+
+    function setProgress(txt) {
+      document.getElementById('sv_progress_text').textContent = txt;
+    }
+
+    function nextFrame() {
+      return new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
+    const FF = "'Microsoft JhengHei','PingFang TC','Noto Sans TC',Arial,sans-serif";
+
+    function fitFontSize(ctx, text, maxW, basePx, weight) {
+      let size = basePx;
+      ctx.font = weight + ' ' + size + 'px ' + FF;
+      while (ctx.measureText(text).width > maxW && size > 18) {
+        size -= 2;
+        ctx.font = weight + ' ' + size + 'px ' + FF;
+      }
+      return size;
+    }
+
+    function buildCanvasLines(slide, W, H) {
+      const s = fontScale;
+      const result = [];
+      if (slide.type === 'h1') {
+        result.push({
+          text: slide.lines[0].text, level: 'h1',
+          color: C.h1, shadow: 'rgba(255,215,0,0.6)', shadowBlur: 50,
+          basePx: Math.round(98 * s), weight: '900',
+          align: 'center', x: W / 2, y: H / 2
+        });
+      } else if (slide.type === 'h2') {
+        result.push({
+          text: slide.lines[0].text, level: 'h2',
+          color: C.h2, shadow: 'rgba(100,181,246,0.5)', shadowBlur: 38,
+          basePx: Math.round(82 * s), weight: '800',
+          align: 'center', x: W / 2, y: H / 2
+        });
+      } else {
+        const n = slide.lines.length;
+        const lineH = Math.min(Math.round(116 * s), Math.max(Math.round(68 * s), (H - 220) / n));
+        const totalH = n * lineH;
+        const startY = (H - totalH) / 2 + lineH * 0.5;
+
+        for (let i = 0; i < slide.lines.length; i++) {
+          const line = slide.lines[i];
+          if (line.level === 'h3') {
+            result.push({
+              text: line.text, level: 'h3',
+              color: C.h3, shadow: 'rgba(129,199,132,0.4)', shadowBlur: 26,
+              basePx: Math.round(60 * s), weight: '700',
+              align: 'center', x: W / 2, y: startY + i * lineH
+            });
+          } else {
+            result.push({
+              text: line.text, level: 'h4',
+              color: C.h4, shadow: null, shadowBlur: 0,
+              basePx: Math.round(44 * s), weight: '400',
+              align: 'center', x: W / 2, y: startY + i * lineH
+            });
+          }
+        }
+      }
+      return result;
+    }
+
+    function drawFrame(ctx, W, H, bgColor, lines, alphas) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, W, H);
+
+      for (let i = 0; i < lines.length; i++) {
+        const alpha = alphas[i];
+        if (alpha <= 0) continue;
+        const ln = lines[i];
+        const maxW = W * 0.86;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = ln.align;
+
+        fitFontSize(ctx, ln.text, maxW, ln.basePx, ln.weight);
+
+        if (ln.shadow) {
+          ctx.shadowColor = ln.shadow;
+          ctx.shadowBlur = ln.shadowBlur;
+        }
+        ctx.fillStyle = ln.color;
+        ctx.fillText(ln.text, ln.x, ln.y, maxW);
+        ctx.restore();
+      }
+    }
+
+    async function renderSlideToCanvas(ctx, W, H, slide, bgColor, durationSec) {
+      const FADE_MS = 680;
+      const HOLD_BETWEEN_MS = 460;
+      const durationMs = durationSec * 1000;
+
+      const lines = buildCanvasLines(slide, W, H);
+      const alphas = lines.map(() => 0);
+      const totalStart = performance.now();
+
+      for (let i = 0; i < lines.length; i++) {
+        const fadeStart = performance.now();
+        while (true) {
+          const elapsed = performance.now() - fadeStart;
+          alphas[i] = Math.min(elapsed / FADE_MS, 1);
+          drawFrame(ctx, W, H, bgColor, lines, alphas);
+          await nextFrame();
+          if (elapsed >= FADE_MS) break;
+        }
+        alphas[i] = 1;
+        if (i < lines.length - 1) {
+          const holdEnd = performance.now() + HOLD_BETWEEN_MS;
+          while (performance.now() < holdEnd) {
+            drawFrame(ctx, W, H, bgColor, lines, alphas);
+            await nextFrame();
+          }
+        }
+      }
+
+      const used = performance.now() - totalStart;
+      const remaining = durationMs - used;
+      if (remaining > 0) {
+        const endAt = performance.now() + remaining;
+        while (performance.now() < endAt) {
+          drawFrame(ctx, W, H, bgColor, lines, alphas);
+          await nextFrame();
+        }
+      }
+    }
+
+    async function exportVideo(bgColor, durationSec) {
+      const W = 1920, H = 1080;
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      const mimeType = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('video/webm;codecs=vp9'))
+        ? 'video/webm;codecs=vp9' : 'video/webm';
+
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 8000000 });
+      const chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+      const stopped = new Promise(resolve => { recorder.onstop = resolve; });
+
+      recorder.start(100);
+      setProgress('準備中...');
+
+      for (let i = 0; i < slideList.length; i++) {
+        setProgress(`正在處理第 ${i + 1} / ${slideList.length} 頁投影片...`);
+        await renderSlideToCanvas(ctx, W, H, slideList[i], bgColor, durationSec);
+      }
+
+      setProgress('正在完成影片封裝...');
+      recorder.stop();
+      await stopped;
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mindmap_slides.webm';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+    }
+
+    // ── 事件繫結與初始化 ──────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      initMindMap();
+
+      // 動態載入題號
+      fetch('questions.txt?t=' + new Date().getTime())
+        .then(r => r.ok ? r.text() : '')
+        .then(text => {
+          if (!text) return;
+          const questions = text.split('\n').map(q => q.trim()).filter(Boolean);
+          if (questions.length > 0) {
+            const sel = document.getElementById('question_select');
+            if (sel) {
+              const cur = sel.value;
+              sel.innerHTML = '';
+              questions.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                sel.appendChild(opt);
+              });
+              if (questions.includes(cur)) sel.value = cur;
+            }
+          }
+        }).catch(() => {});
+
+      // 工具列按鈕
+      document.getElementById('btn_new_map').onclick = () => {
+        if (confirm('確定要建立新的心智圖嗎？這將重置目前的心智圖內容。')) {
+          localStorage.removeItem(STORAGE_KEY);
+          jm.show({
+            meta: { name: 'classroom_mindmap' },
+            format: 'node_tree',
+            data: { id: 'root', topic: '中心主題', children: [] }
+          });
+          applyLayerColors();
+          showNotification('已建立新心智圖！');
+        }
+      };
+
+      document.getElementById('btn_upload_map').onclick = uploadMindmap;
+      document.getElementById('btn_download_png').onclick = downloadPNG;
+      document.getElementById('btn_download_html').onclick = downloadHTML;
+
+      // 匯出 / 匯入 JSON
+      document.getElementById('btn_export_json').onclick = () => {
+        const mindData = jm.get_data('node_tree');
+        const title = (mindData.data.topic || 'mindmap').replace(/<[^>]+>/g, '').trim() || '心智圖';
+        const blob = new Blob([JSON.stringify(mindData, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = title + '.json';
+        link.click();
+        showNotification('JSON 資料已匯出！');
+      };
+
+      document.getElementById('btn_import_json').onclick = () => {
+        document.getElementById('json_file_input').click();
+      };
+
+      document.getElementById('json_file_input').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            jm.show(data);
+            applyLayerColors();
+            saveToLocalStorage();
+            showNotification('心智圖資料匯入成功！');
+          } catch (err) {
+            alert('匯入失敗，請確認檔案為正確的心智圖 JSON 格式。');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+
+      // 姓名輸入框失焦自動檢查
+      document.getElementById('name_input').addEventListener('blur', function() {
+        let val = this.value.trim();
+        if (val && !val.toLowerCase().endsWith('.png')) {
+          this.value = val;
+        }
+      });
+
+      // FAB 節點操作
+      document.getElementById('btn_add_child').onclick = () => {
+        const sel = jm.get_selected_node();
+        const nid = jsMind.util.uuid.newid();
+        jm.add_node(sel, nid, '新節點');
+        jm.select_node(nid);
+      };
+
+      document.getElementById('btn_add_sibling').onclick = () => {
+        const sel = jm.get_selected_node();
+        if (!sel) return alert('請先點選一個節點！');
+        if (sel.isroot) return alert('根節點無法新增同階節點！');
+        const nid = jsMind.util.uuid.newid();
+        jm.add_node(sel.parent, nid, '新節點');
+        jm.select_node(nid);
+      };
+
+      document.getElementById('btn_delete').onclick = () => {
+        const sel = jm.get_selected_node();
+        if (!sel) return alert('請先點選要刪除的節點！');
+        if (sel.isroot) return alert('無法刪除中心主題根節點！');
+        jm.remove_node(sel.id);
+      };
+
+      // 左右/單側排列
+      document.getElementById('btn_reorder').onclick = () => {
+        const root = jm.get_root();
+        if (!root || !root.children || root.children.length < 2) {
+          showNotification('至少需要2個分支節點才能切換排列', true);
+          return;
+        }
+        isReordered = !isReordered;
+        const children = root.children;
+        const midpoint = Math.ceil(children.length / 2);
+        if (isReordered) {
+          for (let i = 0; i < children.length; i++) {
+            children[i].direction = (i < midpoint) ? jsMind.direction.right : jsMind.direction.left;
+          }
+          showNotification('已切換為左右平衡排列');
+        } else {
+          for (const child of children) {
+            child.direction = jsMind.direction.right;
+          }
+          showNotification('已恢復單側排列');
+        }
+        jm.layout.layout();
+        jm.view.show(false);
+      };
+
+      // 展開/收合所有節點
+      document.getElementById('btn_toggle_all').onclick = () => {
+        const rootNode = jm.get_root();
+        if (allExpanded) {
+          const collapseNode = (node) => {
+            if (node && !node.isroot && node.children && node.children.length > 0) {
+              jm.collapse_node(node.id);
+            }
+            if (node && node.children) {
+              node.children.forEach(child => collapseNode(child));
+            }
+          };
+          collapseNode(rootNode);
+          allExpanded = false;
+          showNotification('已收合所有節點');
+        } else {
+          expandAllNodes();
+          allExpanded = true;
+          showNotification('已展開所有節點');
+        }
+      };
+
+      // 簡報模式控制
+      document.getElementById('btn_presentation').onclick = startPresentationMode;
+      document.getElementById('btn_exit_presentation').onclick = exitPresentationMode;
+      document.getElementById('btn_prev_slide').onclick = prevSlide;
+      document.getElementById('btn_next_slide').onclick = nextSlide;
+
+      document.addEventListener('keydown', (e) => {
+        if (!isInPresentationMode) return;
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevSlide();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          exitPresentationMode();
+        }
+      });
+
+      // 超連結 Modal
+      document.getElementById('btn_add_link').onclick = () => {
+        const sel = jm.get_selected_node();
+        if (!sel) return alert('請先點選一個節點！');
+        linkEditingNodeId = sel.id;
+        document.getElementById('link_url_input').value = (sel.data && sel.data.hyperlink) || '';
+        document.getElementById('link_modal_overlay').style.display = 'flex';
+      };
+      document.getElementById('btn_cancel_link').onclick = () => {
+        document.getElementById('link_modal_overlay').style.display = 'none';
+      };
+      document.getElementById('btn_save_link').onclick = () => {
+        const url = document.getElementById('link_url_input').value.trim();
+        const node = jm.get_node(linkEditingNodeId);
+        if (node) {
+          if (!node.data) node.data = {};
+          node.data.hyperlink = url || null;
+          const clean = getCleanTopic(node.topic);
+          const newTopic = buildTopic(node.data, clean);
+          jm.update_node(node.id, newTopic);
+        }
+        document.getElementById('link_modal_overlay').style.display = 'none';
+      };
+
+      // 圖片 Modal
+      document.getElementById('btn_add_image').onclick = () => {
+        const sel = jm.get_selected_node();
+        if (!sel) return alert('請先點選一個節點！');
+        imageEditingNodeId = sel.id;
+        document.getElementById('image_url_input').value = (sel.data && sel.data.image_url) || '';
+        document.getElementById('image_url_modal_overlay').style.display = 'flex';
+      };
+      document.getElementById('btn_cancel_image_url').onclick = () => {
+        document.getElementById('image_url_modal_overlay').style.display = 'none';
+      };
+      document.getElementById('btn_save_image_url').onclick = () => {
+        const url = document.getElementById('image_url_input').value.trim();
+        const node = jm.get_node(imageEditingNodeId);
+        if (node) {
+          if (!node.data) node.data = {};
+          node.data.image_url = url || null;
+          const clean = getCleanTopic(node.topic);
+          const newTopic = buildTopic(node.data, clean);
+          jm.update_node(node.id, newTopic);
+        }
+        document.getElementById('image_url_modal_overlay').style.display = 'none';
+      };
+
+      // 投影片影片匯出 Modal
+      document.getElementById('btn_slide_video').onclick = () => {
+        document.getElementById('sv_modal_overlay').style.display = 'flex';
+      };
+      document.getElementById('btn_sv_cancel').onclick = () => {
+        document.getElementById('sv_modal_overlay').style.display = 'none';
+      };
+
+      // 色票互動
+      const bgInput = document.getElementById('sv_bg_color');
+      const bgHex = document.getElementById('sv_bg_hex');
+      document.querySelectorAll('.sv-swatch').forEach(sw => {
+        sw.onclick = () => {
+          document.querySelectorAll('.sv-swatch').forEach(s => s.classList.remove('active'));
+          sw.classList.add('active');
+          const col = sw.getAttribute('data-color');
+          bgInput.value = col;
+          bgHex.textContent = col.toUpperCase();
+        };
+      });
+
+      bgInput.oninput = () => {
+        document.querySelectorAll('.sv-swatch').forEach(s => s.classList.remove('active'));
+        bgHex.textContent = bgInput.value.toUpperCase();
+      };
+
+      const durRange = document.getElementById('sv_duration_range');
+      const durNum = document.getElementById('sv_duration');
+      durRange.oninput = () => { durNum.value = durRange.value; };
+      durNum.oninput = () => { durRange.value = durNum.value; };
+
+      // 開啟預覽
+      document.getElementById('btn_sv_open_preview').onclick = () => {
+        currentBg = bgInput.value || '#000000';
+        slideList = buildSlides();
+        if (slideList.length === 0) return;
+        previewIndex = 0;
+        document.getElementById('sv_modal_overlay').style.display = 'none';
+        document.getElementById('sv_preview_overlay').style.display = 'flex';
+        updatePreview();
+      };
+
+      // 預覽導航
+      document.getElementById('btn_sv_prev').onclick = () => {
+        if (previewIndex > 0) { previewIndex--; updatePreview(); }
+      };
+      document.getElementById('btn_sv_next').onclick = () => {
+        if (previewIndex < slideList.length - 1) { previewIndex++; updatePreview(); }
+      };
+      document.getElementById('btn_sv_back').onclick = () => {
+        clearAnims();
+        document.getElementById('sv_preview_overlay').style.display = 'none';
+        document.getElementById('sv_modal_overlay').style.display = 'flex';
+      };
+
+      // 匯出影片
+      document.getElementById('btn_sv_export').onclick = () => {
+        const bgColor = currentBg;
+        const durationSec = parseFloat(durNum.value) || 6;
+        clearAnims();
+        document.getElementById('sv_preview_overlay').style.display = 'none';
+        document.getElementById('sv_progress_overlay').style.display = 'flex';
+        exportVideo(bgColor, durationSec)
+          .catch(err => alert('匯出失敗：' + err.message))
+          .finally(() => {
+            document.getElementById('sv_progress_overlay').style.display = 'none';
+          });
+      };
+    });
+  </script>
+</body>
+</html>
