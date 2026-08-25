@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定檔案上傳選單名稱</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+    :root {
+      --macaron-bg: #FAF5FF;
+      --macaron-pink: #FFD1DC;
+      --macaron-mint: #C1F0DB;
+      --macaron-yellow: #FEF08A;
+      --macaron-blue: #BAE6FD;
+      --macaron-purple: #E9D5FF;
+      --text-main: #334155;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Quicksand', 'Noto Sans TC', -apple-system, sans-serif;
+      background-color: #FDF8F5;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 209, 220, 0.45) 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, rgba(186, 230, 253, 0.5) 0%, transparent 40%),
+        radial-gradient(circle at 50% 60%, rgba(233, 213, 255, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, rgba(193, 240, 219, 0.45) 0%, transparent 45%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* 頁首標題列 */
+    header {
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.12);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 卡片通用樣式 */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 按鈕樣式 */
+    .btn {
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(1px); }
+
+    .btn-mint { background: linear-gradient(135deg, #ECFDF5, #C1F0DB); color: #065F46; border: 1.5px solid #6EE7B7; }
+    .btn-pink { background: linear-gradient(135deg, #FFF1F2, #FFD1DC); color: #9B1C31; border: 1.5px solid #FDA4AF; }
+    .btn-blue { background: linear-gradient(135deg, #F0F9FF, #BAE6FD); color: #0369A1; border: 1.5px solid #7DD3FC; }
+    .btn-purple { background: linear-gradient(135deg, #FAF5FF, #E9D5FF); color: #6B21A8; border: 1.5px solid #D8B4FE; }
+    .btn-yellow { background: linear-gradient(135deg, #FFFBEB, #FEF08A); color: #92400E; border: 1.5px solid #FDE047; }
+    .btn-primary { background: linear-gradient(135deg, #38BDF8, #818CF8); color: white; border: none; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35); }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    /* 快速範本區 */
+    .template-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    /* 表單元件 */
+    .form-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      color: #334155;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, textarea:focus {
+      border-color: #38bdf8;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    /* 清單列表 */
+    .q-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .q-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s;
+    }
+    .q-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);
+    }
+
+    .item-index {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #BAE6FD, #E9D5FF);
+      color: #1e293b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .item-input {
+      flex: 1;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* 批次編輯文字框 */
+    #rawTextContainer {
+      display: none;
+      margin-top: 15px;
+    }
+    #rawText {
+      height: 240px;
+      line-height: 1.8;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    /* 底部儲存列 */
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1.5px dashed #e2e8f0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* 提示訊息 */
+    #statusMsg {
+      font-weight: 700;
+      font-size: 14px;
+      display: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    #statusMsg.success {
+      display: inline-block;
+      background: #d1fae5;
+      color: #065f46;
+    }
+    #statusMsg.error {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* 頁尾版權與作者資訊 */
+    .footer-text {
+      position: fixed;
+      bottom: 16px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      z-index: 1200;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .footer-text a {
+      color: #8B5CF6;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .footer-text .cc-license {
+      color: #94A3B8;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 頁首 -->
+    <header>
+      <h1><span>📝</span> 設定檔案上傳選單名稱</h1>
+      <div>
+        <a href="index.html" class="btn btn-blue">🏠 返回首頁</a>
+      </div>
+    </header>
+
+    <!-- 卡片 1：新增與快速範本 -->
+    <div class="card">
+      <h2 class="card-title"><span>⚡</span> 快速範本套用</h2>
+      <div class="template-group">
+        <button class="btn btn-sm btn-yellow" onclick="applyTemplate('standard')">標準 10 題 (問題 1 ~ 10)</button>
+        <button class="btn btn-sm btn-mint" onclick="applyTemplate('group')">分組競賽 (第 1 組 ~ 第 6 組)</button>
+        <button class="btn btn-sm btn-purple" onclick="applyTemplate('lesson')">課堂階段 (預習 / 討論 / 發表 / 測驗)</button>
+        <button class="btn btn-sm btn-pink" onclick="applyTemplate('subjects')">多學科分類 (國語 / 數學 / 英語 / 自然 / 社會)</button>
+      </div>
+
+      <h2 class="card-title" style="margin-top: 20px;"><span>➕</span> 新增自訂選項名稱</h2>
+      <div class="form-row">
+        <input type="text" id="newQuestionName" placeholder="例如：自然實驗第一組、單元隨堂小考、自由創作作品" onkeydown="if(event.key==='Enter') addQuestion();">
+        <button class="btn btn-primary" onclick="addQuestion()" style="flex-shrink:0;">
+          <span>✨</span> 加入選單
+        </button>
+      </div>
+    </div>
+
+    <!-- 卡片 2：目前選單清單管理 -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 class="card-title" style="margin-bottom:0;">
+          <span>📋</span> 目前選單項目 (<span id="countDisplay">0</span> 個)
+        </h2>
+        <button id="btnToggleRaw" class="btn btn-sm btn-yellow" onclick="toggleRawView()">
+          <span>📝</span> 原始文字批次編輯
+        </button>
+      </div>
+
+      <p style="color:#64748b; font-size:13px; margin-top:0;">
+        💡 儲存後，首頁作業繳交、檔案上傳、線上錄音、心智圖與截圖外掛等所有工具都會同步套用此選單！
+      </p>
+
+      <!-- 視覺化清單 -->
+      <div id="visualListContainer">
+        <div id="questionList" class="q-list">
+          <div style="text-align: center; color: #94a3b8; padding: 20px;">載入中...</div>
+        </div>
+      </div>
+
+      <!-- 批次文字編輯模式 -->
+      <div id="rawTextContainer">
+        <p style="font-size: 13px; color: #64748b; margin-top: 0;">
+          每行代表一個選單選項名稱：
+        </p>
+        <textarea id="rawText" placeholder="每行一個題目名稱"></textarea>
+      </div>
+
+      <!-- 底部儲存與狀態列 -->
+      <div class="footer-actions">
+        <div>
+          <span id="statusMsg"></span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-pink" onclick="loadQuestions()"><span>🔄</span> 重設/重新載入</button>
+          <button class="btn btn-primary" onclick="saveAllQuestions()"><span>💾</span> 儲存選單設定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁尾版權與作者資訊 -->
+  <div class="footer-text">
+    Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener noreferrer">阿剛老師</a>
+    <span class="cc-license"> ｜ 創用 CC 姓名標示-非商業性-相同方式分享 (CC BY-NC-SA 4.0) 授權</span>
+  </div>
+
+  <script>
+    let questionItems = [];
+    let isRawMode = false;
+
+    // 載入 questions.txt
+    async function loadQuestions() {
+      const listDiv = document.getElementById('questionList');
+      listDiv.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">載入中...</div>';
+      showStatus('', '');
+
+      try {
+        const res = await fetch('questions.txt?t=' + new Date().getTime());
+        if (!res.ok) throw new Error('無法載入 questions.txt');
+        const text = await res.text();
+        parseQuestionsText(text);
+        renderList();
+      } catch (err) {
+        // 若檔案不存在則提供預設
+        questionItems = [
+          '問題1', '問題2', '問題3', '問題4', '問題5',
+          '問題6', '問題7', '問題8', '問題9', '問題10'
+        ];
+        renderList();
+      }
+    }
+
+    // 解析文字為陣列
+    function parseQuestionsText(text) {
+      questionItems = [];
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        line = line.trim();
+        if (line) {
+          questionItems.push(line);
+        }
+      });
+      if (questionItems.length === 0) {
+        questionItems = ['問題1', '問題2', '問題3', '問題4', '問題5'];
+      }
+      syncToRawText();
+    }
+
+    function syncToRawText() {
+      const rawElem = document.getElementById('rawText');
+      rawElem.value = questionItems.join('\n');
+      document.getElementById('countDisplay').textContent = questionItems.length;
+    }
+
+    function syncFromRawText() {
+      const rawElem = document.getElementById('rawText');
+      parseQuestionsText(rawElem.value);
+    }
+
+    // 渲染清單
+    function renderList() {
+      const listDiv = document.getElementById('questionList');
+      document.getElementById('countDisplay').textContent = questionItems.length;
+
+      if (questionItems.length === 0) {
+        listDiv.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:30px;">目前尚無選項，請在上方新增！</div>';
+        return;
+      }
+
+      listDiv.innerHTML = '';
+      questionItems.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'q-item';
+        itemDiv.innerHTML = `
+          <div class="item-index">${index + 1}</div>
+          <div class="item-input">
+            <input type="text" value="${escapeHtml(item)}" placeholder="選單名稱" onchange="updateItemName(${index}, this.value)">
+          </div>
+          <div class="item-actions">
+            <button class="btn btn-sm btn-yellow" title="上移" onclick="moveItem(${index}, -1)" ${index === 0 ? 'disabled style="opacity:0.4;"' : ''}>⬆️</button>
+            <button class="btn btn-sm btn-yellow" title="下移" onclick="moveItem(${index}, 1)" ${index === questionItems.length - 1 ? 'disabled style="opacity:0.4;"' : ''}>⬇️</button>
+            <button class="btn btn-sm btn-pink" title="刪除" onclick="deleteItem(${index})">🗑️</button>
+          </div>
+        `;
+        listDiv.appendChild(itemDiv);
+      });
+      syncToRawText();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // 新增
+    function addQuestion() {
+      const input = document.getElementById('newQuestionName');
+      const val = input.value.trim();
+      if (!val) {
+        alert('請輸入選項名稱！');
+        input.focus();
+        return;
+      }
+
+      questionItems.push(val);
+      input.value = '';
+      renderList();
+      showStatus('已新增選項，請記得點選下方「儲存選單設定」！', 'success');
+    }
+
+    // 更新名稱
+    function updateItemName(index, val) {
+      if (questionItems[index] !== undefined) {
+        questionItems[index] = val.trim() || `選項 ${index + 1}`;
+        syncToRawText();
+      }
+    }
+
+    // 移動順序
+    function moveItem(index, offset) {
+      const target = index + offset;
+      if (target < 0 || target >= questionItems.length) return;
+      const temp = questionItems[index];
+      questionItems[index] = questionItems[target];
+      questionItems[target] = temp;
+      renderList();
+    }
+
+    // 刪除
+    function deleteItem(index) {
+      if (confirm(`確定要刪除「${questionItems[index]}」嗎？`)) {
+        questionItems.splice(index, 1);
+        renderList();
+        showStatus('已移除項目，請點選「儲存選單設定」以套用！', 'success');
+      }
+    }
+
+    // 套用快速範本
+    function applyTemplate(type) {
+      if (confirm('套用範本將會取代目前的清單內容，確定要套用嗎？')) {
+        if (type === 'standard') {
+          questionItems = ['問題1', '問題2', '問題3', '問題4', '問題5', '問題6', '問題7', '問題8', '問題9', '問題10'];
+        } else if (type === 'group') {
+          questionItems = ['第1組', '第2組', '第3組', '第4組', '第5組', '第6組'];
+        } else if (type === 'lesson') {
+          questionItems = ['課前預習作業', '課堂分組討論', '個人實作成果', '課後延伸心得', '隨堂測驗小考'];
+        } else if (type === 'subjects') {
+          questionItems = ['國語作業', '數學作業', '英語作業', '自然實驗', '社會探究', '自由創作'];
+        }
+        renderList();
+        showStatus('已套用範本，請點選「儲存選單設定」以套用！', 'success');
+      }
+    }
+
+    // 切換文字模式
+    function toggleRawView() {
+      isRawMode = !isRawMode;
+      const visualContainer = document.getElementById('visualListContainer');
+      const rawContainer = document.getElementById('rawTextContainer');
+      const toggleBtn = document.getElementById('btnToggleRaw');
+
+      if (isRawMode) {
+        syncToRawText();
+        visualContainer.style.display = 'none';
+        rawContainer.style.display = 'block';
+        toggleBtn.innerHTML = '<span>📋</span> 切換回卡片清單模式';
+      } else {
+        syncFromRawText();
+        renderList();
+        visualContainer.style.display = 'block';
+        rawContainer.style.display = 'none';
+        toggleBtn.innerHTML = '<span>📝</span> 原始文字批次編輯';
+      }
+    }
+
+    // 儲存到後端
+    async function saveAllQuestions() {
+      if (isRawMode) {
+        syncFromRawText();
+      }
+
+      if (questionItems.length === 0) {
+        alert('選單至少需要有一個項目！');
+        return;
+      }
+
+      const content = questionItems.join('\n');
+      showStatus('正在儲存中...', 'success');
+
+      try {
+        const res = await fetch('/saveQuestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({ content: content })
+        });
+
+        if (!res.ok) throw new Error('伺服器回應錯誤');
+        const data = await res.json();
+        showStatus('🎉 ' + data.message, 'success');
+        alert('🎉 檔案上傳選單名稱已成功更新！所有工具將同步套用新選單。');
+      } catch (err) {
+        showStatus('❌ 儲存失敗：' + err.message, 'error');
+        alert('儲存失敗：' + err.message);
+      }
+    }
+
+    function showStatus(text, type) {
+      const msg = document.getElementById('statusMsg');
+      if (!text) {
+        msg.style.display = 'none';
+        return;
+      }
+      msg.textContent = text;
+      msg.className = type;
+      msg.style.display = 'inline-block';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadQuestions);
+  </script>
+</body>
+</html>
