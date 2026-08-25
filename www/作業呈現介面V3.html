@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學生作業成果展示牆</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+    :root {
+      --text-main: #334155;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    /* 全域馬卡龍背景風格 */
+    body {
+      font-family: 'Quicksand', 'Noto Sans TC', -apple-system, sans-serif;
+      background-color: #FDF8F5;
+      background-image: 
+        radial-gradient(circle at 10% 15%, rgba(255, 209, 220, 0.45) 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, rgba(186, 230, 253, 0.5) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(233, 213, 255, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, rgba(193, 240, 219, 0.45) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(254, 240, 138, 0.4) 0%, transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      position: relative;
+    }
+    
+    h2.section-title {
+      color: #1e293b;
+      text-align: center;
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 30px;
+      margin-top: 10px;
+      position: relative;
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    h2.section-title:after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #FFD1DC, #BAE6FD, #C1F0DB);
+    }
+    
+    /* 頂部固定按鈕群 */
+    .top-actions {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 1100;
+      flex-wrap: wrap;
+    }
+
+    .top-btn {
+      padding: 9px 18px;
+      border-radius: 20px;
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .top-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+    .top-btn:active { transform: translateY(1px); }
+
+    .btn-home { background: linear-gradient(135deg, #F0F9FF, #BAE6FD); color: #0369A1; }
+    .btn-bg-setting { background: linear-gradient(135deg, #FAF5FF, #E9D5FF); color: #6B21A8; }
+    .btn-lottery { background: linear-gradient(135deg, #FFFBEB, #FEF08A); color: #92400E; display: none; }
+    
+    /* 資料夾列表區 */
+    #folderList {
+      margin-bottom: 50px;
+      text-align: center;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    
+    #folderList ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+    }
+    
+    #folderList li {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 210px;
+      height: 140px;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      font-size: 1.25em;
+      font-weight: 700;
+      border: 2.5px solid #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    
+    #folderList li:hover {
+      transform: translateY(-8px) scale(1.04);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+    }
+    
+    #folderList li .folder-icon {
+      font-size: 2.4em;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+      transition: transform 0.2s;
+    }
+    #folderList li:hover .folder-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+    
+    /* 預覽區 */
+    #previewArea {
+      animation: fadeIn 0.6s;
+      padding: 28px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 30px rgba(168, 85, 247, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      position: relative;
+    }
+
+    .preview-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    #backButton {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #ECFDF5, #C1F0DB);
+      border: 1.5px solid #6EE7B7;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      font-weight: 700;
+      color: #065F46;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #backButton:hover {
+      transform: translateY(-2px);
+    }
+
+    .preview-right-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    /* 放大縮小拉桿控制區 */
+    #gridControl {
+      background: #ffffff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #gridControl input[type="range"] {
+      accent-color: #38bdf8;
+    }
+    
+    /* 比較按鈕樣式 */
+    #compareBtn {
+      padding: 9px 18px;
+      background: linear-gradient(135deg, #FFF1F2, #FFD1DC);
+      border: 1.5px solid #FDA4AF;
+      border-radius: 20px;
+      color: #9B1C31;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #compareBtn:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* 圖片網格 */
+    #imageGrid {
+      grid-template-columns: repeat(4, 1fr);
+      display: grid;
+      gap: 22px;
+      padding: 10px 0;
+      --scale-factor: 1;
+    }
+    
+    .image-item {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      border: 1.5px solid #e2e8f0;
+      padding: 14px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .image-item:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: #cbd5e1;
+      box-shadow: 0 12px 24px rgba(168, 85, 247, 0.12);
+    }
+    
+    .image-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      background: #f8fafc;
+    }
+    
+    .image-item:hover img {
+      transform: scale(1.02);
+    }
+
+    /* 音訊卡片專屬樣式 */
+    .audio-card-box {
+      width: 100%;
+      height: 140px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #FAF5FF, #E9D5FF);
+      border: 1.5px solid #D8B4FE;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .audio-card-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.2);
+    }
+    .audio-card-icon {
+      font-size: 42px;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 2px 6px rgba(168, 85, 247, 0.25));
+    }
+    .audio-player-inline {
+      width: 100%;
+      height: 38px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    
+    /* 勾選用的 checkbox */
+    .checkbox-overlay {
+      position: absolute;
+      top: 22px;
+      left: 22px;
+      z-index: 10;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: #FF6584;
+    }
+    
+    .title-line, .desc-line {
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    
+    .title-line {
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: #1e293b;
+      background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+      border: 1px solid #BAE6FD;
+    }
+    
+    .desc-line {
+      font-size: 12px;
+      color: #475569;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      line-height: 1.4;
+      word-break: break-word;
+      min-height: 24px;
+    }
+    
+    /* Modal 彈窗與全螢幕大圖 */
+    #imageModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    
+    .modal-content {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      max-width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      position: relative;
+      text-align: center;
+    }
+    
+    .modal-content img {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: var(--radius-md);
+      object-fit: contain;
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 26px;
+      cursor: pointer;
+      color: #64748b;
+      background: #f1f5f9;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    
+    /* 比較層 */
+    #compareArea {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      z-index: 2500;
+      padding: 24px;
+      overflow: auto;
+    }
+    
+    .compare-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+    
+    #exitCompareBtn {
+      padding: 8px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #exitCompareBtn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    #compareGrid {
+      display: grid;
+      gap: 20px;
+      width: 100%;
+      height: calc(100vh - 120px);
+    }
+    
+    .compare-cell {
+      background: rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.15);
+      position: relative;
+    }
+    
+    .compare-cell img {
+      max-width: 100%;
+      max-height: 85%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    
+    .cell-title {
+      color: #ffffff;
+      font-weight: 700;
+      margin-top: 8px;
+      font-size: 14px;
+      text-align: center;
+    }
+    
+    /* 抽籤動畫覆蓋層 */
+    #lotteryOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      z-index: 3000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #lotteryText {
+      font-size: clamp(48px, 10vw, 120px);
+      font-weight: 900;
+      background: linear-gradient(135deg, #FF6584, #FBBF24, #38BDF8, #A855F7);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-align: center;
+      user-select: none;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+    
+    #openLotteryBtn {
+      display: none;
+      margin-top: 30px;
+      padding: 14px 32px;
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #10B981, #059669);
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+      transition: transform 0.2s;
+    }
+    #openLotteryBtn:hover {
+      transform: scale(1.08);
+    }
+    
+    /* 背景設定覆蓋層 */
+    #bgSettingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2800;
+      padding: 20px;
+    }
+    
+    .bgSettingContainer {
+      width: 90%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      padding: 28px;
+      position: relative;
+    }
+    
+    .bgSettingContainer h2 {
+      margin-top: 0;
+      color: #1e293b;
+      font-size: 20px;
+    }
+    
+    .bgSettingContainer select {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 15px;
+      margin-bottom: 16px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+    }
+    .bgSettingContainer select:focus {
+      border-color: #38bdf8;
+    }
+    
+    #pasteArea {
+      padding: 24px;
+      border: 2px dashed #cbd5e1;
+      text-align: center;
+      color: #64748b;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #pasteArea:hover, #pasteArea:focus {
+      outline: none;
+      border-color: #38bdf8;
+      background: #f0f9ff;
+    }
+    
+    #bgPreview img {
+      max-width: 100%;
+      max-height: 180px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    #setButton {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #38BDF8, #818CF8);
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+    
+    #closeBgSetting {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #f1f5f9;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* 載入動畫 */
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #38bdf8;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* 頁尾版權資訊 */
+    .footer-text {
+      position: fixed;
+      bottom: 16px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      z-index: 1200;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .footer-text a {
+      color: #8B5CF6;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .footer-text .cc-license {
+      color: #94A3B8;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部按鈕群 -->
+  <div class="top-actions">
+    <button id="lotteryBtn" class="top-btn btn-lottery">🎲 抽籤點名</button>
+    <button id="bgSettingBtn" class="top-btn btn-bg-setting">🖼️ 設定畫布背景</button>
+    <a href="index.html" class="top-btn btn-home">🏠 返回首頁</a>
+  </div>
+  
+  <div class="container">
+    <!-- 資料夾列表區 -->
+    <div id="folderList">
+      <h2 class="section-title">
+        <span>📂</span> 學生作業成果瀏覽
+      </h2>
+      <ul id="folders"></ul>
+      <div id="foldersLoader" class="loader" style="display:none;"></div>
+    </div>
+
+    <!-- 圖片預覽區（預設隱藏） -->
+    <div id="previewArea" style="display:none;">
+      <div class="preview-header-bar">
+        <button id="backButton">
+          <span>⬅️</span> 返回題目列表
+        </button>
+        <h2 id="currentFolderTitle" style="margin:0; font-size:1.6em; color:#1e293b;"></h2>
+        <div class="preview-right-controls">
+          <div id="gridControl">
+            欄數：
+            <input type="range" id="gridSlider" min="2" max="6" value="4">
+          </div>
+          <button id="compareBtn">
+            <span>🔍</span> 勾選比較
+          </button>
+        </div>
+      </div>
+
+      <div id="imageGrid"></div>
+      <div id="imagesLoader" class="loader" style="display:none;"></div>
+    </div>
+
+    <!-- 比較層 -->
+    <div id="compareArea">
+      <div class="compare-header">
+        <h2 style="margin:0;">🔍 多張作業並排比較</h2>
+        <button id="exitCompareBtn">✕ 結束比較</button>
+      </div>
+      <div id="compareGrid"></div>
+    </div>
+  </div>
+
+  <!-- 單項放大 Modal (支援圖片與音訊) -->
+  <div id="imageModal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">×</span>
+      <div id="modalTitle" style="font-size:20px; font-weight:bold; margin-bottom:6px; color:#1e293b;"></div>
+      <div id="modalDesc" style="font-size:14px; color:#64748b; margin-bottom:14px;"></div>
+      
+      <!-- 圖片展示 -->
+      <img id="modalImage" src="" alt="大圖預覽" style="display:none;">
+      
+      <!-- 音訊展示 -->
+      <div id="modalAudioContainer" style="display:none; padding:30px 20px; background:linear-gradient(135deg, #FAF5FF, #E9D5FF); border-radius:16px; border:2px solid #D8B4FE; margin:0 auto; max-width:500px;">
+        <div style="font-size:64px; margin-bottom:12px;">🎙️</div>
+        <audio id="modalAudio" controls style="width:100%; outline:none;"></audio>
+      </div>
+    </div>
+  </div>
+
+  <!-- 抽籤動畫覆蓋層 -->
+  <div id="lotteryOverlay">
+    <div id="lotteryText">抽籤中...</div>
+    <button id="openLotteryBtn">🎯 開啟抽中檔案</button>
+  </div>
+  
+  <!-- 設定背景圖覆蓋層 -->
+  <div id="bgSettingOverlay">
+    <div class="bgSettingContainer">
+      <button id="closeBgSetting">×</button>
+      <h2>🖼️ 設定題目畫布背景圖</h2>
+      <label for="questionSelect" style="display:block; font-weight:bold; margin-bottom:6px; color:#475569; font-size:14px;">選擇設定題號：</label>
+      <select id="questionSelect"></select>
+      
+      <div id="bgPreview"></div>
+      <div id="pasteArea" tabindex="0" onclick="document.getElementById('bgFileInput').click()">
+        <div style="font-size:28px; margin-bottom:8px;">📥</div>
+        <div style="font-weight:bold; font-size:15px; color:#1e293b; margin-bottom:4px;">點擊選取電腦圖片，或拖曳圖片至此</div>
+        <div style="font-size:13px; color:#64748b;">（亦支援複製圖片後直接按 Ctrl+V 貼上）</div>
+      </div>
+      <input type="file" id="bgFileInput" accept="image/*" style="display:none;">
+      <button id="setButton">🚀 儲存並設定背景圖</button>
+      <div id="bgStatus" style="margin-top:12px; font-weight:bold; font-size:14px; text-align:center;"></div>
+    </div>
+  </div>
+  
+  <!-- 頁尾版權資訊 -->
+  <div class="footer-text">
+    Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener noreferrer">阿剛老師</a>
+    <span class="cc-license"> ｜ 創用 CC 姓名標示-非商業性-相同方式分享 (CC BY-NC-SA 4.0) 授權</span>
+  </div>
+  
+  <script>
+    // 馬卡龍粉彩資料夾卡片顏色庫
+    const folderThemes = [
+      { bg: 'linear-gradient(135deg, #FFF1F2, #FFD1DC)', color: '#9F1239' },
+      { bg: 'linear-gradient(135deg, #ECFDF5, #C1F0DB)', color: '#065F46' },
+      { bg: 'linear-gradient(135deg, #FFFBEB, #FEF08A)', color: '#92400E' },
+      { bg: 'linear-gradient(135deg, #F0F9FF, #BAE6FD)', color: '#0369A1' },
+      { bg: 'linear-gradient(135deg, #FAF5FF, #E9D5FF)', color: '#6B21A8' },
+      { bg: 'linear-gradient(135deg, #FFEDD5, #FED7AA)', color: '#9A3412' },
+      { bg: 'linear-gradient(135deg, #FCE7F3, #FBCFE8)', color: '#831843' },
+      { bg: 'linear-gradient(135deg, #CCFBF1, #99F6E4)', color: '#115E59' }
+    ];
+
+    // 動態載入題號清單至「設定畫布背景」選單
+    async function loadBgQuestions() {
+      const sel = document.getElementById('questionSelect');
+      if (!sel) return;
+      try {
+        const res = await fetch('questions.txt?t=' + new Date().getTime());
+        if (res.ok) {
+          const text = await res.text();
+          const list = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          if (list.length > 0) {
+            sel.innerHTML = '';
+            list.forEach(q => {
+              const opt = document.createElement('option');
+              opt.value = q;
+              opt.textContent = q;
+              sel.appendChild(opt);
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 備用預設
+      sel.innerHTML = `
+        <option value="問題1">問題1</option>
+        <option value="問題2">問題2</option>
+        <option value="問題3">問題3</option>
+        <option value="問題4">問題4</option>
+        <option value="問題5">問題5</option>
+      `;
+    }
+
+    // 載入 upload 底下的題目資料夾列表
+    function loadFolders() {
+      document.getElementById('foldersLoader').style.display = 'block';
+      fetch('/api/list?path=upload')
+        .then(response => response.json())
+        .then(data => {
+          const folderContainer = document.getElementById('folders');
+          folderContainer.innerHTML = '';
+          const dirs = data.filter(item => item.isDir);
+          
+          if (dirs.length === 0) {
+            folderContainer.innerHTML = '<div style="color:#94a3b8; font-weight:bold; padding:40px;">目前 upload 資料夾中尚無任何作業繳交資料夾</div>';
+            document.getElementById('foldersLoader').style.display = 'none';
+            return;
+          }
+
+          dirs.forEach((item, idx) => {
+            const theme = folderThemes[idx % folderThemes.length];
+            const li = document.createElement('li');
+            li.style.background = theme.bg;
+            li.style.color = theme.color;
+            li.innerHTML = `
+              <div class="folder-icon">📁</div>
+              <div>${item.name}</div>
+            `;
+            li.onclick = () => loadImages(`upload/${item.name}`, item.name);
+            folderContainer.appendChild(li);
+          });
+          document.getElementById('foldersLoader').style.display = 'none';
+        })
+        .catch(err => {
+          console.error('取得資料夾列表失敗：', err);
+          document.getElementById('foldersLoader').style.display = 'none';
+        });
+    }
+
+    // 全域存放勾選圖片
+    let selectedImages = [];
+
+    function loadImages(path, folderName) {
+      document.getElementById('imagesLoader').style.display = 'block';
+      selectedImages = [];
+      fetch('/api/list?path=' + encodeURIComponent(path))
+        .then(response => response.json())
+        .then(data => {
+          const imageGrid = document.getElementById('imageGrid');
+          imageGrid.innerHTML = '';
+          document.getElementById('currentFolderTitle').textContent = folderName;
+          let loadedImages = 0;
+          const totalImages = data.filter(item => !item.isDir).length;
+
+          if (totalImages === 0) {
+            imageGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; font-weight:bold; padding:40px;">此題號資料夾目前尚無學生上傳作品</div>';
+            document.getElementById('imagesLoader').style.display = 'none';
+          }
+
+          data.forEach(item => {
+            if (!item.isDir) {
+              const filename = item.name;
+              const ext = filename.split('.').pop().toLowerCase();
+              const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'webm', 'aac', 'flac'];
+              const isAudio = audioExts.includes(ext);
+
+              let titleText = '';
+              let descText = '';
+              if (filename.includes('+')) {
+                const parts = filename.split('+');
+                titleText = parts[0];
+                const dotIndex = parts[1].lastIndexOf('.');
+                descText = dotIndex !== -1 ? parts[1].substring(0, dotIndex) : parts[1];
+              } else {
+                const dotIndex = filename.lastIndexOf('.');
+                titleText = dotIndex !== -1 ? filename.substring(0, dotIndex) : filename;
+              }
+
+              const itemDiv = document.createElement('div');
+              itemDiv.className = 'image-item';
+              
+              // 勾選框
+              const checkbox = document.createElement('input');
+              checkbox.type = "checkbox";
+              checkbox.className = "checkbox-overlay";
+              checkbox.addEventListener('change', function() {
+                const fileUrl = path + '/' + filename;
+                if (this.checked) {
+                  selectedImages.push({ src: fileUrl, title: titleText, desc: descText, isAudio: isAudio });
+                } else {
+                  selectedImages = selectedImages.filter(it => it.src !== fileUrl);
+                }
+              });
+              itemDiv.appendChild(checkbox);
+              
+              const fileUrl = path + '/' + filename;
+
+              if (isAudio) {
+                // 音訊卡片：語音圖卡 + 原地直接試播控制器
+                const audioBox = document.createElement('div');
+                audioBox.className = 'audio-card-box';
+                audioBox.innerHTML = `
+                  <div class="audio-card-icon">🎙️</div>
+                  <div style="font-size:12px; font-weight:bold; color:#6B21A8;">語音作品 (${ext.toUpperCase()})</div>
+                `;
+                audioBox.onclick = () => openModal(fileUrl, titleText, descText, true);
+                itemDiv.appendChild(audioBox);
+
+                const audioElem = document.createElement('audio');
+                audioElem.className = 'audio-player-inline';
+                audioElem.controls = true;
+                audioElem.preload = 'metadata';
+                audioElem.src = fileUrl;
+                itemDiv.appendChild(audioElem);
+              } else {
+                // 圖片卡片
+                const img = document.createElement('img');
+                img.src = fileUrl;
+                img.alt = filename;
+                img.onload = () => {
+                  loadedImages++;
+                  if (loadedImages === totalImages) {
+                    document.getElementById('imagesLoader').style.display = 'none';
+                  }
+                };
+                img.onerror = () => {
+                  loadedImages++;
+                  if (loadedImages === totalImages) {
+                    document.getElementById('imagesLoader').style.display = 'none';
+                  }
+                };
+                img.onclick = () => openModal(fileUrl, titleText, descText, false);
+                itemDiv.appendChild(img);
+              }
+              
+              const titleDiv = document.createElement('div');
+              titleDiv.className = 'title-line';
+              titleDiv.textContent = titleText;
+              itemDiv.appendChild(titleDiv);
+              
+              const descDiv = document.createElement('div');
+              descDiv.className = 'desc-line';
+              descDiv.textContent = descText || '（無備註）';
+              itemDiv.appendChild(descDiv);
+              
+              imageGrid.appendChild(itemDiv);
+            }
+          });
+
+          document.getElementById('folderList').style.display = 'none';
+          document.getElementById('previewArea').style.display = 'block';
+          document.getElementById('lotteryBtn').style.display = 'inline-flex';
+        })
+        .catch(err => {
+          console.error('取得作品列表失敗：', err);
+          document.getElementById('imagesLoader').style.display = 'none';
+        });
+    }
+
+    document.getElementById('backButton').addEventListener('click', () => {
+      // 停止所有正在播放的音訊
+      document.querySelectorAll('audio').forEach(a => a.pause());
+      document.getElementById('previewArea').style.display = 'none';
+      document.getElementById('folderList').style.display = 'block';
+      document.getElementById('lotteryBtn').style.display = 'none';
+    });
+
+    function updateGridSettings(columns) {
+      const imageGrid = document.getElementById('imageGrid');
+      imageGrid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    }
+
+    document.getElementById('gridSlider').addEventListener('input', function() {
+      updateGridSettings(this.value);
+    });
+
+    // 單項放大 Modal (支援圖片與音訊)
+    function openModal(src, title, desc, isAudio = false) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      const modalAudioContainer = document.getElementById('modalAudioContainer');
+      const modalAudio = document.getElementById('modalAudio');
+
+      document.getElementById('modalTitle').textContent = '👤 學生：' + title;
+      document.getElementById('modalDesc').textContent = desc ? '💬 心得/備註：' + desc : '';
+
+      if (isAudio) {
+        modalImg.style.display = 'none';
+        modalAudioContainer.style.display = 'block';
+        modalAudio.src = src;
+        modalAudio.play().catch(() => {});
+      } else {
+        modalAudioContainer.style.display = 'none';
+        modalAudio.pause();
+        modalAudio.src = '';
+        modalImg.src = src;
+        modalImg.style.display = 'block';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      const modalAudio = document.getElementById('modalAudio');
+      if (modalAudio) {
+        modalAudio.pause();
+        modalAudio.src = '';
+      }
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // 比較功能
+    document.getElementById('compareBtn').addEventListener('click', function() {
+      if (selectedImages.length === 0) {
+        alert('請先在圖片左上角勾選至少 1 張圖片進行比較！');
+        return;
+      }
+
+      const compareGrid = document.getElementById('compareGrid');
+      compareGrid.innerHTML = '';
+      
+      const count = selectedImages.length;
+      let cols = Math.min(count, 4);
+      if (count === 4) cols = 2;
+      compareGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+      selectedImages.forEach(item => {
+        const cell = document.createElement('div');
+        cell.className = 'compare-cell';
+        cell.innerHTML = `
+          <img src="${item.src}" alt="${item.title}">
+          <div class="cell-title">${item.title}</div>
+          ${item.desc ? `<div style="color:#cbd5e1; font-size:12px; margin-top:4px;">${item.desc}</div>` : ''}
+        `;
+        compareGrid.appendChild(cell);
+      });
+
+      document.getElementById('compareArea').style.display = 'block';
+    });
+
+    document.getElementById('exitCompareBtn').addEventListener('click', function() {
+      document.getElementById('compareArea').style.display = 'none';
+    });
+
+    // 抽籤功能
+    const lotteryBtn = document.getElementById('lotteryBtn');
+    lotteryBtn.addEventListener('click', function() {
+      const items = document.querySelectorAll('#imageGrid .image-item');
+      if (items.length === 0) {
+        alert("目前沒有作業可供抽籤！");
+        return;
+      }
+
+      const lotteryOverlay = document.getElementById('lotteryOverlay');
+      const lotteryText = document.getElementById('lotteryText');
+      const openLotteryBtn = document.getElementById('openLotteryBtn');
+      lotteryOverlay.style.display = 'flex';
+      openLotteryBtn.style.display = 'none';
+      
+      let interval = 100;
+      let duration = 2000;
+      let elapsed = 0;
+      let currentHighlight = null;
+      const originalBorders = Array.from(items).map(el => el.style.border);
+      const highlightBorder = "2.5px solid #FF6584";
+
+      const lotteryInterval = setInterval(() => {
+        if (currentHighlight) {
+          const idx = Array.from(items).indexOf(currentHighlight);
+          currentHighlight.style.border = originalBorders[idx] || "";
+          currentHighlight.style.transform = "";
+        }
+        const randomIndex = Math.floor(Math.random() * items.length);
+        const randomItem = items[randomIndex];
+        randomItem.style.border = highlightBorder;
+        randomItem.style.transform = "scale(1.05)";
+        currentHighlight = randomItem;
+
+        const titleText = randomItem.querySelector('.title-line').textContent;
+        lotteryText.textContent = titleText;
+        elapsed += interval;
+
+        if (elapsed >= duration) {
+          clearInterval(lotteryInterval);
+          openLotteryBtn.style.display = 'block';
+        }
+      }, interval);
+      
+      openLotteryBtn.onclick = function() {
+        lotteryOverlay.style.display = 'none';
+        if (currentHighlight) {
+          const clickTarget = currentHighlight.querySelector('img') || currentHighlight.querySelector('.audio-card-box');
+          if (clickTarget) clickTarget.click();
+        }
+      };
+    });
+
+    // 設定畫布背景覆蓋層
+    const bgSettingBtn = document.getElementById('bgSettingBtn');
+    const bgSettingOverlay = document.getElementById('bgSettingOverlay');
+    const closeBgSetting = document.getElementById('closeBgSetting');
+    const pasteArea = document.getElementById("pasteArea");
+    const bgPreviewDiv = document.getElementById("bgPreview");
+    const setButton = document.getElementById("setButton");
+    const bgStatusDiv = document.getElementById("bgStatus");
+    let pastedImageFile = null;
+    
+    bgSettingBtn.addEventListener('click', function() {
+      loadBgQuestions();
+      bgSettingOverlay.style.display = "flex";
+    });
+    
+    closeBgSetting.addEventListener('click', function() {
+      bgSettingOverlay.style.display = "none";
+      bgStatusDiv.innerText = "";
+      bgPreviewDiv.innerHTML = "";
+      pastedImageFile = null;
+    });
+    
+    // 處理圖片檔案預覽
+    function handleSelectedImageFile(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        alert("請選擇正確的圖片檔案格式（PNG/JPG/GIF）！");
+        return;
+      }
+      pastedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        bgPreviewDiv.innerHTML = `<img src="${event.target.result}" alt="預覽圖片">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 本機檔案選取
+    const bgFileInput = document.getElementById("bgFileInput");
+    bgFileInput.addEventListener("change", function(e) {
+      if (this.files && this.files[0]) {
+        handleSelectedImageFile(this.files[0]);
+      }
+    });
+
+    // 拖曳上傳支援
+    pasteArea.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      pasteArea.style.borderColor = "#38bdf8";
+      pasteArea.style.background = "#f0f9ff";
+    });
+
+    pasteArea.addEventListener("dragleave", function(e) {
+      e.preventDefault();
+      pasteArea.style.borderColor = "#cbd5e1";
+      pasteArea.style.background = "#f8fafc";
+    });
+
+    pasteArea.addEventListener("drop", function(e) {
+      e.preventDefault();
+      pasteArea.style.borderColor = "#cbd5e1";
+      pasteArea.style.background = "#f8fafc";
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleSelectedImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // 鍵盤 Ctrl+V 貼上
+    document.addEventListener("paste", function(e) {
+      if (bgSettingOverlay.style.display !== "flex") return;
+      e.preventDefault();
+      const items = (e.clipboardData || window.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === "file") {
+          const blob = items[i].getAsFile();
+          if (blob && blob.type.startsWith("image/")) {
+            handleSelectedImageFile(blob);
+            break;
+          }
+        }
+      }
+    });
+    
+    setButton.addEventListener("click", function() {
+      bgStatusDiv.innerText = "";
+      if (!pastedImageFile) {
+        alert("請先選取圖片檔案或按 Ctrl+V 貼上圖片！");
+        return;
+      }
+      const questionSelect = document.getElementById("questionSelect");
+      const question = questionSelect.value;
+      const qNum = question.replace("問題", "").trim();
+      const fileName = (question === "問題1" || qNum === "1") ? "q1.jpg" : "q" + qNum + ".png";
+      
+      const formData = new FormData();
+      formData.append("question", question);
+      const newFile = new File([pastedImageFile], fileName, {type: pastedImageFile.type});
+      formData.append("file", newFile);
+      
+      fetch("/setBg", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.text())
+      .then(text => {
+        bgStatusDiv.style.color = "#059669";
+        bgStatusDiv.innerText = `🎉 背景圖已成功儲存至 bg/ 資料夾！`;
+        setTimeout(() => {
+          bgSettingOverlay.style.display = "none";
+          bgPreviewDiv.innerHTML = "";
+          pastedImageFile = null;
+        }, 1200);
+      })
+      .catch(err => {
+        bgStatusDiv.style.color = "red";
+        bgStatusDiv.innerText = "設定失敗：" + err.message;
+      });
+    });
+
+    // 頁面初始化
+    document.addEventListener("DOMContentLoaded", function() {
+      loadFolders();
+      loadBgQuestions();
+      const urlParams = new URLSearchParams(window.location.search);
+      const folder = urlParams.get('folder');
+      if (folder) {
+        loadImages(`upload/${folder}`, folder);
+      }
+    });
+  </script>
+</body>
+</html>
