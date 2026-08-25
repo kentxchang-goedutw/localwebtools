@@ -62,16 +62,59 @@ echo [OK] Python detected:
 echo.
 
 rem ------------------------------------------------------
-rem 2. Make sure pip is available
+rem 2. Make sure pip is available (verify AFTER repair, with a
+rem    get-pip.py fallback for Python builds that ship without pip
+rem    and where ensurepip itself cannot bootstrap it)
 rem ------------------------------------------------------
+set "PIP_OK=0"
 %PYEXE% -m pip --version >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [INFO] pip not found, attempting repair...
-    %PYEXE% -m ensurepip --upgrade >nul 2>nul
+if %errorlevel% equ 0 (
+    set "PIP_OK=1"
+) else (
+    echo [INFO] pip not found, attempting repair via ensurepip...
+    %PYEXE% -m ensurepip --upgrade --default-pip
+    %PYEXE% -m pip --version >nul 2>nul
+    if !errorlevel! equ 0 (
+        set "PIP_OK=1"
+    )
 )
+
+if "!PIP_OK!"=="0" (
+    echo [INFO] ensurepip could not install pip, downloading get-pip.py instead ^(internet required^)...
+    set "GETPIP=%TEMP%\get-pip.py"
+    if exist "!GETPIP!" del /f /q "!GETPIP!" >nul 2>nul
+    where curl >nul 2>nul
+    if !errorlevel! equ 0 (
+        curl -sSL -o "!GETPIP!" https://bootstrap.pypa.io/get-pip.py
+    ) else (
+        powershell -NoProfile -Command "try { Invoke-WebRequest -UseBasicParsing -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile '!GETPIP!' } catch { exit 1 }"
+    )
+    if exist "!GETPIP!" (
+        %PYEXE% "!GETPIP!"
+        %PYEXE% -m pip --version >nul 2>nul
+        if !errorlevel! equ 0 set "PIP_OK=1"
+    )
+)
+
+if "!PIP_OK!"=="0" (
+    echo.
+    echo [ERROR] Could not install pip on this Python installation.
+    echo This can happen with a restricted/minimal Python install, or
+    echo if this network blocks access to bootstrap.pypa.io / PyPI.
+    echo Please reinstall Python from https://www.python.org/downloads/
+    echo ^(make sure "pip" stays checked during install^), then run this
+    echo launcher again.
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] pip is available.
+echo.
 
 rem ------------------------------------------------------
 rem 3. Check required packages, install if missing
+rem    (falls back to --user install if the default location is not
+rem    writable, e.g. a machine-wide Python install without admin rights)
 rem ------------------------------------------------------
 echo [CHECK] Verifying required packages (PyQt5, PyQtWebEngine, qrcode, Pillow)...
 %PYEXE% -c "import PyQt5, PyQt5.QtWebEngineWidgets, qrcode, PIL" >nul 2>nul
@@ -79,11 +122,21 @@ if %errorlevel% neq 0 (
     echo [INSTALL] Missing packages detected, installing now ^(internet required^)...
     %PYEXE% -m pip install --upgrade pip
     %PYEXE% -m pip install PyQt5 PyQtWebEngine qrcode Pillow
+    %PYEXE% -c "import PyQt5, PyQt5.QtWebEngineWidgets, qrcode, PIL" >nul 2>nul
+    if !errorlevel! neq 0 (
+        echo [WARN] Default install did not complete. Retrying with --user
+        echo ^(installs to your personal profile, no admin rights required^)...
+        %PYEXE% -m pip install --user --upgrade pip
+        %PYEXE% -m pip install --user PyQt5 PyQtWebEngine qrcode Pillow
+    )
+    %PYEXE% -c "import PyQt5, PyQt5.QtWebEngineWidgets, qrcode, PIL" >nul 2>nul
     if !errorlevel! neq 0 (
         echo.
-        echo [ERROR] Package installation failed. Check your internet connection
-        echo and try again, or run manually:
-        echo   %PYEXE% -m pip install PyQt5 PyQtWebEngine qrcode Pillow
+        echo [ERROR] Package installation failed. See the pip messages above
+        echo for the exact reason ^(no internet connection, a proxy/firewall
+        echo blocking PyPI, or a permissions issue are the most common causes^).
+        echo You can try running manually:
+        echo   %PYEXE% -m pip install --user PyQt5 PyQtWebEngine qrcode Pillow
         echo.
         pause
         exit /b 1
