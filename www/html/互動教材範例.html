@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>課堂互動教材範例</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4, #e0f2fe);
+      margin: 0;
+      padding: 40px 20px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      background: white;
+      padding: 36px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    h1 {
+      color: #0284c7;
+      margin-top: 0;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .canvas-area {
+      margin: 20px auto;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 30px;
+      background: #f8fafc;
+    }
+    .info-text {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #64748b;
+    }
+    .interactive-counter {
+      font-size: 48px;
+      font-weight: bold;
+      color: #10b981;
+      margin: 20px 0;
+    }
+    button.demo-btn {
+      padding: 10px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #38bdf8;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+      transition: transform 0.2s;
+    }
+    button.demo-btn:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="badge">📂 www/html/ 教材範例</div>
+    <h1>🌟 課堂互動教材範例頁面</h1>
+    <p class="info-text">
+      這是一個放置在 <code>www/html/</code> 子資料夾中的 HTML 網頁。<br>
+      無論您將任何課堂教材、網頁小遊戲或實驗放進此資料夾，系統都會自動在畫面右下角外掛 <b>「📸 截圖繳交作業」</b> 浮動按鈕！
+    </p>
+
+    <div class="canvas-area">
+      <div class="interactive-counter" id="counter">0</div>
+      <button class="demo-btn" onclick="document.getElementById('counter').textContent = parseInt(document.getElementById('counter').textContent) + 1;">
+        ✨ 點我增加互動計數
+      </button>
+    </div>
+
+    <p style="color:#94a3b8; font-size:14px; margin-top:24px;">
+      👉 完成學習任務後，請直接點選右下角的 <b>「📸 截圖繳交作業」</b> 按鈕，即可一鍵將當前畫面截圖繳交給教師！
+    </p>
+  </div>
+
+</body>
+</html>
