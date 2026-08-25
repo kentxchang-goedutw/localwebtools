@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「小學英檢」GEPT Kids 1200字單字卡 - 主題分類目錄</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #FFF5F5 0%, #F0FDF4 35%, #F0F9FF 70%, #FAF5FF 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --font-family: system-ui, -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 30px 20px 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 頂部導覽與返回首頁按鈕 */
+        .top-nav {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .back-home-btn {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            color: #475569;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 24px;
+            border: 1.5px solid #E2E8F0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-home-btn:hover {
+            background: #FFFFFF;
+            color: #7C3AED;
+            border-color: #DDD6FE;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2);
+        }
+
+        /* 主標題區域 */
+        .header-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 16px 36px rgba(139, 92, 246, 0.08), 0 4px 12px rgba(0,0,0,0.03);
+            padding: 32px 40px;
+            text-align: center;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .header-card h1 {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1E293B;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .header-card h1 .badge {
+            background: linear-gradient(135deg, #FFD1DC, #DDD6FE);
+            font-size: 26px;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .header-desc {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* 搜尋過濾器 */
+        .search-container {
+            max-width: 460px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 44px;
+            font-size: 15px;
+            border: 2px solid #E2E8F0;
+            border-radius: 24px;
+            outline: none;
+            background: #FFFFFF;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .search-input:focus {
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #94A3B8;
+        }
+
+        /* 主題卡片網格 */
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 18px;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .unit-card {
+            border-radius: 22px;
+            padding: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 2px solid transparent;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unit-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.09);
+        }
+
+        /* 馬卡龍色彩輪替 */
+        .color-pink { background: linear-gradient(135deg, #FFF1F2, #FFE4E6); border-color: #FECDD3; color: #9F1239; }
+        .color-pink:hover { border-color: #FDA4AF; box-shadow: 0 14px 28px rgba(244, 63, 94, 0.2); }
+
+        .color-orange { background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color: #FDE68A; color: #92400E; }
+        .color-orange:hover { border-color: #FCD34D; box-shadow: 0 14px 28px rgba(245, 158, 11, 0.2); }
+
+        .color-mint { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-color: #A7F3D0; color: #065F46; }
+        .color-mint:hover { border-color: #6EE7B7; box-shadow: 0 14px 28px rgba(16, 185, 129, 0.2); }
+
+        .color-blue { background: linear-gradient(135deg, #F0F9FF, #E0F2FE); border-color: #BAE6FD; color: #075985; }
+        .color-blue:hover { border-color: #7DD3FC; box-shadow: 0 14px 28px rgba(14, 165, 233, 0.2); }
+
+        .color-purple { background: linear-gradient(135deg, #FAF5FF, #EDE9FE); border-color: #DDD6FE; color: #5B21B6; }
+        .color-purple:hover { border-color: #C4B5FD; box-shadow: 0 14px 28px rgba(139, 92, 246, 0.2); }
+
+        .unit-icon {
+            font-size: 36px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+        }
+
+        .unit-info {
+            flex: 1;
+        }
+
+        .unit-number {
+            font-size: 12px;
+            font-weight: 800;
+            opacity: 0.75;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .unit-title {
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        /* 頁尾 */
+        .footer {
+            margin-top: auto;
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #7C3AED;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <a href="../../index.html" class="back-home-btn">
+            <span>🏠</span> 返回互動工具箱首頁
+        </a>
+        <div style="font-size: 14px; font-weight: 700; color: #64748B;">
+            共 33 個主題單元 ｜ 1200 單字
+        </div>
+    </div>
+
+    <div class="header-card">
+        <h1>
+            <span class="badge">📖</span>
+            <span>「小學英檢」GEPT Kids 1200字單字卡</span>
+        </h1>
+        <p class="header-desc">按主題精心分類的單字練習卡與翻牌記憶遊戲，點選主題即可開始練習！</p>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="搜尋主題單元（如：動物、食物、衣服...）" oninput="filterUnits()">
+        </div>
+    </div>
+
+    <div class="unit-grid" id="unitGrid">
+        <a class="unit-card color-pink" href="01動物及昆蟲.html" target="_blank"><div class="unit-icon">🦁</div><div class="unit-info"><div class="unit-number">UNIT 01</div><div class="unit-title">動物及昆蟲</div></div></a>
+        <a class="unit-card color-orange" href="02衣服及配件.html" target="_blank"><div class="unit-icon">👗</div><div class="unit-info"><div class="unit-number">UNIT 02</div><div class="unit-title">衣服及配件</div></div></a>
+        <a class="unit-card color-mint" href="03顏色.html" target="_blank"><div class="unit-icon">🎨</div><div class="unit-info"><div class="unit-number">UNIT 03</div><div class="unit-title">顏色</div></div></a>
+        <a class="unit-card color-blue" href="04家庭.html" target="_blank"><div class="unit-icon">👨‍👩‍👧‍👦</div><div class="unit-info"><div class="unit-number">UNIT 04</div><div class="unit-title">家庭</div></div></a>
+        <a class="unit-card color-purple" href="05食物及飲料a.html" target="_blank"><div class="unit-icon">🍎</div><div class="unit-info"><div class="unit-number">UNIT 05</div><div class="unit-title">食物及飲料 A</div></div></a>
+        <a class="unit-card color-pink" href="06食物及飲料b.html" target="_blank"><div class="unit-icon">🍕</div><div class="unit-info"><div class="unit-number">UNIT 06</div><div class="unit-title">食物及飲料 B</div></div></a>
+        <a class="unit-card color-orange" href="07稱謂、地理名詞及節日.html" target="_blank"><div class="unit-icon">🎄</div><div class="unit-info"><div class="unit-number">UNIT 07</div><div class="unit-title">稱謂、地理及節日</div></div></a>
+        <a class="unit-card color-mint" href="08健康.html" target="_blank"><div class="unit-icon">🏥</div><div class="unit-info"><div class="unit-number">UNIT 08</div><div class="unit-title">健康</div></div></a>
+        <a class="unit-card color-blue" href="09房子及公寓a.html" target="_blank"><div class="unit-icon">🏠</div><div class="unit-info"><div class="unit-number">UNIT 09</div><div class="unit-title">房子及公寓 A</div></div></a>
+        <a class="unit-card color-purple" href="10房子及公寓b.html" target="_blank"><div class="unit-icon">🛋️</div><div class="unit-info"><div class="unit-number">UNIT 10</div><div class="unit-title">房子及公寓 B</div></div></a>
+        <a class="unit-card color-pink" href="11數字a.html" target="_blank"><div class="unit-icon">🔢</div><div class="unit-info"><div class="unit-number">UNIT 11</div><div class="unit-title">數字 A</div></div></a>
+        <a class="unit-card color-orange" href="12數字b.html" target="_blank"><div class="unit-icon">🔟</div><div class="unit-info"><div class="unit-number">UNIT 12</div><div class="unit-title">數字 B</div></div></a>
+        <a class="unit-card color-mint" href="13工作.html" target="_blank"><div class="unit-icon">💼</div><div class="unit-info"><div class="unit-number">UNIT 13</div><div class="unit-title">工作與職業</div></div></a>
+        <a class="unit-card color-blue" href="14身體部位.html" target="_blank"><div class="unit-icon">👀</div><div class="unit-info"><div class="unit-number">UNIT 14</div><div class="unit-title">身體部位</div></div></a>
+        <a class="unit-card color-purple" href="15人.html" target="_blank"><div class="unit-icon">🧑</div><div class="unit-info"><div class="unit-number">UNIT 15</div><div class="unit-title">人與人物</div></div></a>
+        <a class="unit-card color-pink" href="16個性及特點.html" target="_blank"><div class="unit-icon">⭐</div><div class="unit-info"><div class="unit-number">UNIT 16</div><div class="unit-title">個性及特點</div></div></a>
+        <a class="unit-card color-orange" href="17地點方位.html" target="_blank"><div class="unit-icon">🧭</div><div class="unit-info"><div class="unit-number">UNIT 17</div><div class="unit-title">地點與方位</div></div></a>
+        <a class="unit-card color-mint" href="18學校.html" target="_blank"><div class="unit-icon">🏫</div><div class="unit-info"><div class="unit-number">UNIT 18</div><div class="unit-title">學校生活</div></div></a>
+        <a class="unit-card color-blue" href="19尺寸及計量.html" target="_blank"><div class="unit-icon">📏</div><div class="unit-info"><div class="unit-number">UNIT 19</div><div class="unit-title">尺寸及計量</div></div></a>
+        <a class="unit-card color-purple" href="20運動、興趣及嗜好.html" target="_blank"><div class="unit-icon">⚽</div><div class="unit-info"><div class="unit-number">UNIT 20</div><div class="unit-title">運動與興趣嗜好</div></div></a>
+        <a class="unit-card color-pink" href="21餐具.html" target="_blank"><div class="unit-icon">🍴</div><div class="unit-info"><div class="unit-number">UNIT 21</div><div class="unit-title">餐具</div></div></a>
+        <a class="unit-card color-orange" href="22時間.html" target="_blank"><div class="unit-icon">⏰</div><div class="unit-info"><div class="unit-number">UNIT 22</div><div class="unit-title">時間與日期</div></div></a>
+        <a class="unit-card color-mint" href="23運輸.html" target="_blank"><div class="unit-icon">🚗</div><div class="unit-info"><div class="unit-number">UNIT 23</div><div class="unit-title">交通與運輸</div></div></a>
+        <a class="unit-card color-blue" href="24天氣及自然.html" target="_blank"><div class="unit-icon">☀️</div><div class="unit-info"><div class="unit-number">UNIT 24</div><div class="unit-title">天氣及自然</div></div></a>
+        <a class="unit-card color-purple" href="25冠詞及限定詞.html" target="_blank"><div class="unit-icon">🔤</div><div class="unit-info"><div class="unit-number">UNIT 25</div><div class="unit-title">冠詞及限定詞</div></div></a>
+        <a class="unit-card color-pink" href="26代名詞.html" target="_blank"><div class="unit-icon">👥</div><div class="unit-info"><div class="unit-number">UNIT 26</div><div class="unit-title">代名詞</div></div></a>
+        <a class="unit-card color-orange" href="27-Be動詞、助動詞、連接詞及感嘆詞.html" target="_blank"><div class="unit-icon">⚡</div><div class="unit-info"><div class="unit-number">UNIT 27</div><div class="unit-title">動詞、連接詞與感嘆詞</div></div></a>
+        <a class="unit-card color-mint" href="28介系詞.html" target="_blank"><div class="unit-icon">📍</div><div class="unit-info"><div class="unit-number">UNIT 28</div><div class="unit-title">介系詞</div></div></a>
+        <a class="unit-card color-blue" href="29其他名詞.html" target="_blank"><div class="unit-icon">📦</div><div class="unit-info"><div class="unit-number">UNIT 29</div><div class="unit-title">其他名詞</div></div></a>
+        <a class="unit-card color-purple" href="30其他動詞a.html" target="_blank"><div class="unit-icon">🏃</div><div class="unit-info"><div class="unit-number">UNIT 30</div><div class="unit-title">其他動詞 A</div></div></a>
+        <a class="unit-card color-pink" href="31其他動詞b.html" target="_blank"><div class="unit-icon">🏊</div><div class="unit-info"><div class="unit-number">UNIT 31</div><div class="unit-title">其他動詞 B</div></div></a>
+        <a class="unit-card color-orange" href="32其他形容詞.html" target="_blank"><div class="unit-icon">✨</div><div class="unit-info"><div class="unit-number">UNIT 32</div><div class="unit-title">其他形容詞</div></div></a>
+        <a class="unit-card color-mint" href="33其他副詞及疑問詞.html" target="_blank"><div class="unit-icon">❓</div><div class="unit-info"><div class="unit-number">UNIT 33</div><div class="unit-title">其他副詞及疑問詞</div></div></a>
+    </div>
+
+    <div class="footer">
+        Made by <a href="https://kentxchang.blogspot.tw" target="_blank">阿剛老師</a> ｜ 創用 CC 姓名標示-非商業性-相同方式分享 (CC BY-NC-SA 4.0) 授權
+    </div>
+
+    <script>
+        function filterUnits() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const cards = document.querySelectorAll('.unit-card');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
