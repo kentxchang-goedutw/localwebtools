@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可愛風單字卡遊戲</title>
+    <style>
+        :root {
+            --primary-color: #FAF5FF;
+            --primary-border: #DDD6FE;
+            --secondary-color: #8B5CF6;
+            --background-color: #F8FAFC;
+            --card-background-color: rgba(255, 255, 255, 0.9);
+            --text-color: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --button-hover-color: #7C3AED;
+            --shadow-color: rgba(139, 92, 246, 0.15);
+            --font-family: system-ui, -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, #FFF5F5 0%, #F0FDF4 35%, #F0F9FF 70%, #FAF5FF 100%);
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            color: var(--text-color);
+            position: relative;
+        }
+
+        /* 頂部導覽列 */
+        .top-nav-bar {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .nav-pill-btn {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            color: #475569;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1.5px solid #E2E8F0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-pill-btn:hover {
+            background: #FFFFFF;
+            color: #7C3AED;
+            border-color: #C4B5FD;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.18);
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1000px;
+            min-height: 75vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--card-background-color);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(139, 92, 246, 0.1), 0 4px 12px rgba(0,0,0,0.04);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            padding: 30px 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 25px;
+            max-width: 900px;
+        }
+
+        .word-button {
+            margin: 0;
+            padding: 12px 24px;
+            font-size: 19px;
+            font-weight: 700;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+            color: #334155;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .word-button:nth-child(5n+1) { border-color: #FBCFE8; background: linear-gradient(135deg, #FFF1F2, #FCE7F3); color: #9D174D; }
+        .word-button:nth-child(5n+2) { border-color: #FED7AA; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #9A3412; }
+        .word-button:nth-child(5n+3) { border-color: #A7F3D0; background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #065F46; }
+        .word-button:nth-child(5n+4) { border-color: #BAE6FD; background: linear-gradient(135deg, #F0F9FF, #E0F2FE); color: #0369A1; }
+        .word-button:nth-child(5n+5) { border-color: #DDD6FE; background: linear-gradient(135deg, #FAF5FF, #EDE9FE); color: #5B21B6; }
+
+        .word-button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            filter: brightness(1.02);
+        }
+
+        .flashcard-container, .game-container {
+            display: none;
+            width: 92%;
+            max-width: 950px;
+            min-height: 75vh;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: var(--card-background-color);
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(139, 92, 246, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            padding: 30px 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .flashcard-container.show, .game-container.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .flashcard {
+            width: min(520px, 90vw);
+            height: 340px;
+            border: 2.5px solid #C4B5FD;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            text-align: center;
+            position: relative;
+            user-select: none;
+            background: linear-gradient(135deg, #FAF5FF 0%, #EDE9FE 100%);
+            box-shadow: 0 16px 36px rgba(139, 92, 246, 0.18);
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+            border-radius: 24px;
+        }
+
+        .flashcard:hover {
+            box-shadow: 0 20px 44px rgba(139, 92, 246, 0.28);
+        }
+
+        .flashcard.flip {
+            transform: rotateY(180deg);
+            border-color: #FDA4AF;
+            background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
+        }
+
+        .flashcard-content {
+            position: absolute;
+            backface-visibility: hidden;
+            font-weight: 800;
+            color: #1E293B;
+            padding: 30px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .flashcard-front {
+            color: #5B21B6;
+            letter-spacing: 0.5px;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            color: #9F1239;
+        }
+
+        .flashcard img {
+            width: 44px;
+            height: 44px;
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .flashcard img:hover {
+            transform: scale(1.15);
+            background: #FFFFFF;
+        }
+
+        .game-card {
+            width: 140px;
+            height: 100px;
+            border: 2px solid #BAE6FD;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            text-align: center;
+            position: relative;
+            user-select: none;
+            background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+            box-shadow: 0 6px 14px rgba(56, 189, 248, 0.12);
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+            margin: 8px;
+            border-radius: 18px;
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.22);
+        }
+
+        .game-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .game-card.flip {
+            transform: rotateY(180deg);
+            border-color: #DDD6FE;
+            background: linear-gradient(135deg, #FAF5FF, #EDE9FE);
+        }
+
+        .game-card-content {
+            position: absolute;
+            backface-visibility: hidden;
+            font-weight: 700;
+            color: #1E293B;
+            padding: 10px;
+            border-radius: 18px;
+        }
+
+        .game-card-back {
+            transform: rotateY(180deg);
+            color: #6B21A8;
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #0369A1;
+            background: #E0F2FE;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #BAE6FD;
+        }
+
+        .countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: 900;
+            color: #E11D48;
+            background: rgba(255, 255, 255, 0.95);
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(225, 29, 72, 0.25);
+            border: 3px solid #FECDD3;
+        }
+
+        .message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: 800;
+            color: #9333EA;
+            background: #FAF5FF;
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 1.5px solid #DDD6FE;
+            box-shadow: 0 4px 10px rgba(147, 51, 234, 0.1);
+        }
+
+        .buttons {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .buttons button {
+            margin: 0;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(109, 40, 217, 0.25);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .buttons button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 24px rgba(109, 40, 217, 0.35);
+        }
+
+        #flipGameBtn {
+            background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%);
+            box-shadow: 0 6px 16px rgba(190, 24, 93, 0.25);
+        }
+        #flipGameBtn:hover {
+            box-shadow: 0 10px 24px rgba(190, 24, 93, 0.35);
+        }
+
+        #backBtn {
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            box-shadow: 0 6px 16px rgba(71, 85, 105, 0.2);
+        }
+
+        .footer-text {
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer-text a {
+            color: #7C3AED;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .clickable-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        /* 自訂輸入頁樣式 */
+        .input-page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            width: 92%;
+            max-width: 900px;
+            background: var(--card-background-color);
+            backdrop-filter: blur(16px);
+            color: var(--text-color);
+            padding: 30px;
+            text-align: center;
+            border-radius: 28px;
+            box-shadow: 0 16px 40px rgba(139, 92, 246, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .input-page.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .input-page h1 {
+            font-size: 26px;
+            color: #5B21B6;
+            margin-bottom: 20px;
+        }
+
+        .input-page textarea {
+            width: 80%;
+            height: 200px;
+            background: #fff;
+            color: var(--text-color);
+            border: 2px solid var(--primary-border);
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .input-page textarea:focus {
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        .input-page button {
+            margin-top: 16px;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 6px 16px rgba(109, 40, 217, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        .input-page button:hover {
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .output-table-container {
+            width: 80%;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1.5px solid var(--primary-border);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .output-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .output-table th, .output-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .output-table th {
+            background-color: #FAF5FF;
+            color: #5B21B6;
+            font-weight: 800;
+        }
+
+        .file-selection-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(16px);
+            padding: 26px;
+            border-radius: 20px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+            border: 2px solid #DDD6FE;
+            z-index: 1000;
+            display: none;
+            min-width: 300px;
+        }
+
+        .file-selection-popup.show {
+            display: block;
+        }
+
+        .file-selection-popup button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .file-selection-popup button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-nav-bar"><a href="index.html" class="nav-pill-btn">⬅️ 單字卡目錄</a><a href="../../index.html" class="nav-pill-btn">🏠 返回首頁</a></div>
+<div class="container" id="mainPage">
+    <div class="button-container" id="buttonContainer">
+        <!-- Buttons will be dynamically updated -->
+    </div>
+    <div class="buttons">
+        <button id="flipGameBtn">翻牌遊戲</button>
+    </div>
+</div>
+
+<div class="flashcard-container" id="flashcardContainer">
+    <div class="flashcard" id="flashcard">
+        <div class="flashcard-content flashcard-front">
+            <span id="word"></span>
+        </div>
+        <div class="flashcard-content flashcard-back">
+            <span id="translation"></span>
+        </div>
+        <img src="https://img.icons8.com/ios-filled/50/000000/speaker.png" id="speak" alt="Speak">
+    </div>
+
+    <div class="buttons">
+        <button id="prevBtn">上一個</button>
+        <button id="nextBtn">下一個</button>
+        <button id="backBtn">回上一頁</button>
+    </div>
+</div>
+
+<div class="game-container" id="gameContainer">
+    <div class="message" id="message">預計 10 秒後蓋牌</div>
+    <div class="timer" id="timer">00:00</div>
+    <div class="countdown" id="countdown">10</div>
+    <!-- Flip card game content will be dynamically added here -->
+</div>
+
+<div class="footer-text" id="loadFilesButton">
+    Made by <a href="#">阿剛老師</a>
+</div>
+
+<!-- Transparent clickable area -->
+<div class="clickable-area" id="clickableArea"></div>
+
+<!-- Input page for question input -->
+<div class="input-page" id="inputPage">
+    <h1>題庫輸入區</h1>
+    <textarea id="inputTextarea" placeholder="在此輸入題目，每行用英文,中文格式">about	1. 大約；2. 關於...
+after	在...之後
+at	在(某處)、在(時刻)
+before	在...之前
+behind	在...後面
+by	在...旁邊
+for	給、為了(某人、物)
+from	從(某處)/(某時刻)/(某人)
+in	在...裡面、在某短時間裡
+in front of	在...前面
+inside	在...裡面、向...裡面
+near	靠近、接近
+next to	在...旁邊
+of	...的
+off	離開、從...去掉
+on	在...上面；在(某一天)
+out	向外地
+outside	在...外面、向...外面
+over	在...上方
+than	比
+to	向、朝、對著
+under	在...下方
+up	向上
+with	和...一起</textarea>
+    <button id="submitBtn">送出</button>
+    <div class="output-table-container" id="outputTableContainer">
+        <table class="output-table" id="outputTable">
+            <thead>
+                <tr>
+                    <th>英文</th>
+                    <th>中文</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <button id="startGameBtn" style="display: none;">開始遊玩</button>
+    <button id="downloadBtn">下載完整遊戲</button>
+</div>
+
+<!-- Popup window for file selection -->
+<div class="file-selection-popup" id="fileSelectionPopup"></div>
+
+<script>
+    const defaultWords = [
+        {english: "School", chinese: "學校"},
+        {english: "Student", chinese: "學生"},
+        {english: "Homework", chinese: "作業"},
+        {english: "Classroom", chinese: "教室"},
+        {english: "Pen", chinese: "筆"},
+        {english: "Book", chinese: "書"}
+    ];
+
+    let words = [...defaultWords];
+
+    const buttonContainer = document.getElementById('buttonContainer');
+    const gameContainer = document.getElementById('gameContainer');
+    const flashcardContainer = document.getElementById('flashcardContainer');
+    const flashcard = document.getElementById('flashcard');
+    const wordElement = document.getElementById('word');
+    const translationElement = document.getElementById('translation');
+    const speakButton = document.getElementById('speak');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const backBtn = document.getElementById('backBtn');
+    const flipGameBtn = document.getElementById('flipGameBtn');
+    const timerElement = document.getElementById('timer');
+    const countdownElement = document.getElementById('countdown');
+    const messageElement = document.getElementById('message');
+    const clickableArea = document.getElementById('clickableArea');
+    const inputPage = document.getElementById('inputPage');
+    const mainPage = document.getElementById('mainPage');
+    const inputTextarea = document.getElementById('inputTextarea');
+    const outputTable = document.getElementById('outputTable').querySelector('tbody');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const loadFilesButton = document.getElementById('loadFilesButton');
+    const fileSelectionPopup = document.getElementById('fileSelectionPopup');
+    let timerInterval;
+
+    let currentIndex = 0;
+
+    // Load the flip sound effect
+    const flipSound = new Audio("https://downsc.chinaz.net/Files/DownLoad/sound1/202312/y2387.mp3");
+    flipSound.preload = 'auto';
+
+    // Ensure the sound is ready to play
+    function playFlipSound() {
+        flipSound.play().catch(() => {
+            // In case of a play error, catch and handle it here
+            document.addEventListener('click', () => {
+                flipSound.play();
+            }, { once: true });
+        });
+    }
+
+    function updateCard() {
+        playFlipSound();  // Play sound on card update
+        flashcard.classList.remove('show');
+        flashcard.classList.remove('flip'); // Always ensure it shows the front side
+        setTimeout(() => {
+            wordElement.textContent = words[currentIndex].english;
+            translationElement.textContent = words[currentIndex].chinese;
+            flashcard.classList.add('show');
+        }, 300);  // Duration of the transition effect
+    }
+
+    function speakText(text, lang) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        speechSynthesis.speak(utterance);
+    }
+
+    function updateButtons() {
+        buttonContainer.innerHTML = "";
+        words.forEach((word, index) => {
+            const button = document.createElement('button');
+            button.className = 'word-button';
+            button.textContent = word.english;
+            button.setAttribute('data-index', index);
+            button.addEventListener('click', () => {
+                currentIndex = index;
+                playFlipSound();  // Play sound when switching to flashcard view
+                buttonContainer.parentElement.classList.remove('show');
+                setTimeout(() => {
+                    buttonContainer.parentElement.style.display = 'none';
+                    flipGameBtn.style.display = 'none';
+                    flashcardContainer.classList.add('show');
+                    flashcardContainer.style.display = 'flex';
+                    updateCard();
+                }, 600);
+            });
+            buttonContainer.appendChild(button);
+        });
+    }
+
+    function submitData() {
+        const inputText = inputTextarea.value.trim();
+        if (!inputText) return;
+
+        const newWords = inputText.split('\n').map(line => {
+            const [english, chinese] = line.split(/,|\t/).map(item => item.trim());
+            return {english, chinese};
+        });
+
+        // Clear the previous table content and add new words
+        outputTable.innerHTML = '';
+        newWords.forEach(word => {
+            const row = document.createElement('tr');
+            const englishCell = document.createElement('td');
+            const chineseCell = document.createElement('td');
+            englishCell.textContent = word.english;
+            chineseCell.textContent = word.chinese;
+            row.appendChild(englishCell);
+            row.appendChild(chineseCell);
+            outputTable.appendChild(row);
+        });
+
+        // Update words and refresh the buttons and game cards
+        words = newWords;
+        updateButtons();
+        startGameBtn.style.display = 'block'; // Show the start game button
+    }
+
+    flashcard.addEventListener('click', () => {
+        flashcard.classList.toggle('flip');
+        playFlipSound();  // Play sound on card flip
+    });
+
+    speakButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevents flipping the card
+        if (flashcard.classList.contains('flip')) {
+            speakText(translationElement.textContent, 'zh-TW');
+        } else {
+            speakText(wordElement.textContent, 'en-US');
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCard();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentIndex < words.length - 1) {
+            currentIndex++;
+            updateCard();
+        }
+    });
+
+    backBtn.addEventListener('click', () => {
+        playFlipSound();  // Play sound when returning to main view
+        flashcardContainer.classList.remove('show');
+        setTimeout(() => {
+            flashcardContainer.style.display = 'none';
+            buttonContainer.parentElement.style.display = 'flex';
+            buttonContainer.parentElement.classList.add('show');
+            flipGameBtn.style.display = 'block';
+        }, 600);
+    });
+
+    // Flip game functionality
+
+    function startFlipGame() {
+        // 隨機選取最多10個單字
+        let gameWords = [];
+        if (words.length > 10) {
+            const shuffledWords = words.sort(() => 0.5 - Math.random());
+            gameWords = shuffledWords.slice(0, 10);
+        } else {
+            gameWords = [...words];
+        }
+
+        playFlipSound();  // Play sound when starting flip game
+        buttonContainer.parentElement.classList.remove('show');
+        setTimeout(() => {
+            buttonContainer.parentElement.style.display = 'none';
+            flipGameBtn.style.display = 'none';
+            gameContainer.classList.add('show');
+            gameContainer.style.display = 'flex';
+            createGameCards(gameWords);  // 傳入選取的單字列表
+            startCountdown(10);  // Start countdown from 10 seconds
+        }, 600);
+    }
+
+    function startCountdown(seconds) {
+        countdownElement.textContent = seconds;
+        messageElement.textContent = `預計 ${seconds} 秒後蓋牌`;
+
+        const countdownInterval = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = seconds;
+            messageElement.textContent = `預計 ${seconds} 秒後蓋牌`;
+
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                countdownElement.style.display = 'none';
+                messageElement.style.display = 'none';
+                hideAllCards();
+                startTimer();
+            }
+        }, 1000);
+    }
+
+    function createGameCards(gameWords) {
+        const cards = [];
+        gameWords.forEach(word => {
+            cards.push({text: word.english, pair: word.chinese});
+            cards.push({text: word.chinese, pair: word.english});
+        });
+        const shuffledCards = cards.sort(() => 0.5 - Math.random());
+        shuffledCards.forEach(cardData => {
+            const card = document.createElement('div');
+            card.classList.add('game-card');
+            card.innerHTML = `<div class="game-card-content">${cardData.text}</div>`;
+            card.dataset.pair = cardData.pair;
+            card.addEventListener('click', () => flipCard(card));
+            gameContainer.appendChild(card);
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 10);
+        });
+    }
+
+    function hideAllCards() {
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.classList.add('flip');
+        });
+    }
+
+    let flippedCards = [];
+    let matchesFound = 0;
+    let startTime;
+
+    function flipCard(card) {
+        if (flippedCards.length < 2 && card.classList.contains('flip')) {
+            card.classList.remove('flip');
+            flippedCards.push(card);
+            playFlipSound();  // Play sound on each flip
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+    }
+
+    function checkForMatch() {
+        const [firstCard, secondCard] = flippedCards;
+        if (firstCard.dataset.pair === secondCard.textContent.trim() && 
+            secondCard.dataset.pair === firstCard.textContent.trim()) {
+            setTimeout(() => {
+                firstCard.style.visibility = 'hidden';
+                secondCard.style.visibility = 'hidden';
+                matchesFound += 1;
+                flippedCards = [];
+                if (matchesFound === Math.min(words.length, 10)) {
+                    setTimeout(endGame, 500);
+                }
+            }, 500);
+        } else {
+            setTimeout(() => {
+                firstCard.classList.add('flip');
+                secondCard.classList.add('flip');
+                flippedCards = [];
+            }, 1000);
+        }
+    }
+
+    function startTimer() {
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        const elapsedTime = Math.round((new Date() - startTime) / 1000);
+        const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+        const seconds = String(elapsedTime % 60).padStart(2, '0');
+        timerElement.textContent = `${minutes}:${seconds}`;
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        const endTime = new Date();
+        const timeTaken = Math.round((endTime - startTime) / 1000);
+        alert(`遊戲完成！總共花了 ${timeTaken} 秒`);
+        resetGame();
+    }
+
+    function resetGame() {
+        gameContainer.innerHTML = '<div class="message" id="message">預計 10 秒後蓋牌</div><div class="timer" id="timer">00:00</div><div class="countdown" id="countdown">10</div>';
+        matchesFound = 0;
+        flippedCards = [];
+        buttonContainer.parentElement.style.display = 'flex';
+        buttonContainer.parentElement.classList.add('show');
+        flipGameBtn.style.display = 'block';
+        gameContainer.style.display = 'none';
+        gameContainer.classList.remove('show');
+        clearInterval(timerInterval);
+    }
+
+    flipGameBtn.addEventListener('click', startFlipGame);
+
+    // Input page switching
+    function showInputPage() {
+        mainPage.classList.remove('show');
+        setTimeout(() => {
+            mainPage.style.display = 'none';
+            inputPage.classList.add('show');
+            inputPage.style.display = 'flex';
+        }, 600);
+    }
+
+    clickableArea.addEventListener('click', showInputPage);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'r') {
+            showInputPage();
+        }
+    });
+
+    // Submit new words
+    submitBtn.addEventListener('click', () => {
+        submitData();
+    });
+
+    // Start the game with the new words
+    startGameBtn.addEventListener('click', () => {
+        inputPage.classList.remove('show');
+        setTimeout(() => {
+            inputPage.style.display = 'none';
+            mainPage.classList.add('show');
+            mainPage.style.display = 'flex';
+        }, 600);
+    });
+
+    // Auto submit and start game if data exists
+    window.addEventListener('load', () => {
+        loadWordsFromUrl();
+        if (inputTextarea.value.trim() !== "") {
+            submitData();
+            startGameBtn.click(); // Automatically start the game
+        }
+    });
+
+    // Download the complete game with the current input
+    downloadBtn.addEventListener('click', () => {
+        const originalHtml = document.documentElement.outerHTML;
+        const updatedHtml = originalHtml.replace(
+            /<textarea id="inputTextarea"[^>]*>[\s\S]*?<\/textarea>/,
+            `<textarea id="inputTextarea" placeholder="在此輸入題目，每行用英文,中文格式">${inputTextarea.value}</textarea>`
+        );
+
+        const blob = new Blob([updatedHtml], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'custom_game.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // Load words from URL if data exists and populate textarea
+    function loadWordsFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data');
+        if (dataParam) {
+            const formattedText = dataParam.split(';').map(item => {
+                const [english, chinese] = item.split(',').map(i => i.trim());
+                return `${english},${chinese}`;
+            }).join('\n');
+            inputTextarea.value = formattedText;
+        }
+    }
+
+    // Load text files into textarea
+    loadFilesButton.addEventListener('click', async () => {
+        let fileIndex = 1;
+        let fileList = [];
+
+        // Check for existence of eng1.txt, eng2.txt, ...
+        while (true) {
+            try {
+                const response = await fetch(`eng${fileIndex}.txt`);
+                if (response.ok) {
+                    fileList.push(`eng${fileIndex}.txt`);
+                    fileIndex++;
+                } else {
+                    break;
+                }
+            } catch {
+                break;
+            }
+        }
+
+        if (fileList.length === 0) {
+            alert('沒有找到任何 txt 文件。');
+            return;
+        }
+
+        // Display the popup for file selection
+        fileSelectionPopup.innerHTML = ''; // Clear previous buttons
+        fileList.forEach(file => {
+            const button = document.createElement('button');
+            button.textContent = file;
+            button.addEventListener('click', async () => {
+                try {
+                    const response = await fetch(file);
+                    const text = await response.text();
+                    inputTextarea.value = text;
+                    submitData();
+                    fileSelectionPopup.classList.remove('show');
+                } catch {
+                    alert('載入文件失敗。');
+                }
+            });
+            fileSelectionPopup.appendChild(button);
+        });
+
+        fileSelectionPopup.classList.add('show'); // Show the popup
+    });
+
+    // Show the initial container with effect
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            mainPage.classList.add('show');
+        }, 100);
+    });
+</script>
+
+
+
+
+</body></html>
