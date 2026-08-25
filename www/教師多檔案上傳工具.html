@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>教師多檔上傳工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* 全新風格：淡藍及華麗外觀 */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #B3E5FC, #E1F5FE);
+      font-family: 'Arial', sans-serif;
+      color: #0D47A1;
+    }
+    
+    /* 頁首 */
+    header {
+      background: linear-gradient(45deg, #81D4FA, #B3E5FC);
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 32px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 上傳表單容器 */
+    .upload-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 表單標籤與輸入元素 */
+    .upload-container label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    
+    .upload-container select,
+    .upload-container input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #B3E5FC;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    
+    /* 上傳按鈕 */
+    .upload-container button {
+      background: linear-gradient(45deg, #64B5F6, #81D4FA);
+      border: none;
+      color: #fff;
+      padding: 15px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .upload-container button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 上傳結果訊息 */
+    #uploadResult {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    /* 簡單的 row、col 版面 */
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .col {
+      flex: 1;
+    }
+    
+    /* 右下角製作資訊 */
+    .footer {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border: 2px solid #81D4FA;
+      border-radius: 15px;
+      font-size: 16px;
+      color: #0D47A1;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    教師多檔上傳工具
+  </header>
+  
+  <div class="upload-container">
+    <form id="multiUploadForm">
+      <div class="row">
+        <div class="col">
+          <label for="question">題號：</label>
+          <select id="question" name="question">
+            <option value="問題1">問題1</option>
+            <option value="問題2">問題2</option>
+            <option value="問題3">問題3</option>
+            <option value="問題4">問題4</option>
+            <option value="問題5">問題5</option>
+            <option value="問題6">問題6</option>
+            <option value="問題7">問題7</option>
+            <option value="問題8">問題8</option>
+            <option value="問題9">問題9</option>
+            <option value="問題10">問題10</option>
+          </select>
+        </div>
+      </div>
+      
+      <label for="files">選擇檔案：</label>
+      <input type="file" id="files" name="files" multiple required />
+      <button type="button" id="uploadButton">上傳檔案</button>
+    </form>
+    <div id="uploadResult"></div>
+  </div>
+  
+  <div class="footer">
+    Made by 阿剛老師
+  </div>
+  
+  <script>
+    // 動態載入題號清單
+    function loadQuestions() {
+      fetch('questions.txt?t=' + new Date().getTime())
+        .then(r => r.ok ? r.text() : '')
+        .then(text => {
+          if (!text) return;
+          const questions = text.split('\n').map(q => q.trim()).filter(Boolean);
+          if (questions.length > 0) {
+            const sel = document.getElementById('question');
+            if (sel) {
+              const cur = sel.value;
+              sel.innerHTML = '';
+              questions.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                sel.appendChild(opt);
+              });
+              if (questions.includes(cur)) sel.value = cur;
+            }
+          }
+        }).catch(() => {});
+    }
+    document.addEventListener('DOMContentLoaded', loadQuestions);
+
+    // 當按下「上傳檔案」按鈕時，依照所選題號及多檔案進行上傳
+    document.getElementById("uploadButton").addEventListener("click", function() {
+      const question = document.getElementById("question").value;
+      const filesInput = document.getElementById("files");
+      const files = filesInput.files;
+      const uploadResult = document.getElementById("uploadResult");
+
+      if (files.length === 0) {
+        alert("請選擇至少一個檔案");
+        return;
+      }
+
+      uploadResult.innerHTML = "檔案上傳中，請稍候...";
+
+      let uploadCount = 0;
+      let errorOccurred = false;
+
+      // 逐一上傳每個檔案（參考 file_upload.js 上傳方式）
+      for (let i = 0; i < files.length; i++) {
+        let formData = new FormData();
+        // 將題號欄位加入 FormData，伺服器端可根據此值決定存放目錄
+        formData.set("question", question);
+
+        let file = files[i];
+        let fileName = file.name;
+        // 如果檔名沒有副檔名，可預設加上 .png（本範例保留原始檔名）
+        if (fileName.indexOf('.') === -1) {
+          fileName += ".png";
+        }
+        formData.set("name", fileName);
+        // 刪除原有 file 欄位後，用新的 File 物件附加檔案（保留原始檔名）
+        formData.delete("file");
+        const renamedFile = new File([file], fileName, { type: file.type });
+        formData.append("file", renamedFile);
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("伺服器回應錯誤，狀態碼：" + response.status);
+          }
+          return response.text();
+        })
+        .then(text => {
+          console.log("檔案 " + fileName + " 上傳成功：", text);
+          uploadCount++;
+          if (uploadCount === files.length && !errorOccurred) {
+            uploadResult.innerHTML = "全部檔案上傳完成。";
+            filesInput.value = "";
+          }
+        })
+        .catch(error => {
+          console.error("檔案 " + fileName + " 上傳失敗：", error);
+          errorOccurred = true;
+          uploadResult.innerHTML = "上傳時發生錯誤：" + error;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
