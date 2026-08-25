@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <title>WEB 區網互動教學工具箱</title>
+  <!-- 防止瀏覽器快取 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 連結馬卡龍風格外部 CSS -->
+  <link rel="stylesheet" href="file_style.css?v=20260825_1">
+  <!-- 引入 html2canvas 函式庫，用於即時畫布截圖 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <!-- 頁首：馬卡龍風格標題及功能按鈕群 -->
+  <header>
+    <h1>
+      <span class="logo-badge">🎨</span>
+      <span>互動教學工具箱</span>
+    </h1>
+    <div class="btn-group">
+      <div class="tools-dropdown-wrapper" id="interactiveToolsWrapper">
+        <button class="macaron-btn btn-peach" id="interactiveToolsButton" aria-haspopup="true" aria-expanded="false">🧩 剛好互動工具 <span class="tools-dropdown-caret">▾</span></button>
+        <div class="tools-dropdown-menu hidden" id="interactiveToolsMenu">
+          <a href="01classtools.html" target="_blank" class="tools-dropdown-item item-yellow">
+            <span class="tools-dropdown-icon">🙋</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">剛好學</span>
+              <span class="tools-dropdown-desc">互動教學模組合集（問答、投票、便利貼牆…）</span>
+            </span>
+          </a>
+          <a href="02classwhiteboard.html" target="_blank" class="tools-dropdown-item item-peach">
+            <span class="tools-dropdown-icon">📋</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">剛好白板</span>
+              <span class="tools-dropdown-desc">即時互動數位白板、多人協作畫布</span>
+            </span>
+          </a>
+          <a href="03classppt.html" target="_blank" class="tools-dropdown-item item-teal">
+            <span class="tools-dropdown-icon">📊</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">剛好簡報</span>
+              <span class="tools-dropdown-desc">PDF 課堂簡報同步與即時互動問答</span>
+            </span>
+          </a>
+          <a href="04classquiz.html" target="_blank" class="tools-dropdown-item item-pink">
+            <span class="tools-dropdown-icon">📝</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">剛好測</span>
+              <span class="tools-dropdown-desc">線上測驗與即時成績分析</span>
+            </span>
+          </a>
+        </div>
+      </div>
+      <button class="macaron-btn btn-yellow" id="urlButton" onclick="window.open('網址分享.html', '_blank')">🔗 網址分享</button>
+      <button class="macaron-btn btn-pink" id="mindMapButton" onclick="window.open('簡易心智圖上傳工具V2.html', '_blank')">🧠 心智圖創作</button>
+      <button class="macaron-btn btn-mint" id="uploadButton">✏️ 課堂繳交</button>
+      <button class="macaron-btn btn-blue" id="fileUploadButton">📁 檔案上傳</button>
+      <button class="macaron-btn btn-purple" id="audioRecordButton">🎙️ 語音錄音</button>
+      <div class="tools-dropdown-wrapper" id="teacherAdminWrapper" style="display: none;">
+        <button class="macaron-btn btn-admin" id="btnTeacherAdmin" aria-haspopup="true" aria-expanded="false">⚙️ 教師管理 <span class="tools-dropdown-caret">▾</span></button>
+        <div class="tools-dropdown-menu hidden" id="teacherAdminMenu">
+          <a href="作業呈現介面V3.html" target="_blank" class="tools-dropdown-item item-purple">
+            <span class="tools-dropdown-icon">🖥️</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">查閱作業</span>
+              <span class="tools-dropdown-desc">大螢幕展示牆、多圖比較與隨機抽籤</span>
+            </span>
+          </a>
+          <a href="設定檔案上傳選單名稱.html" target="_blank" class="tools-dropdown-item item-blue">
+            <span class="tools-dropdown-icon">📝</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">設定作業選單</span>
+              <span class="tools-dropdown-desc">自訂題目名稱與題號範本切換</span>
+            </span>
+          </a>
+          <a href="設定分享網址.html" target="_blank" class="tools-dropdown-item item-yellow">
+            <span class="tools-dropdown-icon">🔗</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">設定分享網址</span>
+              <span class="tools-dropdown-desc">管理課堂常用網址分享清單</span>
+            </span>
+          </a>
+          <a href="教師設定背景圖工具.html" target="_blank" class="tools-dropdown-item item-mint">
+            <span class="tools-dropdown-icon">🖼️</span>
+            <span class="tools-dropdown-text">
+              <span class="tools-dropdown-title">設定作業背景圖</span>
+              <span class="tools-dropdown-desc">貼上或選取題目即時畫布底圖</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- 檔案總管介面 -->
+  <div id="breadcrumb"></div>
+  <div id="file-explorer"></div>
+  
+  <!-- 1. 課堂繳交 Modal -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeUploadModal()">×</span>
+      <h2 class="modal-header-title"><span>✏️</span> 課堂繳交工具</h2>
+      <form id="submissionForm">
+        <div class="row">
+          <div class="col form-group">
+            <label for="question" class="form-label">選擇題號：</label>
+            <select id="question" name="question">
+              <option value="問題1">問題 1</option>
+              <option value="問題2">問題 2</option>
+              <option value="問題3">問題 3</option>
+              <option value="問題4">問題4</option>
+              <option value="問題5">問題 5</option>
+              <option value="問題6">問題 6</option>
+              <option value="問題7">問題 7</option>
+              <option value="問題8">問題 8</option>
+              <option value="問題9">問題 9</option>
+              <option value="問題10">問題 10</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label for="name" class="form-label">學生姓名：</label>
+            <input type="text" id="name" name="name" placeholder="請輸入姓名或座號" required />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="discussion" class="form-label">討論內容 / 答題備註：</label>
+          <textarea id="discussion" name="discussion" rows="2" placeholder="請輸入心得或討論內容（選填）"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">作業繳交方式（二擇一）：</label>
+          <div class="button-container">
+            <button type="button" class="macaron-btn btn-mint" id="btnCanvas" onclick="chooseCanvas()">🎨 開啟即時畫布</button>
+            <button type="button" class="macaron-btn btn-pink" id="btnUpload" onclick="chooseUpload()">🖼️ 選取圖片檔案</button>
+          </div>
+        </div>
+
+        <div id="uploadSection" style="display:none;">
+          <div class="form-group">
+            <label for="file" class="form-label">選擇本機圖片：</label>
+            <input type="file" id="file" name="file" accept="image/*" />
+          </div>
+        </div>
+
+        <button type="button" id="submitButton" class="submit-btn-primary" onclick="submitData()">
+          <span>🚀</span> 確認繳交作業
+        </button>
+        <div id="canvasFileNameDisplay"></div>
+      </form>
+      <div id="result"></div>
+      <div id="uploadingMessage">作業上傳中，請稍候，請勿重複點擊...</div>
+    </div>
+  </div>
+  
+  <!-- 2. 檔案上傳 Modal -->
+  <div id="fileUploadModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeFileUploadModal()">×</span>
+      <h2 class="modal-header-title"><span>📁</span> 檔案上傳工具</h2>
+      <form id="fileUploadForm">
+        <div class="row">
+          <div class="col form-group">
+            <label for="question_simple" class="form-label">選擇題號：</label>
+            <select id="question_simple" name="question">
+              <option value="問題1">問題 1</option>
+              <option value="問題2">問題 2</option>
+              <option value="問題3">問題 3</option>
+              <option value="問題4">問題 4</option>
+              <option value="問題5">問題 5</option>
+              <option value="問題6">問題 6</option>
+              <option value="問題7">問題 7</option>
+              <option value="問題8">問題 8</option>
+              <option value="問題9">問題 9</option>
+              <option value="問題10">問題 10</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label for="name_simple" class="form-label">學生姓名：</label>
+            <input type="text" id="name_simple" name="name" placeholder="請輸入姓名或座號" required />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="file_simple" class="form-label">選擇檔案：</label>
+          <input type="file" id="file_simple" name="file" required />
+        </div>
+        
+        <div id="dropZone">📥 點擊或拖曳檔案至此區域上傳</div>
+        
+        <button type="button" id="submitButtonSimple" class="submit-btn-primary" onclick="submitSimpleData()">
+          <span>🚀</span> 上傳檔案
+        </button>
+      </form>
+      <div id="resultSimple"></div>
+      <div id="uploadingMessageSimple">檔案上傳中，請稍候...</div>
+    </div>
+  </div>
+
+  <!-- 3. 新增：語音錄音與直接上傳 Modal (支援 iPad / 瀏覽器即時錄音) -->
+  <div id="audioRecordModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAudioRecordModal()">×</span>
+      <h2 class="modal-header-title"><span>🎙️</span> 線上語音錄製與繳交</h2>
+      <form id="audioRecordForm">
+        <div class="row">
+          <div class="col form-group">
+            <label for="question_audio" class="form-label">選擇題號：</label>
+            <select id="question_audio" name="question">
+              <option value="問題1">問題 1</option>
+              <option value="問題2">問題 2</option>
+              <option value="問題3">問題 3</option>
+              <option value="問題4">問題 4</option>
+              <option value="問題5">問題 5</option>
+              <option value="問題6">問題 6</option>
+              <option value="問題7">問題 7</option>
+              <option value="問題8">問題 8</option>
+              <option value="問題9">問題 9</option>
+              <option value="問題10">問題 10</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label for="name_audio" class="form-label">學生姓名：</label>
+            <input type="text" id="name_audio" name="name" placeholder="請輸入姓名或座號" required />
+          </div>
+        </div>
+
+        <!-- 錄音卡片控制區 -->
+        <div class="recorder-card">
+          <div class="record-status-badge">
+            <span id="recordingDot" class="recording-pulse-dot"></span>
+            <span id="recordStatusText">準備就緒</span>
+          </div>
+          
+          <div id="recordTimerDisplay" class="record-timer">00:00</div>
+          
+          <div class="recorder-btn-group">
+            <button type="button" id="btnStartRecord" class="btn-record-start" onclick="startAudioRecording()">
+              <span>🎙️</span> 開始錄音
+            </button>
+            <button type="button" id="btnNativeRecord" class="btn-record-start" onclick="triggerNativeAudioRecording()" style="display:none; background:linear-gradient(135deg, #38BDF8, #818CF8);">
+              <span>📱</span> 原生錄音 / 選擇音訊
+            </button>
+            <button type="button" id="btnStopRecord" class="btn-record-stop" onclick="stopAudioRecording()">
+              <span>⏹️</span> 停止錄音
+            </button>
+            <button type="button" id="btnResetRecord" class="btn-record-reset" onclick="resetAudioRecording()">
+              <span>🔄</span> 重新錄音
+            </button>
+          </div>
+          <input type="file" id="nativeAudioInput" accept="audio/*,video/*,.mov,.mp4,.m4a,.wav" capture="microphone" style="display:none;" onchange="handleNativeAudioSelected(event)">
+
+          <!-- 錄音播放器預覽 -->
+          <audio id="audioPreview" class="audio-preview-player" controls></audio>
+          <div id="audioCompatibilityTip" style="font-size:12px; color:#64748b; margin-top:8px; display:none;">
+            💡 區網 HTTP 環境下，已為您自動切換至 iPad / 系統原生錄音模式。
+          </div>
+        </div>
+
+        <button type="button" id="submitButtonAudio" class="submit-btn-primary" onclick="submitAudioData()" disabled>
+          <span>🚀</span> 上傳錄音檔案
+        </button>
+      </form>
+      <div id="resultAudio"></div>
+      <div id="uploadingMessageAudio">錄音檔上傳中，請稍候...</div>
+    </div>
+  </div>
+  
+  <!-- 5. 全螢幕畫布模式 -->
+  <div id="fullCanvasMode">
+    <div class="canvas-toolbar">
+      <label>筆刷粗細：</label>
+      <select id="brushSize">
+        <option value="5">5 px (細)</option>
+        <option value="10" selected>10 px (中)</option>
+        <option value="20">20 px (粗)</option>
+      </select>
+      
+      <label>筆刷顏色：</label>
+      <select id="brushColor">
+        <option value="#0000ff" selected>經典藍</option>
+        <option value="#ff0000">活力紅</option>
+        <option value="#00aa00">清新綠</option>
+        <option value="#000000">沉穩黑</option>
+        <option value="#ffaa00">亮麗橙</option>
+        <option value="#9900ee">夢幻紫</option>
+      </select>
+      
+      <button type="button" onclick="useEraser()">🧹 橡皮擦</button>
+      <button type="button" onclick="clearCanvas()">🗑️ 全清除</button>
+      <button type="button" onclick="exitCanvas()">❌ 離開畫布</button>
+      <button type="button" onclick="submitCanvas()" class="submit-canvas">✨ 完成並送出畫布</button>
+      <button type="button" id="uploadBackgroundBtn" onclick="uploadBackgroundImage()">🖼️ 自訂底圖</button>
+      <input type="file" id="backgroundImageInput" accept="image/*" style="display:none;" />
+    </div>
+    <!-- 背景層 Canvas -->
+    <canvas id="bgCanvas"></canvas>
+    <!-- 繪圖層 Canvas -->
+    <canvas id="drawCanvas"></canvas>
+  </div>
+  
+  <!-- 5. 圖片預覽 Overlay -->
+  <div id="imageOverlay" style="display:none;"></div>
+  
+  <!-- 6. 文字編輯彈窗 -->
+  <div id="text-edit-modal">
+    <h3 class="modal-title">✏️ 編輯文字標籤</h3>
+    <div class="color-picker">
+      <div class="color-option selected" style="background-color: #000000;" data-color="#000000"></div>
+      <div class="color-option" style="background-color: #FF3B30;" data-color="#FF3B30"></div>
+      <div class="color-option" style="background-color: #34C759;" data-color="#34C759"></div>
+      <div class="color-option" style="background-color: #007AFF;" data-color="#007AFF"></div>
+      <div class="color-option" style="background-color: #FF9500;" data-color="#FF9500"></div>
+      <div class="color-option" style="background-color: #AF52DE;" data-color="#AF52DE"></div>
+      <div class="color-option" style="background-color: #5856D6;" data-color="#5856D6"></div>
+      <div class="color-option" style="background-color: #FFFFFF;" data-color="#FFFFFF"></div>
+    </div>
+    <div class="formatting-options">
+      <button id="toggle-bold" class="btn">粗體</button>
+      <button id="toggle-italic" class="btn">斜體</button>
+      <button id="delete-text-box" class="btn" style="background:#FEE2E2; color:#DC2626; border-color:#FCA5A5;">刪除</button>
+    </div>
+    <div class="text-area-container">
+      <textarea id="text-edit-area" placeholder="輸入文字內容..."></textarea>
+    </div>
+    <div class="modal-buttons" style="display:flex; gap:10px;">
+      <button id="cancel-text-edit" class="btn" style="flex:1;">取消</button>
+      <button id="confirm-text-edit" class="btn" style="flex:1; background:#10B981; color:#fff; border-color:#10B981;">確定</button>
+    </div>
+  </div>
+  
+  <!-- 右下角版權與作者資訊 -->
+  <div class="footer-text">
+    Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener noreferrer">阿剛老師</a>
+    <span class="cc-license"> ｜ 創用 CC 姓名標示-非商業性-相同方式分享 (CC BY-NC-SA 4.0) 授權</span>
+  </div>
+  
+  <!-- 左下角教師管理設定圖示 -->
+  <div id="settingsIcon" title="教師後台管理">
+    ⚙️
+  </div>
+  
+  <!-- 管理密碼輸入遮罩 -->
+  <div id="passwordOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(71, 85, 105, 0.5); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 1300;">
+    <div style="background: white; padding: 28px 36px; border-radius: 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-width: 320px; width: 85%;">
+      <h3 style="margin-top:0; color:#334155;">🔒 請輸入管理密碼</h3>
+      <input type="password" id="passwordInput" placeholder="管理密碼" style="font-size:16px; padding:10px 14px; width:100%; border:2px solid #E2E8F0; border-radius:12px; margin-bottom:15px; box-sizing:border-box;"/>
+      <button id="passwordSubmit" class="submit-btn-primary" style="margin-top:0; padding:10px;">解鎖教師工具</button>
+    </div>
+  </div>
+  
+  <!-- 依功能拆分的外部 JavaScript -->
+  <script src="file_main.js?v=20260824_3"></script>
+  <script src="file_upload.js?v=20260824_3"></script>
+  <script src="file_canvas.js?v=20260824_3"></script>
+  <script src="file_text.js?v=20260824_3"></script>
+  <script src="file_password.js?v=20260825_1"></script>
+
+  <!-- 頁首下拉選單（剛好互動工具 / 教師管理） -->
+  <script>
+    (function () {
+      const closers = [];
+
+      function setupDropdown(wrapperId, btnId, menuId) {
+        const wrapper = document.getElementById(wrapperId);
+        const btn = document.getElementById(btnId);
+        const menu = document.getElementById(menuId);
+        if (!wrapper || !btn || !menu) return;
+
+        function closeMenu() {
+          menu.classList.add('hidden');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+        function toggleMenu() {
+          const isOpen = !menu.classList.contains('hidden');
+          closers.forEach(close => close !== closeMenu && close());
+          if (isOpen) {
+            closeMenu();
+          } else {
+            menu.classList.remove('hidden');
+            btn.setAttribute('aria-expanded', 'true');
+          }
+        }
+
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toggleMenu();
+        });
+        document.addEventListener('click', function (e) {
+          if (!wrapper.contains(e.target)) closeMenu();
+        });
+
+        closers.push(closeMenu);
+      }
+
+      setupDropdown('interactiveToolsWrapper', 'interactiveToolsButton', 'interactiveToolsMenu');
+      setupDropdown('teacherAdminWrapper', 'btnTeacherAdmin', 'teacherAdminMenu');
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closers.forEach(close => close());
+      });
+    })();
+  </script>
+</body>
+</html>
