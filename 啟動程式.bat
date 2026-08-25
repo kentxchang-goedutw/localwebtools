@@ -9,28 +9,42 @@ echo ============================================
 echo.
 
 rem ------------------------------------------------------
-rem 1. Locate a usable Python (prefer the py launcher)
+rem 1. Locate a REAL, usable Python (prefer the py launcher).
+rem     Windows ships a fake "python.exe" / "python3.exe" app-execution
+rem     alias even when NO Python is installed at all - "where" finds
+rem     it and it even "runs", but it produces no real output (its only
+rem     job is to pop up the Microsoft Store). So every candidate found
+rem     is verified by actually executing a command through it before
+rem     it gets accepted.
 rem ------------------------------------------------------
 set "PYEXE="
+
 where py >nul 2>nul
 if %errorlevel% equ 0 (
-    set "PYEXE=py"
-) else (
+    set "PROBE="
+    for /f "delims=" %%P in ('py -c "print(1)" 2^>nul') do set "PROBE=%%P"
+    if "!PROBE!"=="1" set "PYEXE=py"
+)
+
+if "!PYEXE!"=="" (
     where python >nul 2>nul
     if !errorlevel! equ 0 (
-        set "PYEXE=python"
+        set "PROBE="
+        for /f "delims=" %%P in ('python -c "print(1)" 2^>nul') do set "PROBE=%%P"
+        if "!PROBE!"=="1" set "PYEXE=python"
     )
 )
 
 rem ------------------------------------------------------
 rem 1b. Reject the Microsoft Store "python.exe" / "python3.exe" app
-rem     execution alias. It reports a real version number and looks
-rem     fine, but it runs in a sandbox that blocks pip/ensurepip from
-rem     writing packages, so treat it the same as "Python not found"
-rem     and install the real thing instead.
+rem     execution alias even when it IS a real, working interpreter
+rem     (i.e. it passed the probe above). It reports a real version
+rem     number and looks fine, but it runs in a sandbox that blocks
+rem     pip/ensurepip from writing packages, so treat it the same as
+rem     "Python not found" and install the real thing instead.
 rem ------------------------------------------------------
-if not "%PYEXE%"=="" (
-    set "RESOLVED_PY="
+set "RESOLVED_PY="
+if not "!PYEXE!"=="" (
     for /f "delims=" %%P in ('%PYEXE% -c "import sys;print(sys.executable)" 2^>nul') do set "RESOLVED_PY=%%P"
     echo !RESOLVED_PY! | findstr /I "WindowsApps" >nul 2>nul
     if !errorlevel! equ 0 (
@@ -44,27 +58,56 @@ if not "%PYEXE%"=="" (
     )
 )
 
-if "%PYEXE%"=="" (
-    echo [INFO] Python not found. Attempting automatic install...
+rem ------------------------------------------------------
+rem 1c. No usable Python found - install one automatically.
+rem     Tries winget first; if winget is unavailable or fails (older
+rem     Windows without App Installer, or a blocked winget source),
+rem     falls back to downloading the official python.org installer
+rem     directly and running it silently (per-user, no admin needed).
+rem ------------------------------------------------------
+if "!PYEXE!"=="" (
+    echo [INFO] No working Python installation found. Attempting automatic install...
     echo.
+    set "INSTALL_OK=0"
+
     where winget >nul 2>nul
-    if !errorlevel! neq 0 (
-        echo [ERROR] winget is not available, cannot auto-install Python.
-        echo Please download and install Python manually from:
-        echo https://www.python.org/downloads/
-        echo IMPORTANT: check "Add python.exe to PATH" during install,
-        echo then run this launcher again.
-        echo.
-        pause
-        exit /b 1
+    if !errorlevel! equ 0 (
+        echo Installing Python via winget, please wait ^(internet required^)...
+        winget install -e --id Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements
+        if !errorlevel! equ 0 set "INSTALL_OK=1"
+    ) else (
+        echo [INFO] winget is not available on this PC.
     )
 
-    echo Installing Python via winget, please wait ^(internet required^)...
-    winget install -e --id Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements
-    if !errorlevel! neq 0 (
+    if "!INSTALL_OK!"=="0" (
+        echo [INFO] Trying a direct download of the official Python installer
+        echo from python.org instead ^(internet required^)...
+        set "PYSETUP=%TEMP%\python-installer.exe"
+        if exist "!PYSETUP!" del /f /q "!PYSETUP!" >nul 2>nul
+        where curl >nul 2>nul
+        if !errorlevel! equ 0 (
+            curl -sSL -o "!PYSETUP!" https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe
+        ) else (
+            powershell -NoProfile -Command "try { Invoke-WebRequest -UseBasicParsing -Uri 'https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe' -OutFile '!PYSETUP!' } catch { exit 1 }"
+        )
+        if exist "!PYSETUP!" (
+            echo Installing Python ^(per-user install, no admin rights required^)...
+            "!PYSETUP!" /quiet InstallAllUsers=0 PrependPath=1 Include_launcher=1 Include_pip=1 Include_test=0
+            if !errorlevel! equ 0 set "INSTALL_OK=1"
+            del /f /q "!PYSETUP!" >nul 2>nul
+        ) else (
+            echo [INFO] Direct download failed too ^(network/firewall likely
+            echo blocking python.org^).
+        )
+    )
+
+    if "!INSTALL_OK!"=="0" (
         echo.
-        echo [ERROR] Automatic Python install failed.
-        echo Please install manually from https://www.python.org/downloads/
+        echo [ERROR] Automatic Python install failed ^(tried both winget and
+        echo a direct download^). Please install manually from:
+        echo https://www.python.org/downloads/
+        echo IMPORTANT: check "Add python.exe to PATH" and "pip" during
+        echo install, then run this launcher again.
         echo.
         pause
         exit /b 1
@@ -120,8 +163,8 @@ if "!PIP_OK!"=="0" (
 
 if "!PIP_OK!"=="0" (
     echo.
-    echo [ERROR] Could not install pip on this Python installation:
-    echo   !RESOLVED_PY!
+    echo [ERROR] Could not install pip on this Python installation.
+    if defined RESOLVED_PY echo   ^(!RESOLVED_PY!^)
     echo This usually means either ^(a^) this network blocks access to
     echo bootstrap.pypa.io / PyPI, or ^(b^) this is a restricted Python
     echo build ^(e.g. installed from the Microsoft Store^) that cannot
