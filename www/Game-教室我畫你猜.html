@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>教室你畫我猜</title>
+    
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 載入 Google 字體：Quicksand（馬卡龍主字體）+ Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind 自訂設定 (馬卡龍粉彩視覺) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Quicksand"', '"Noto Sans TC"', 'sans-serif'] },
+                    colors: {
+                        pop: { yellow: '#FBBF24', red: '#F43F5E', blue: '#0EA5E9', pink: '#EC4899', green: '#10B981' }
+                    },
+                    boxShadow: {
+                        'pop': '0 10px 25px -5px rgba(168, 85, 247, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.06)',
+                        'pop-sm': '0 6px 16px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自訂 CSS：馬卡龍粉彩背景與元件 -->
+    <style>
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+        }
+
+        body {
+            /* 馬卡龍粉彩漸層背景（與 index.html 主頁一致） */
+            background-color: #FDF8F5;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 209, 220, 0.45) 0%, transparent 40%),
+                radial-gradient(circle at 90% 15%, rgba(186, 230, 253, 0.5) 0%, transparent 40%),
+                radial-gradient(circle at 50% 60%, rgba(233, 213, 255, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 15% 85%, rgba(193, 240, 219, 0.45) 0%, transparent 45%),
+                radial-gradient(circle at 85% 90%, rgba(254, 240, 138, 0.4) 0%, transparent 40%);
+            background-attachment: fixed;
+            overscroll-behavior: none;
+            height: 100vh;
+            height: 100dvh;
+            padding-top: var(--sat);
+            padding-bottom: var(--sab);
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+        }
+
+        /* 馬卡龍元件通用類別 */
+        .pop-border { border: 2px solid rgba(255, 255, 255, 0.9); }
+        .pop-panel {
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .pop-btn {
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: none;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07), 0 2px 0 rgba(0, 0, 0, 0.04);
+        }
+        .pop-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+        .pop-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+        /* 深色系按鈕（結束房間／關閉等）改用柔和深藍灰漸層，取代純黑 */
+        .pop-btn.bg-black {
+            background: linear-gradient(135deg, #64748B, #334155) !important;
+        }
+
+        .pop-input {
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 0.5rem 1rem;
+            outline: none;
+            font-weight: 700;
+            background: #F8FAFC;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+        .pop-input:focus {
+            border-color: #38BDF8;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+        }
+
+        /* 淡化原本的純黑邊框／文字，融入馬卡龍柔和配色 */
+        .border-black { border-color: rgba(148, 163, 184, 0.35) !important; }
+        .text-black { color: #334155 !important; }
+        .text-black\/50 { color: rgba(51, 65, 85, 0.5) !important; }
+        .bg-black\/20 { background-color: rgba(255, 255, 255, 0.35) !important; }
+
+        /* 繪圖區專用 */
+        #drawing-canvas { touch-action: none; cursor: crosshair; }
+
+        /* 隱藏捲軸但可捲動 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Modal 遮罩動畫 */
+        .modal-overlay { background: rgba(71, 85, 105, 0.45); backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="w-screen overflow-hidden text-black font-sans flex flex-col">
+
+    <!-- 全域 Toast 通知容器 -->
+    <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2"></div>
+
+    <!-- 頂部導航列 (進入遊戲房間時自動隱藏以最大化遊戲畫布) -->
+    <header id="main-header" class="pop-panel m-4 p-3 flex justify-between items-center bg-white z-10 shrink-0">
+        <h1 class="text-2xl md:text-3xl font-black italic tracking-wider flex items-center gap-2">
+            <span class="text-pop-red text-4xl">★</span> 教室我畫你猜!
+        </h1>
+        <div class="flex gap-2">
+            <button onclick="ui.showHelp()" class="pop-btn bg-pop-pink text-white px-4 py-2">說明</button>
+            <button onclick="ui.showSettings()" class="pop-btn bg-pop-blue text-white px-4 py-2">設定</button>
+        </div>
+    </header>
+
+    <!-- 主要內容區切換 -->
+    <main id="app-container" class="flex-1 relative overflow-hidden mx-3 md:mx-4 mb-3 md:mb-4 flex flex-col md:flex-row gap-4">
+        
+        <!-- 視圖 1: 初始化載入畫面 -->
+        <div id="view-loading" class="absolute inset-0 flex flex-col items-center justify-center pop-panel bg-pop-yellow z-50">
+            <h2 class="text-4xl font-black mb-4 animate-bounce">載入中...</h2>
+            <p class="font-bold text-lg">正在連接本機資料庫伺服器 🚀</p>
+        </div>
+
+        <!-- 視圖 2: 主選單 (大廳) -->
+        <div id="view-lobby" class="hidden absolute inset-0 flex flex-col items-center justify-center pop-panel bg-white z-40 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-5xl w-full flex flex-col gap-6 text-center">
+                <div class="text-6xl mb-2">🎨</div>
+                <h2 class="text-3xl font-black mb-4">選擇你的角色</h2>
+                
+                <!-- 左右兩欄設計 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    
+                    <!-- 教師登入區 (左欄) -->
+                    <div class="flex flex-col gap-4 p-6 border-4 border-black rounded-lg bg-pop-pink bg-opacity-20 shadow-pop h-fit">
+                        <h3 class="text-2xl font-black flex items-center gap-2"><span class="text-3xl">👩‍🏫</span> 教師入口</h3>
+                        <p class="font-bold text-gray-700 text-sm">管理題庫與建立新房間</p>
+                        <div class="flex flex-col gap-2 mt-2">
+                            <input type="password" id="teacher-pwd-input" placeholder="輸入教師密碼 (預設: tpet)" class="pop-input text-center text-lg w-full">
+                            <button onclick="app.joinAsTeacher()" class="pop-btn bg-pop-yellow py-3 text-xl w-full mt-2">登入管理後台</button>
+                        </div>
+                    </div>
+
+                    <!-- 學生登入區 (右欄) -->
+                    <div class="flex flex-col gap-4 p-6 border-4 border-black rounded-lg bg-pop-blue bg-opacity-20 shadow-pop flex-1">
+                        <h3 class="text-2xl font-black flex items-center gap-2"><span class="text-3xl">👦👧</span> 學生入口</h3>
+                        <p class="font-bold text-gray-700 text-sm">輸入姓名與選擇房間加入遊戲</p>
+                        
+                        <div class="flex flex-col gap-2 mt-2">
+                            <input type="text" id="student-name-input" placeholder="輸入你的真實姓名" class="pop-input text-center text-lg w-full">
+                            <div class="flex gap-2">
+                                <input type="text" id="room-code-input" placeholder="輸入房間代碼" class="pop-input w-full text-center text-xl uppercase">
+                                <button onclick="app.joinAsStudent()" class="pop-btn bg-pop-green text-white py-2 px-6 text-xl whitespace-nowrap">進入</button>
+                            </div>
+                        </div>
+
+                        <!-- 房間列表 (學生端) -->
+                        <div class="mt-4 flex flex-col gap-2 bg-white p-3 rounded border-2 border-black">
+                            <div class="font-black text-sm border-b-2 border-black pb-1 flex items-center gap-1">
+                                <span class="text-pop-green">●</span> 目前可加入的房間 (點擊自動帶入)
+                            </div>
+                            <div id="lobby-rooms-list" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto no-scrollbar pt-1">
+                                <div class="col-span-2 text-center text-black/50 font-bold mt-2 text-sm">載入中...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- 版權與授權宣告 Footer -->
+            <div class="mt-10 text-center font-bold pb-4">
+                <p class="text-lg">Made by <a href="https://kentxchang.blogspot.tw" target="_blank" class="text-pop-blue hover:text-pop-red underline transition-colors">阿剛老師</a></p>
+                <div class="mt-2 text-xs text-gray-600 bg-gray-100 p-2 border-2 border-black rounded inline-block shadow-sm">
+                    本程式採用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh_TW" target="_blank" class="text-pop-blue hover:underline">創用 CC 姓名標示-非商業性-相同方式分享</a> 授權
+                </div>
+            </div>
+        </div>
+
+        <!-- 視圖 3: 教師管理後台 (全新設計：聚焦開房與房間管理，題庫以圖層按鈕呈現) -->
+        <div id="view-teacher" class="hidden absolute inset-0 flex flex-col pop-panel bg-white z-30 p-4 md:p-6 overflow-hidden">
+            <div class="flex justify-between items-center mb-4 shrink-0 pb-3 border-b-2 border-slate-100">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl md:text-3xl font-black flex items-center gap-2">
+                        <span class="text-pop-blue">🧠</span> 教師控制台
+                    </h2>
+                    <span class="text-xs px-3 py-1 bg-pop-yellow text-black font-bold rounded-full border border-black/20">純監控與管理模式</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="ui.showModal('modal-question-bank')" class="pop-btn bg-pop-pink text-white px-4 py-2 flex items-center gap-1.5 shadow-pop-sm">
+                        <span>📚</span> 題庫管理
+                    </button>
+                    <button onclick="app.enterLobby()" class="pop-btn bg-gray-200 px-4 py-2">返回大廳</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-full overflow-hidden">
+                
+                <!-- 開房區 (左側 4 欄) -->
+                <div class="md:col-span-4 flex flex-col gap-4 shrink-0">
+                    <div class="pop-panel bg-gradient-to-br from-pop-pink to-rose-400 text-white p-5 flex flex-col gap-4 shadow-pop">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xl font-black flex items-center gap-2">
+                                <span>🚀</span> 建立遊戲房間
+                            </h3>
+                            <button onclick="ui.showModal('modal-question-bank')" class="text-xs text-white underline hover:text-pop-yellow font-bold">
+                                管理題庫
+                            </button>
+                        </div>
+                        <p class="text-xs text-white/90 font-bold leading-relaxed">
+                            請先選取欲使用的題庫主題，建立後學生可從大廳點擊或輸入代碼加入。
+                        </p>
+                        <div class="flex flex-col gap-3">
+                            <div>
+                                <label class="font-bold mb-1.5 block text-xs text-white/90">選擇題庫主題：</label>
+                                <select id="room-topic-selector" class="pop-input text-slate-800 w-full text-sm font-bold bg-white">
+                                    <option value="">-- 讀取題庫中... --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="font-bold mb-1.5 block text-xs text-white/90">每題畫圖作答時間：</label>
+                                <div class="flex gap-2">
+                                    <select id="room-draw-time-selector" class="pop-input text-slate-800 flex-1 text-sm font-bold bg-white" onchange="app.toggleCustomTimeInput()">
+                                        <option value="60" selected>⏱️ 60 秒（預設推薦）</option>
+                                        <option value="30">⚡ 30 秒（快速刺激）</option>
+                                        <option value="90">⏳ 90 秒（充裕作畫）</option>
+                                        <option value="120">🎨 120 秒（精緻作畫）</option>
+                                        <option value="custom">✏️ 自訂秒數</option>
+                                        <option value="0">♾️ 不限時間</option>
+                                    </select>
+                                    <input type="number" id="custom-draw-time-input" min="10" max="600" placeholder="秒數" value="45" class="pop-input text-slate-800 w-20 text-sm font-bold bg-white text-center hidden">
+                                </div>
+                            </div>
+                            <button onclick="app.createRoom()" class="pop-btn bg-white text-pop-pink hover:bg-pop-yellow hover:text-black w-full py-3 text-lg font-black mt-1 shadow-md">
+                                ➕ 開放新房間
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 提示小卡 -->
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-xs text-blue-900 leading-relaxed font-bold flex flex-col gap-2">
+                        <div class="flex items-center gap-1.5 text-sm text-pop-blue font-black">
+                            <span>💡</span> 教師管理說明
+                        </div>
+                        <ul class="list-disc pl-4 space-y-1 text-slate-600 font-medium">
+                            <li>從控制台進入房間後，教師為<b>「純管理者」</b>，不參與輪流畫圖出題，也不計入得分排行榜。</li>
+                            <li>教師進入後可隨時按下<b>「▶ 開始遊戲」</b>、<b>「⏭ 強制換題」</b>或<b>「⏹ 結束房間」</b>。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 房間列表區 (右側 8 欄) -->
+                <div class="md:col-span-8 pop-panel bg-slate-50 p-5 flex flex-col overflow-hidden border-2 border-slate-200">
+                    <div class="flex justify-between items-center mb-3 shrink-0 pb-2 border-b border-slate-200">
+                        <h3 class="text-xl font-black text-slate-700 flex items-center gap-2">
+                            <span>📋</span> 進行中房間列表
+                        </h3>
+                        <span class="text-xs text-slate-400 font-bold">即時同步</span>
+                    </div>
+                    <div id="active-rooms-list" class="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-3 content-start">
+                        <div class="col-span-2 text-center text-slate-400 font-bold mt-10 text-sm">
+                            目前無開啟的房間。<br>請在左側選擇主題並點擊建立房間。
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 視圖 4: 遊戲畫面 (畫布 + 聊天) -->
+        <div id="view-game" class="hidden absolute inset-0 flex flex-col md:flex-row gap-3 md:gap-4 z-20 overflow-hidden pt-2 md:pt-1">
+            <!-- 左側：畫布區 -->
+            <div class="flex-1 flex flex-col pop-panel p-2.5 md:p-4 bg-white min-h-0">
+                <!-- 遊戲狀態列 (加入教師控制項，支援行動裝置與 iPad 靈活縮放與安全邊距) -->
+                <div class="flex flex-wrap justify-between items-center mb-2 shrink-0 border-b-2 border-slate-100 pb-2 gap-2">
+                    <div class="flex gap-2 items-center shrink-0">
+                        <div class="font-black text-sm md:text-lg bg-pop-yellow px-2.5 py-1 pop-border rounded-xl tracking-wider" id="game-room-display">房間: ----</div>
+                        <div class="font-black text-lg md:text-2xl text-pop-red" id="game-timer">⏳ 60s</div>
+                    </div>
+                    
+                    <!-- 教師與房長控制面板 (預設隱藏) -->
+                    <div id="teacher-controls" class="hidden flex flex-wrap gap-1.5 shrink-0 items-center">
+                        <button onclick="app.startGame()" id="btn-start-game" class="pop-btn bg-pop-green text-white px-2.5 py-1 text-xs md:text-sm font-bold shadow-xs">▶ 開始遊戲</button>
+                        <button onclick="app.skipWord()" id="btn-skip-word" class="pop-btn bg-pop-yellow text-slate-900 px-2.5 py-1 text-xs md:text-sm font-bold shadow-xs hidden">⏭ 強制換題</button>
+                        <button onclick="app.endRoom()" id="btn-end-room" class="pop-btn bg-pop-red text-white px-2.5 py-1 text-xs md:text-sm font-bold shadow-xs">⏹ 結束房間</button>
+                        <button onclick="app.restartGame()" id="btn-restart-game" class="pop-btn bg-pop-blue text-white px-2.5 py-1 text-xs md:text-sm font-bold shadow-xs hidden">🔄 重新開始</button>
+                    </div>
+                    
+                    <button onclick="app.leaveRoom()" class="pop-btn bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 text-xs md:text-sm font-bold shrink-0">離開</button>
+                </div>
+                
+                <!-- 題目提示區 -->
+                <div id="word-hint-area" class="text-center font-black text-2xl md:text-4xl my-2 tracking-widest text-pop-blue h-12 flex items-center justify-center shrink-0">
+                    等待遊戲開始...
+                </div>
+
+                <!-- 畫布容器 -->
+                <div class="flex-1 relative pop-border rounded-lg overflow-hidden bg-white shadow-inner cursor-crosshair min-h-0" id="canvas-container">
+                    <canvas id="drawing-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                    <!-- 畫布工具列 (僅繪圖者可見) -->
+                    <div id="drawing-tools" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-white pop-border rounded-full px-3 py-2 flex gap-2 shadow-pop-sm overflow-x-auto max-w-[95%] no-scrollbar">
+                        <button class="w-8 h-8 rounded-full bg-black border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#000000')"></button>
+                        <button class="w-8 h-8 rounded-full bg-red-500 border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#EF4444')"></button>
+                        <button class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#3B82F6')"></button>
+                        <button class="w-8 h-8 rounded-full bg-yellow-400 border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#FACC15')"></button>
+                        <button class="w-8 h-8 rounded-full bg-pop-green border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#32CD32')"></button>
+                        <button class="w-8 h-8 rounded-full bg-[#8B4513] border-2 border-white focus:ring-2 focus:ring-black shrink-0" onclick="canvasApp.setColor('#8B4513')"></button>
+                        <div class="w-1 bg-gray-300 mx-1 shrink-0"></div>
+                        <button class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center font-bold text-xs shrink-0" onclick="canvasApp.setColor('#FFFFFF')">擦</button>
+                        <button class="pop-btn bg-gray-200 px-2 py-0 text-xs ml-1 shrink-0" onclick="canvasApp.clearCanvas(true)">清空</button>
+                    </div>
+                    
+                    <!-- 遮罩 (非繪圖者或遊戲結束時) -->
+                    <div id="canvas-overlay" class="absolute inset-0 bg-transparent z-10 hidden pointer-events-auto"></div>
+                </div>
+            </div>
+
+            <!-- 右側：排行榜與聊天猜題區 -->
+            <div class="w-full md:w-80 flex flex-col gap-4 shrink-0 h-80 md:h-full min-h-0">
+                <!-- 玩家列表/排行榜 -->
+                <div class="pop-panel p-3 bg-pop-pink text-white shrink-0 h-1/3 flex flex-col min-h-0">
+                    <h3 class="font-black border-b-2 border-white mb-2 pb-1 shrink-0">👑 玩家排行榜</h3>
+                    <ul id="player-list" class="flex flex-col gap-1 font-bold text-sm flex-1 overflow-y-auto no-scrollbar">
+                        <!-- 玩家列表 -->
+                    </ul>
+                </div>
+
+                <!-- 聊天/猜題區 -->
+                <div class="pop-panel p-3 bg-white flex-1 flex flex-col min-h-0">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-2 mb-3 text-sm font-bold min-h-0">
+                        <div class="text-gray-400 text-center text-xs">系統：歡迎加入房間！</div>
+                    </div>
+                    <form id="chat-form" class="flex gap-2 shrink-0">
+                        <input type="text" id="chat-input" placeholder="輸入答案猜題..." class="pop-input flex-1 py-2 px-2 text-sm" autocomplete="off">
+                        <button type="submit" class="pop-btn bg-pop-green text-white px-3 py-2 text-sm shrink-0">送出</button>
+                    </form>
+                </div>
+            </div>
+        <!-- 全螢幕答對提示浮層 (答對時全員畫面彈出，呈現答對者與答案，3秒後自動進入下一題) -->
+        <div id="answer-correct-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
+            <div class="pop-panel bg-white text-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl border-4 border-pop-yellow max-w-md w-full text-center flex flex-col items-center gap-3 animate-bounce">
+                <div class="text-5xl md:text-6xl animate-pulse">🎉</div>
+                <h3 class="text-xl md:text-2xl font-black text-pop-pink" id="correct-player-text">
+                    小明 答對了！
+                </h3>
+                <div class="bg-pop-yellow/30 border-2 border-pop-yellow rounded-2xl px-5 py-3 w-full">
+                    <span class="text-xs text-slate-500 font-bold block mb-0.5">正確答案</span>
+                    <span class="text-2xl md:text-3xl font-black text-slate-900 tracking-wider" id="correct-word-text">長頸鹿</span>
+                </div>
+                <p class="text-xs text-slate-400 font-bold mt-1">
+                    ⏳ 3 秒後自動進入下一題...
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 模態視窗區 (Modals)                        -->
+    <!-- ========================================== -->
+
+    <!-- 題庫管理 Modal (全新獨立彈出圖層) -->
+    <div id="modal-question-bank" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-question-bank')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-3xl h-[85vh] flex flex-col z-10 p-5 md:p-6 overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center pb-3 border-b-2 border-slate-100 shrink-0">
+                <h2 class="text-2xl font-black flex items-center gap-2 text-slate-800">
+                    <span class="text-pop-pink">📚</span> 題庫管理中心
+                </h2>
+                <button onclick="ui.closeModal('modal-question-bank')" class="pop-btn bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 text-sm">
+                    ✕ 關閉
+                </button>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4 overflow-hidden mt-3 min-h-0">
+                <!-- 主題選擇與切換列 -->
+                <div class="bg-pop-yellow/30 p-3 rounded-2xl border-2 border-pop-yellow flex flex-wrap justify-between items-center gap-2 shrink-0">
+                    <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+                        <span class="font-black text-sm text-slate-700 whitespace-nowrap">選擇主題：</span>
+                        <select id="topic-selector" class="pop-input py-1.5 text-sm bg-white flex-1" onchange="app.renderTeacherUI()">
+                            <option value="">-- 讀取題庫主題中 --</option>
+                        </select>
+                    </div>
+                    <button onclick="app.deleteTopic()" class="pop-btn bg-pop-red text-white px-3 py-1.5 text-xs font-bold shrink-0" title="刪除選取主題">
+                        🗑️ 刪除主題
+                    </button>
+                </div>
+
+                <!-- 新增主題與題目操作區 -->
+                <div class="bg-slate-50 p-3.5 rounded-2xl border-2 border-slate-200 flex flex-col gap-2.5 shrink-0">
+                    <div class="flex gap-2">
+                        <input type="text" id="new-topic-input" placeholder="輸入新主題名稱（如：成語大挑戰、動物王國）..." class="pop-input flex-1 py-1.5 text-sm">
+                        <button onclick="app.createLocalTopic()" class="pop-btn bg-pop-yellow px-4 py-1.5 text-sm font-black whitespace-nowrap">
+                            📁 建立主題
+                        </button>
+                    </div>
+                    <div class="flex gap-2 flex-wrap items-center pt-1 border-t border-slate-200">
+                        <input type="text" id="manual-word-input" placeholder="輸入單一詞彙（如：長頸鹿）" class="pop-input flex-1 min-w-[150px] py-1.5 text-sm">
+                        <button onclick="app.addManualWord()" class="pop-btn bg-pop-blue text-white px-3.5 py-1.5 text-sm font-bold whitespace-nowrap">
+                            ➕ 手動加入
+                        </button>
+                        <button onclick="app.openAIGenerator()" class="pop-btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-1.5 text-sm font-bold whitespace-nowrap shadow-sm">
+                            ✨ AI 智慧出題精靈
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 題目清單區 -->
+                <div class="flex-1 flex flex-col overflow-hidden border-2 border-slate-200 rounded-2xl bg-white p-3 min-h-0">
+                    <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-slate-100 shrink-0">
+                        <span class="text-xs font-black text-slate-500 uppercase tracking-wider">詞彙列表</span>
+                        <span id="topic-words-count" class="text-xs font-bold text-pop-blue">0 題</span>
+                    </div>
+                    <div id="question-list" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-2 pr-1">
+                        <div class="text-center text-slate-400 mt-10 font-bold">請先選擇或建立主題。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 智慧出題精靈 Modal -->
+    <div id="modal-ai-generator" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-ai-generator')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto z-10 p-6">
+            <h2 class="text-2xl font-black mb-4 flex items-center gap-2 border-b-4 border-black pb-2"><span class="text-pop-blue">✨</span> AI 智慧出題精靈</h2>
+
+            <div class="mb-4">
+                <label class="font-bold text-sm mb-2 block text-pop-red">1. 出題資料來源：</label>
+                <div class="flex gap-4 font-bold text-sm bg-gray-100 p-2 rounded border-2 border-black">
+                    <label class="cursor-pointer flex items-center gap-1"><input type="radio" name="ai-source" value="topic" checked onchange="app.toggleAISource()"> 僅依主題發散</label>
+                    <label class="cursor-pointer flex items-center gap-1"><input type="radio" name="ai-source" value="text" onchange="app.toggleAISource()"> 貼上文字講義</label>
+                    <label class="cursor-pointer flex items-center gap-1"><input type="radio" name="ai-source" value="pdf" onchange="app.toggleAISource()"> 上傳 PDF</label>
+                </div>
+            </div>
+
+            <!-- 動態切換區 -->
+            <div id="ai-source-text" class="hidden mb-4">
+                <textarea id="ai-text-input" class="pop-input w-full h-32 text-sm" placeholder="請在此貼上課文或單字表..."></textarea>
+            </div>
+
+            <div id="ai-source-pdf" class="hidden mb-4">
+                <input type="file" id="ai-pdf-input" accept=".pdf" class="pop-input w-full text-sm bg-gray-50">
+                <p class="text-xs text-gray-500 mt-1 font-bold">*提示：為確保穩定，建議上傳 10 頁以內、文字為主的 PDF 檔案。</p>
+            </div>
+
+            <div class="flex gap-4 mb-4">
+                <div class="flex-1">
+                    <label class="font-bold text-sm mb-1 block text-pop-blue">2. 生成題數：</label>
+                    <input type="number" id="ai-count-input" value="5" min="1" max="20" class="pop-input w-full text-sm text-center">
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="font-bold text-sm mb-1 block">3. 自訂需求 (選填)：</label>
+                <input type="text" id="ai-req-input" placeholder="例如：適合小學三年級、答案限兩個字、要有成語..." class="pop-input w-full text-sm">
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="ui.closeModal('modal-ai-generator')" class="pop-btn bg-gray-200 flex-1 py-3">取消</button>
+                <button onclick="app.executeAIGeneration()" class="pop-btn bg-pop-green text-white flex-1 py-3 text-lg">🚀 開始生成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定 Modal -->
+    <div id="modal-settings" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-settings')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 flex flex-col">
+            <h2 class="text-2xl font-black mb-4 flex items-center gap-2"><span class="text-pop-blue">⚙️</span> 系統設定</h2>
+            
+            <div class="flex-1 flex flex-col gap-4">
+                <!-- 本機資料庫說明區 -->
+                <div class="bg-gray-100 p-4 border-2 border-black rounded">
+                    <h3 class="font-bold text-lg mb-2">1. 本機區網資料庫</h3>
+                    <p class="text-sm text-gray-700">本遊戲已改用本機 Python 伺服器作為資料庫，房間、題庫與畫布資料都存放在伺服器的 <code>www/data</code> 資料夾中，不需要任何雲端設定。只要學生與教師的裝置連上同一個區網，並開啟同一個伺服器網址即可一起遊玩。</p>
+                </div>
+
+                <!-- AI API 設定區 -->
+                <div class="bg-pop-yellow p-4 border-2 border-black rounded">
+                    <h3 class="font-bold text-lg mb-2">2. Gemini AI 設定</h3>
+                    <div class="flex items-center gap-4 mb-2">
+                        <label class="font-bold flex items-center gap-1 cursor-pointer">
+                            <input type="radio" name="ai-mode" value="default" class="w-4 h-4" onchange="configManager.toggleAiMode()"> 
+                            Canvas 免 Key 預設模式
+                        </label>
+                        <label class="font-bold flex items-center gap-1 cursor-pointer">
+                            <input type="radio" name="ai-mode" value="custom" class="w-4 h-4" onchange="configManager.toggleAiMode()"> 
+                            自訂 API Key
+                        </label>
+                    </div>
+                    <input type="password" id="custom-api-key" placeholder="輸入您的 Google Gemini API Key" class="pop-input w-full mt-2 hidden">
+                    <p class="text-xs text-black mt-1 font-bold">* 若在外部網頁部署，必須使用自訂 Key。</p>
+                </div>
+
+                <!-- 分享連結產生區 -->
+                <div class="bg-pop-pink text-white p-4 border-2 border-black rounded">
+                    <h3 class="font-bold text-lg mb-2">3. 產生分享連結</h3>
+                    <p class="text-sm mb-2">複製目前的網址，分享給同一區網內的學生直接點擊連線！</p>
+                    <button onclick="configManager.generateShareLink()" class="pop-btn bg-white text-pop-pink px-4 py-2 w-full mb-2">🔗 複製本頁連結</button>
+                    <input type="text" id="share-link-output" class="pop-input w-full text-black text-sm" readonly placeholder="點擊上方按鈕複製連結...">
+                </div>
+            </div>
+            
+            <button onclick="ui.closeModal('modal-settings')" class="pop-btn bg-black text-white mt-4 py-2 w-full text-center">關閉</button>
+        </div>
+    </div>
+
+    <!-- 編輯同義詞 Modal -->
+    <div id="modal-edit-word" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-edit-word')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-md z-10 p-6">
+            <h2 class="text-2xl font-black mb-4 flex items-center gap-2"><span class="text-pop-blue">✏️</span> 編輯其他答案</h2>
+            <input type="hidden" id="edit-word-id">
+            <p class="font-bold mb-2 text-lg">主詞彙：<span id="edit-word-main" class="text-pop-red text-2xl"></span></p>
+            <p class="text-sm font-bold text-gray-600 mb-1">請輸入同義詞 (讓學生輸入這些也能算對)：</p>
+            <input type="text" id="edit-word-synonyms" placeholder="例如：貓咪,小貓 (用半形逗號分隔)" class="pop-input w-full mb-6">
+            <div class="flex gap-4">
+                <button onclick="ui.closeModal('modal-edit-word')" class="pop-btn bg-gray-200 flex-1 py-2">取消</button>
+                <button onclick="app.saveWordEdit()" class="pop-btn bg-pop-green text-white flex-1 py-2">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客製化確認 Modal (取代原生 confirm) -->
+    <div id="modal-confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-confirm')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-sm z-10 p-6 text-center">
+            <h2 class="text-2xl font-black mb-2 text-pop-red">⚠️ 請確認</h2>
+            <p id="confirm-msg" class="font-bold mb-6 text-lg">確定要執行此操作？</p>
+            <div class="flex gap-4">
+                <button onclick="ui.closeModal('modal-confirm')" class="pop-btn bg-gray-200 flex-1 py-2">取消</button>
+                <button id="confirm-yes-btn" class="pop-btn bg-pop-red text-white flex-1 py-2">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 說明 Modal (手把手區網連線教學) -->
+    <div id="modal-help" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="ui.closeModal('modal-help')"></div>
+        <div class="relative pop-panel bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto z-10 p-6">
+            <h2 class="text-2xl md:text-3xl font-black mb-4 border-b-4 border-black pb-2 text-pop-blue flex items-center gap-2">
+                <span>📖</span> 手把手區網連線教學
+            </h2>
+
+            <div class="space-y-4 font-bold text-sm md:text-base text-black">
+                <!-- 步驟一 -->
+                <div class="bg-pop-yellow p-4 border-4 border-black rounded-lg shadow-pop-sm">
+                    <h3 class="text-xl font-black mb-2">1. 啟動本機伺服器</h3>
+                    <ol class="list-decimal pl-5 space-y-1">
+                        <li>在教師電腦上執行「WEB 區網互動教學工具箱」主程式（<code>web_exe2.py</code>）。</li>
+                        <li>程式啟動後會顯示一組區網網址，格式類似 <code>http://192.168.x.x:埠號/</code>。</li>
+                        <li>教師電腦與所有學生裝置必須連接<b>同一個 Wi-Fi / 區網</b>才能互相連線。</li>
+                    </ol>
+                </div>
+
+                <!-- 步驟二 -->
+                <div class="bg-pop-pink text-white p-4 border-4 border-black rounded-lg shadow-pop-sm">
+                    <h3 class="text-xl font-black mb-2">2. 開啟遊戲並分享網址</h3>
+                    <ol class="list-decimal pl-5 space-y-1">
+                        <li>在教師電腦瀏覽器開啟 <code>你畫我猜</code> 遊戲頁面（本頁面）。</li>
+                        <li>點擊右上角「設定」中的【複製本頁連結】，把網址分享給學生（例如寫在黑板或用通訊軟體傳送）。</li>
+                        <li>學生在自己的手機或電腦瀏覽器貼上該網址即可進入遊戲大廳。</li>
+                    </ol>
+                </div>
+
+                <!-- 步驟三 -->
+                <div class="bg-white p-4 border-4 border-black rounded-lg shadow-pop-sm">
+                    <h3 class="text-xl font-black mb-2 text-pop-red">3. 資料儲存位置</h3>
+                    <ol class="list-decimal pl-5 space-y-1">
+                        <li>所有題庫、房間、玩家與畫布資料都會自動儲存在伺服器端的 <code>www/data</code> 資料夾中，關閉伺服器後資料仍會保留。</li>
+                        <li>不需要註冊帳號、不需要 API 金鑰，也不會將教室資料上傳到任何雲端服務。</li>
+                        <li>若要清除所有房間與題庫資料，只需刪除 <code>www/data</code> 資料夾中的資料庫檔案即可重新開始。</li>
+                    </ol>
+                </div>
+            </div>
+
+            <button onclick="ui.closeModal('modal-help')" class="pop-btn bg-black text-white w-full py-3 mt-6 text-xl">設定好了，開始遊玩！</button>
+        </div>
+    </div>
+
+    <!-- 核心邏輯腳本 (本機資料庫, Logic, UI) -->
+    <script type="module">
+        // 匯入本機 Python 後端專用 SDK（模擬 Firestore/Auth 介面）
+        import { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot, addDoc, updateDoc, serverTimestamp, deleteDoc } from "./local-firebase.js";
+
+        // ==========================================
+        // 全域變數與環境常常數
+        // ==========================================
+        const APP_ID = 'pop-guess-classroom';
+        let db, auth, currentUser;
+        
+        // ==========================================
+        // 工具模組 (UI, Toast, Confirm)
+        // ==========================================
+        window.ui = {
+            showToast: (msg, type = 'info') => {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                const colors = { info: 'bg-pop-blue', success: 'bg-pop-green', error: 'bg-pop-red', warning: 'bg-pop-yellow text-black' };
+                toast.className = `pop-panel ${colors[type] || colors.info} text-white px-4 py-2 font-bold flex items-center gap-2 animate-bounce cursor-pointer`;
+                toast.innerHTML = `<span>${msg}</span>`;
+                toast.onclick = () => toast.remove();
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            },
+            showConfirm: (msg, onConfirmCallback) => {
+                document.getElementById('confirm-msg').innerText = msg;
+                const btn = document.getElementById('confirm-yes-btn');
+                btn.onclick = () => { 
+                    ui.closeModal('modal-confirm'); 
+                    onConfirmCallback(); 
+                };
+                ui.showModal('modal-confirm');
+            },
+            switchView: (viewId) => {
+                ['view-loading', 'view-lobby', 'view-teacher', 'view-game'].forEach(id => {
+                    document.getElementById(id).classList.add('hidden');
+                });
+                document.getElementById(viewId).classList.remove('hidden');
+
+                // 進入遊戲房間時隱藏頂部標題列以最大化遊戲空間，其餘視圖還原顯示
+                const mainHeader = document.getElementById('main-header');
+                if (mainHeader) {
+                    if (viewId === 'view-game') {
+                        mainHeader.classList.add('hidden');
+                    } else {
+                        mainHeader.classList.remove('hidden');
+                    }
+                }
+            },
+            showModal: (modalId) => document.getElementById(modalId).classList.remove('hidden'),
+            closeModal: (modalId) => document.getElementById(modalId).classList.add('hidden'),
+            showSettings: () => {
+                configManager.loadUITextarea();
+                ui.showModal('modal-settings');
+            },
+            showHelp: () => ui.showModal('modal-help')
+        };
+
+        // ==========================================
+        // 設定管理器 (Config Manager) - 僅保留 AI 相關設定
+        // ==========================================
+        window.configManager = {
+            aiModeKey: 'popGuess_aiMode',
+            aiCustomKey: 'popGuess_aiCustomKey',
+
+            loadUITextarea: () => {
+                const mode = localStorage.getItem(window.configManager.aiModeKey) || 'default';
+                document.querySelector(`input[name="ai-mode"][value="${mode}"]`).checked = true;
+                if (mode === 'custom') {
+                    document.getElementById('custom-api-key').classList.remove('hidden');
+                    document.getElementById('custom-api-key').value = localStorage.getItem(window.configManager.aiCustomKey) || '';
+                }
+            },
+
+            toggleAiMode: () => {
+                const mode = document.querySelector('input[name="ai-mode"]:checked').value;
+                const input = document.getElementById('custom-api-key');
+                if (mode === 'custom') input.classList.remove('hidden');
+                else input.classList.add('hidden');
+
+                localStorage.setItem(window.configManager.aiModeKey, mode);
+                if (mode === 'custom') {
+                    localStorage.setItem(window.configManager.aiCustomKey, input.value);
+                }
+            },
+
+            generateShareLink: () => {
+                const url = `${window.location.origin}${window.location.pathname}`;
+                const input = document.getElementById('share-link-output');
+                input.value = url;
+                input.select();
+                try {
+                    document.execCommand('copy');
+                    ui.showToast('連結已複製到剪貼簿！分享給學生吧！', 'success');
+                } catch(e) {
+                    ui.showToast('產生成功，請手動複製連結。', 'info');
+                }
+            }
+        };
+
+        document.getElementById('custom-api-key')?.addEventListener('change', (e) => {
+            localStorage.setItem(configManager.aiCustomKey, e.target.value);
+        });
+
+        // ==========================================
+        // 本機資料庫連線初始化
+        // ==========================================
+        async function initFirebase() {
+            try {
+                const appInstance = initializeApp({ isLocal: true });
+                auth = getAuth(appInstance);
+                db = getFirestore(appInstance);
+
+                await signInAnonymously(auth);
+
+                return new Promise((resolve) => {
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            currentUser = user;
+                            app.enterLobby();
+                            resolve(true);
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error("Local DB Init Error:", error);
+                ui.switchView('view-lobby');
+                ui.showToast('本機資料庫連線失敗，請確認伺服器是否啟動！', 'error');
+                return false;
+            }
+        }
+
+        // ==========================================
+        // 應用程式主要控制器 (Game App)
+        // ==========================================
+        window.app = {
+            currentRoomId: null,
+            isTeacher: false,
+            playerName: '',
+            listeners: [],
+            questionBanks: {},
+            idleTimer: null, // 新增：閒置計時器
+
+            // --- 閒置踢出邏輯 ---
+            startIdleTimer: () => {
+                if (app.idleTimer) clearTimeout(app.idleTimer);
+                if (!app.currentRoomId) return; // 只有在房間內才計時
+                app.idleTimer = setTimeout(app.handleIdleTimeout, 10 * 60 * 1000); // 10分鐘 = 600,000毫秒
+            },
+
+            handleIdleTimeout: async () => {
+                if (!app.currentRoomId || !currentUser) return;
+                const roomId = app.currentRoomId;
+                const playerName = app.playerName;
+                
+                // 1. 本地端先離開房間並跳轉
+                app.leaveRoom();
+                ui.showToast('因閒置超過 10 分鐘，您已自動離開房間。', 'warning');
+
+                // 2. 從資料庫中移除該玩家，並發送系統廣播
+                try {
+                    const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', roomId);
+                    const snap = await getDoc(roomRef);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        const updatedPlayers = data.players.filter(p => p.uid !== currentUser.uid);
+                        await updateDoc(roomRef, { players: updatedPlayers });
+                        
+                        const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${roomId}/messages`);
+                        await addDoc(msgRef, { uid: 'system', name: '系統', text: `💤 ${playerName} 因閒置過久，已被系統請出房間。`, isSystem: true, timestamp: Date.now() });
+                    }
+                } catch (e) { console.error("Idle kick error", e); }
+            },
+
+            // --- 進入與大廳 ---
+            enterLobby: () => {
+                // 確保進入大廳前清除其他視圖的監聽器
+                app.listeners.forEach(unsub => unsub());
+                app.listeners = [];
+                ui.switchView('view-lobby');
+                app.listenLobbyRooms();
+            },
+
+            listenLobbyRooms: () => {
+                const roomsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms');
+                const unsub = onSnapshot(roomsRef, (snap) => {
+                    const listEl = document.getElementById('lobby-rooms-list');
+                    if (!listEl) return;
+                    
+                    const activeRooms = [];
+                    snap.forEach(docSnap => {
+                        const d = docSnap.data();
+                        // 僅列出未結束的房間給學生看
+                        if (d.status !== 'ended') {
+                            activeRooms.push({ code: docSnap.id, ...d });
+                        }
+                    });
+
+                    const getTimeMs = (val) => {
+                        if (!val) return 0;
+                        if (typeof val === 'number') return val;
+                        if (typeof val.toMillis === 'function') return val.toMillis();
+                        if (typeof val.getTime === 'function') return val.getTime();
+                        if (val.seconds) return val.seconds * 1000;
+                        const parsed = new Date(val).getTime();
+                        return isNaN(parsed) ? 0 : parsed;
+                    };
+
+                    activeRooms.sort((a,b) => getTimeMs(b.createdAt) - getTimeMs(a.createdAt));
+
+                    if (activeRooms.length === 0) {
+                        // 修改此處：增加 col-span-2 以適應 grid 排版
+                        listEl.innerHTML = '<div class="col-span-2 text-center text-black/50 font-bold mt-2 text-sm">目前無開啟的房間，請等待老師開房。</div>';
+                        return;
+                    }
+
+                    listEl.innerHTML = activeRooms.map(r => `
+                        <div class="bg-gray-50 border-2 border-black rounded p-2 flex justify-between items-center shadow-sm cursor-pointer hover:bg-pop-yellow transition-colors" onclick="document.getElementById('room-code-input').value='${r.code}'">
+                            <div class="text-left flex-1 min-w-0">
+                                <div class="font-black text-lg text-pop-blue tracking-widest">${r.code}</div>
+                                <div class="text-xs font-bold text-gray-600 truncate">主題: ${r.topic || '未知'}</div>
+                            </div>
+                            <div class="text-xs bg-white border-2 border-black px-2 py-1 rounded font-bold shrink-0 ml-1">${r.players ? r.players.length : 0} 人</div>
+                        </div>
+                    `).join('');
+                }, (err) => console.error("Lobby Rooms Error", err));
+                app.listeners.push(unsub);
+            },
+
+            joinAsTeacher: () => {
+                const pwd = document.getElementById('teacher-pwd-input').value;
+                if (pwd !== 'tpet') {
+                    ui.showToast('教師密碼錯誤！請重新輸入。', 'error');
+                    return;
+                }
+                
+                if(!currentUser) { ui.showToast('尚未連線資料庫，請先設定', 'warning'); ui.showSettings(); return; }
+                
+                // 清除大廳的房間監聽器
+                app.listeners.forEach(unsub => unsub());
+                app.listeners = [];
+
+                app.isTeacher = true;
+                app.playerName = "老師 " + currentUser.uid.substring(0,4);
+                ui.switchView('view-teacher');
+                app.loadQuestionBank();
+                app.listenActiveRooms(); 
+                document.getElementById('teacher-pwd-input').value = ''; 
+            },
+            
+            joinAsStudent: () => {
+                const name = document.getElementById('student-name-input').value.trim();
+                if (!name) { ui.showToast('請先輸入你的姓名！', 'warning'); return; }
+
+                if(!currentUser) { ui.showToast('尚未連線資料庫，請先設定', 'warning'); ui.showSettings(); return; }
+                const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+                if (!code) { ui.showToast('請輸入房間代碼', 'error'); return; }
+                
+                app.isTeacher = false;
+                app.playerName = name; 
+                app.enterRoom(code);
+            },
+
+            // --- 教師端：多主題題庫管理 ---
+            loadQuestionBank: () => {
+                if(!currentUser) return;
+                const qbRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank');
+                
+                onSnapshot(qbRef, (snapshot) => {
+                    const emptyTopics = Object.keys(app.questionBanks).filter(t => app.questionBanks[t].length === 0);
+                    app.questionBanks = {};
+                    emptyTopics.forEach(t => app.questionBanks[t] = []);
+
+                    snapshot.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const topic = d.topic || '未分類';
+                        if(!app.questionBanks[topic]) app.questionBanks[topic] = [];
+                        app.questionBanks[topic].push({ id: docSnap.id, ...d });
+                    });
+                    
+                    const currentSelectorVal = document.getElementById('topic-selector')?.value;
+                    app.renderTeacherUI();
+                    
+                    if (currentSelectorVal && document.querySelector(`#topic-selector option[value="${currentSelectorVal}"]`)) {
+                        document.getElementById('topic-selector').value = currentSelectorVal;
+                        app.renderTeacherUI();
+                    }
+                }, (err) => console.error("QB Error", err));
+            },
+
+            renderTeacherUI: () => {
+                const topics = Object.keys(app.questionBanks);
+                const selector = document.getElementById('topic-selector');
+                const roomSelector = document.getElementById('room-topic-selector');
+                const currentTopic = selector.value;
+
+                selector.innerHTML = `<option value="">-- 選擇已建立的主題 --</option>` + 
+                                     topics.map(t => `<option value="${t}">${t} (${app.questionBanks[t].length}題)</option>`).join('');
+                roomSelector.innerHTML = `<option value="">-- 選擇開房主題 --</option>` + 
+                                         topics.map(t => `<option value="${t}">${t}</option>`).join('');
+                
+                if(topics.includes(currentTopic)) selector.value = currentTopic;
+
+                const listEl = document.getElementById('question-list');
+                const activeTopic = selector.value;
+
+                if (!activeTopic) {
+                    listEl.innerHTML = '<div class="text-center text-gray-400 mt-10 font-bold">請選擇主題，或在上方輸入名稱建立新主題。</div>';
+                    const countEl = document.getElementById('topic-words-count');
+                    if (countEl) countEl.innerText = '0 題';
+                    return;
+                }
+
+                const words = app.questionBanks[activeTopic] || [];
+                const countEl = document.getElementById('topic-words-count');
+                if (countEl) countEl.innerText = `${words.length} 題`;
+
+                if (words.length === 0) {
+                    listEl.innerHTML = '<div class="text-center text-gray-400 mt-10 font-bold">此主題目前沒有題目，請在上方新增或使用 AI 生成。</div>';
+                    return;
+                }
+
+                listEl.innerHTML = words.map(d => `
+                    <div class="bg-white border-2 border-black rounded p-2 flex justify-between items-center shadow-sm gap-2">
+                        <div class="flex-1">
+                            <strong class="text-lg">${d.word}</strong>
+                            <span class="text-xs text-gray-500 ml-1">(${d.synonyms && d.synonyms.length > 0 ? d.synonyms.join(', ') : '無其他答案'})</span>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="app.openEditWord('${d.id}', '${d.word}', '${d.synonyms ? d.synonyms.join(',') : ''}')" class="pop-btn bg-pop-yellow text-xs px-2 py-1">✏️ 編輯</button>
+                            <button onclick="app.deleteQuestion('${d.id}')" class="pop-btn bg-pop-red text-white text-xs px-2 py-1">X</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            createLocalTopic: () => {
+                const topic = document.getElementById('new-topic-input').value.trim();
+                if(!topic) { ui.showToast('請先輸入主題名稱！', 'warning'); return; }
+                if(!app.questionBanks[topic]) {
+                    app.questionBanks[topic] = []; 
+                }
+                document.getElementById('new-topic-input').value = '';
+                app.renderTeacherUI();
+                document.getElementById('topic-selector').value = topic;
+                app.renderTeacherUI(); 
+                ui.showToast(`已建立主題「${topic}」，請開始新增詞彙！`, 'success');
+            },
+
+            getOrSetTopic: () => {
+                let topic = document.getElementById('topic-selector').value;
+                if(!topic) {
+                    topic = document.getElementById('new-topic-input').value.trim();
+                    if(topic) {
+                        app.createLocalTopic();
+                        topic = document.getElementById('topic-selector').value;
+                    }
+                }
+                if(!topic) { ui.showToast('請先選擇或建立一個主題名稱！', 'warning'); return null; }
+                return topic;
+            },
+
+            addManualWord: async () => {
+                const topic = app.getOrSetTopic();
+                if(!topic) return;
+                const wordInput = document.getElementById('manual-word-input');
+                const word = wordInput.value.trim();
+                if(!word) { ui.showToast('請輸入詞彙', 'warning'); return; }
+
+                try {
+                    const qbRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank');
+                    await addDoc(qbRef, { topic: topic, word: word, synonyms: [], createdAt: serverTimestamp() });
+                    wordInput.value = '';
+                    ui.showToast('新增成功！', 'success');
+                } catch(e) { ui.showToast('新增失敗', 'error'); }
+            },
+
+            // --- 刪除整個主題 ---
+            deleteTopic: () => {
+                const topic = document.getElementById('topic-selector').value;
+                if (!topic) { ui.showToast('請先選擇要刪除的主題', 'warning'); return; }
+
+                ui.showConfirm(`確定要刪除主題「${topic}」與其中的所有題目嗎？此動作無法復原！`, async () => {
+                    const words = app.questionBanks[topic] || [];
+                    try {
+                        for (const word of words) {
+                            if (word.id) {
+                                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank', word.id));
+                            }
+                        }
+                        delete app.questionBanks[topic];
+                        ui.showToast(`主題「${topic}」已徹底刪除！`, 'success');
+                        document.getElementById('topic-selector').value = '';
+                        app.renderTeacherUI();
+                    } catch(e) {
+                        console.error(e);
+                        ui.showToast('刪除主題發生錯誤', 'error');
+                    }
+                });
+            },
+
+            openEditWord: (id, word, synonymsStr) => {
+                document.getElementById('edit-word-id').value = id;
+                document.getElementById('edit-word-main').innerText = word;
+                document.getElementById('edit-word-synonyms').value = synonymsStr;
+                ui.showModal('modal-edit-word');
+            },
+
+            saveWordEdit: async () => {
+                const id = document.getElementById('edit-word-id').value;
+                const synonymsStr = document.getElementById('edit-word-synonyms').value;
+                const synonymsArr = synonymsStr.split(',').map(s => s.trim()).filter(s => s !== '');
+                
+                try {
+                    const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank', id);
+                    await updateDoc(docRef, { synonyms: synonymsArr });
+                    ui.closeModal('modal-edit-word');
+                    ui.showToast('其他答案已儲存！', 'success');
+                } catch(e) { 
+                    console.error(e);
+                    ui.showToast('修改失敗', 'error'); 
+                }
+            },
+
+            // --- AI 智慧出題精靈相關邏輯 ---
+            openAIGenerator: () => {
+                const topic = app.getOrSetTopic();
+                if(!topic) return; 
+
+                // 初始化 Modal 狀態
+                document.getElementById('ai-text-input').value = '';
+                document.getElementById('ai-pdf-input').value = '';
+                document.getElementById('ai-count-input').value = '5';
+                document.getElementById('ai-req-input').value = '';
+                document.querySelector('input[name="ai-source"][value="topic"]').checked = true;
+                app.toggleAISource();
+                ui.showModal('modal-ai-generator');
+            },
+
+            toggleAISource: () => {
+                const source = document.querySelector('input[name="ai-source"]:checked').value;
+                document.getElementById('ai-source-text').style.display = source === 'text' ? 'block' : 'none';
+                document.getElementById('ai-source-pdf').style.display = source === 'pdf' ? 'block' : 'none';
+            },
+
+            executeAIGeneration: async () => {
+                const topic = app.getOrSetTopic();
+                if(!topic) { ui.closeModal('modal-ai-generator'); return; }
+
+                const mode = localStorage.getItem(configManager.aiModeKey) || 'default';
+                let apiKey = "";
+                if (mode === 'custom') {
+                    apiKey = localStorage.getItem(configManager.aiCustomKey) || "";
+                    if (!apiKey) { ui.showToast('自訂模式請先輸入 API Key', 'error'); return; }
+                }
+
+                const source = document.querySelector('input[name="ai-source"]:checked').value;
+                const count = document.getElementById('ai-count-input').value || 5;
+                const req = document.getElementById('ai-req-input').value.trim();
+
+                let promptText = `Act as an educational expert. Generate ${count} vocabulary words for a 'Draw and Guess' game for kids based on the theme: [${topic}].\n`;
+                if (req) promptText += `Additional requirements: ${req}\n`;
+
+                let pdfBase64 = null;
+
+                if (source === 'text') {
+                    const textContent = document.getElementById('ai-text-input').value.trim();
+                    if(!textContent) { ui.showToast('請先貼上參考文本！', 'warning'); return; }
+                    promptText += `\nPlease base the vocabulary strictly on the following text:\n${textContent}\n`;
+                } else if (source === 'pdf') {
+                    const fileInput = document.getElementById('ai-pdf-input');
+                    if(fileInput.files.length === 0) { ui.showToast('請先上傳 PDF 檔案！', 'warning'); return; }
+                    const file = fileInput.files[0];
+                    
+                    try {
+                        pdfBase64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                            reader.onerror = (e) => reject(e);
+                            reader.readAsDataURL(file);
+                        });
+                    } catch(e) {
+                        ui.showToast('讀取 PDF 失敗', 'error');
+                        return;
+                    }
+                    promptText += `\nPlease extract and base the vocabulary strictly on the contents of the attached PDF document.\n`;
+                }
+
+                promptText += `\nReturn strictly a JSON array with this format: [{"word": "Main Word (Traditional Chinese)", "synonyms": ["alt1", "alt2"]}]`;
+
+                ui.showToast(`🚀 AI 魔法生成中... 預計產生 ${count} 題，請稍候！`, 'info');
+                ui.closeModal('modal-ai-generator');
+
+                const parts = [{ text: promptText }];
+                if (pdfBase64) {
+                    parts.push({ inlineData: { mimeType: "application/pdf", data: pdfBase64 } });
+                }
+
+                try {
+                    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
+                    const url = apiKey ? `${baseUrl}?key=${apiKey}` : baseUrl;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: parts }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if(data.error) throw new Error(data.error.message);
+                    
+                    const textResult = data.candidates[0].content.parts[0].text;
+                    // 以防 AI 包裝了 Markdown code block，做簡單清理
+                    const cleanJsonStr = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const jsonArr = JSON.parse(cleanJsonStr);
+                    
+                    const qbRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank');
+                    for (const item of jsonArr) {
+                        await addDoc(qbRef, { topic: topic, word: item.word, synonyms: item.synonyms || [], createdAt: serverTimestamp() });
+                    }
+                    ui.showToast(`✨ AI 生成成功，已加入 ${jsonArr.length} 題！`, 'success');
+                } catch (e) {
+                    console.error("AI Error:", e);
+                    ui.showToast('AI 生成失敗，請檢查網路、API 設定或文件是否過大', 'error');
+                }
+            },
+            
+            deleteQuestion: async (id) => {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'questionBank', id));
+                } catch(e) { ui.showToast('刪除失敗', 'error'); }
+            },
+
+            // --- 房間管理與遊戲邏輯 (教師主導) ---
+            roundTimerInterval: null,
+            isAnsweringTransition: false, // 是否正在進行答對換題過渡動畫
+
+            toggleCustomTimeInput: () => {
+                const selectVal = document.getElementById('room-draw-time-selector')?.value;
+                const customInput = document.getElementById('custom-draw-time-input');
+                if (!customInput) return;
+                if (selectVal === 'custom') {
+                    customInput.classList.remove('hidden');
+                    customInput.focus();
+                } else {
+                    customInput.classList.add('hidden');
+                }
+            },
+
+            showCorrectAnswerOverlay: (playerName, word) => {
+                const modal = document.getElementById('answer-correct-modal');
+                const playerText = document.getElementById('correct-player-text');
+                const wordText = document.getElementById('correct-word-text');
+                if (!modal || !playerText || !wordText) return;
+
+                playerText.innerText = `🎉 ${playerName} 答對了！`;
+                wordText.innerText = word;
+                modal.classList.remove('hidden');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 3000);
+            },
+
+            // 清除本機端的每題倒數計時器
+            clearRoundTimer: () => {
+                if (app.roundTimerInterval) {
+                    clearInterval(app.roundTimerInterval);
+                    app.roundTimerInterval = null;
+                }
+            },
+
+            // --- 房間管理與遊戲邏輯 (教師主導) ---
+            createRoom: async () => {
+                const topic = document.getElementById('room-topic-selector').value;
+                if (!topic || !app.questionBanks[topic] || app.questionBanks[topic].length === 0) {
+                    ui.showToast('請選擇一個包含題目的主題！', 'error'); return;
+                }
+
+                // 讀取每題時間設定 (0 表示不限時)
+                const timeSelectVal = document.getElementById('room-draw-time-selector')?.value || "60";
+                let drawDuration = 60;
+                if (timeSelectVal === 'custom') {
+                    drawDuration = parseInt(document.getElementById('custom-draw-time-input')?.value) || 60;
+                    if (drawDuration < 5) drawDuration = 5;
+                } else {
+                    drawDuration = parseInt(timeSelectVal);
+                }
+
+                const words = [...app.questionBanks[topic]].sort(() => Math.random() - 0.5);
+                const code = Math.floor(1000 + Math.random() * 9000).toString();
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code);
+                
+                try {
+                    await setDoc(roomRef, {
+                        status: 'waiting',
+                        host: currentUser.uid,
+                        topic: topic,
+                        drawDuration: drawDuration, // 每一題的設定秒數 (0為不限時)
+                        roundStartTime: null,       // 本題開始時間毫秒戳
+                        currentPainter: null,
+                        currentWordObj: null,
+                        wordQueue: words,
+                        createdAt: serverTimestamp(),
+                        players: [{ uid: currentUser.uid, name: app.playerName, score: 0, isTeacher: true }]
+                    });
+                    ui.showToast(`✅ 成功建立房間：${code} (每題 ${drawDuration === 0 ? '不限時' : drawDuration + '秒'})！`, 'success');
+                } catch(e) { console.error(e); ui.showToast('開房失敗', 'error'); }
+            },
+
+            enterRoom: async (code) => {
+                // 進入房間前清除既有監聽器（例如大廳的房間列表監聽）
+                app.listeners.forEach(unsub => unsub());
+                app.listeners = [];
+                app.clearRoundTimer();
+                app.isAnsweringTransition = false;
+
+                app.currentRoomId = code;
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code);
+                
+                try {
+                    const snap = await getDoc(roomRef);
+                    if (!snap.exists()) { ui.showToast('找不到此房間', 'error'); return; }
+                    
+                    const data = snap.data();
+                    app.isTeacher = (data.host === currentUser.uid);
+
+                    if(!app.isTeacher) {
+                        const exists = data.players.find(p => p.uid === currentUser.uid);
+                        if(!exists) {
+                            const newPlayers = [...data.players, { uid: currentUser.uid, name: app.playerName, score: 0, isTeacher: false }];
+                            await updateDoc(roomRef, { players: newPlayers });
+                        }
+                    }
+
+                    ui.switchView('view-game');
+                    document.getElementById('game-room-display').innerText = `房間: ${code} | ${app.playerName}`;
+                    document.getElementById('teacher-controls').style.display = app.isTeacher ? 'flex' : 'none';
+
+                    app.listenRoomState();
+                    app.listenMessages();
+                    canvasApp.init(code);
+                    app.startIdleTimer(); // 進入房間時啟動閒置計時器
+
+                } catch(e) { console.error(e); ui.showToast('進入失敗', 'error'); }
+            },
+
+            leaveRoom: () => {
+                if (app.idleTimer) clearTimeout(app.idleTimer);
+                app.clearRoundTimer();
+                app.isAnsweringTransition = false;
+                app.listeners.forEach(unsub => unsub());
+                app.listeners = [];
+                canvasApp.deinit();
+                app.currentRoomId = null;
+                
+                const correctModal = document.getElementById('answer-correct-modal');
+                if (correctModal) correctModal.classList.add('hidden');
+
+                if (app.isTeacher) {
+                    ui.switchView('view-teacher');
+                    app.loadQuestionBank();
+                    app.listenActiveRooms(); 
+                } else {
+                    app.enterLobby();
+                }
+            },
+
+            listenActiveRooms: () => {
+                const roomsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms');
+                const unsub = onSnapshot(roomsRef, (snap) => {
+                    const listEl = document.getElementById('active-rooms-list');
+                    if (!listEl) return;
+                    
+                    const activeRooms = [];
+                    snap.forEach(docSnap => {
+                        const d = docSnap.data();
+                        if (d.status !== 'ended') {
+                            activeRooms.push({ code: docSnap.id, ...d });
+                        }
+                    });
+
+                    const getTimeMs = (val) => {
+                        if (!val) return 0;
+                        if (typeof val === 'number') return val;
+                        if (typeof val.toMillis === 'function') return val.toMillis();
+                        if (typeof val.getTime === 'function') return val.getTime();
+                        if (val.seconds) return val.seconds * 1000;
+                        const parsed = new Date(val).getTime();
+                        return isNaN(parsed) ? 0 : parsed;
+                    };
+
+                    activeRooms.sort((a,b) => getTimeMs(b.createdAt) - getTimeMs(a.createdAt));
+
+                    if (activeRooms.length === 0) {
+                        listEl.innerHTML = '<div class="col-span-2 text-center text-slate-400 font-bold mt-10 text-sm">目前無開啟的房間。<br>請在左側選擇主題並點擊建立房間。</div>';
+                        return;
+                    }
+
+                    listEl.innerHTML = activeRooms.map(r => {
+                        let statusBadge = '';
+                        if (r.status === 'playing') statusBadge = '<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">▶ 遊戲中</span>';
+                        else if (r.status === 'finished') statusBadge = '<span class="text-[11px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">🏆 已結算</span>';
+                        else statusBadge = '<span class="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">⏳ 等待中</span>';
+
+                        const studentCount = r.players ? r.players.filter(p => !p.isTeacher).length : 0;
+                        const durationText = r.drawDuration === 0 ? '不限時' : (r.drawDuration ? `${r.drawDuration}秒` : '60秒');
+
+                        return `
+                        <div class="bg-white text-slate-800 border-2 border-slate-200 hover:border-pop-blue rounded-2xl p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-black text-lg bg-pop-yellow/40 text-slate-900 px-2.5 py-0.5 border border-pop-yellow rounded-lg tracking-widest">${r.code}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="text-xs font-bold text-slate-600 truncate">
+                                主題：<span class="text-slate-900 font-black">${r.topic || '未知'}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 font-medium flex justify-between items-center">
+                                <span>👥 學生：<strong class="text-slate-800">${studentCount} 人</strong></span>
+                                <span>⏱️ 限時：<strong class="text-pop-blue">${durationText}</strong></span>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-1 pt-2 border-t border-slate-100">
+                                <button onclick="app.enterRoom('${r.code}')" class="pop-btn bg-pop-green text-white py-1.5 text-xs font-bold shadow-xs">進入管理</button>
+                                <button onclick="app.resetRoomFromDashboard('${r.code}')" class="pop-btn bg-pop-blue text-white py-1.5 text-xs font-bold shadow-xs" title="將房間重置為初始等待狀態、分數歸零並重整題目">🔄 重置房間</button>
+                                <button onclick="app.kickAllPlayersFromRoom('${r.code}')" class="pop-btn bg-pop-yellow text-slate-900 py-1.5 text-xs font-bold shadow-xs">清空學生</button>
+                                <button onclick="app.closeRoomFromDashboard('${r.code}')" class="pop-btn bg-pop-red text-white py-1.5 text-xs font-bold shadow-xs">結束房間</button>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                }, (err) => console.error("Active Rooms Error", err));
+                app.listeners.push(unsub);
+            },
+
+            resetRoomFromDashboard: async (code) => {
+                ui.showConfirm(`確定要重置房間 ${code} 嗎？\n這將會將房間恢復為「等待開始」狀態、清空所有學生、清空畫布與答題紀錄，並重新洗牌題庫！`, async () => {
+                    try {
+                        const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code);
+                        const snap = await getDoc(roomRef);
+                        if (!snap.exists()) return;
+                        const data = snap.data();
+
+                        const topic = data.topic;
+                        let words = [];
+                        if (topic && app.questionBanks[topic] && app.questionBanks[topic].length > 0) {
+                            words = [...app.questionBanks[topic]].sort(() => Math.random() - 0.5);
+                        } else if (data.wordQueue && data.wordQueue.length > 0) {
+                            words = [...data.wordQueue].sort(() => Math.random() - 0.5);
+                        }
+
+                        // 清空所有學生，僅保留教師管理員
+                        const onlyTeacher = (data.players || []).filter(p => p.isTeacher || p.uid === data.host);
+
+                        await updateDoc(roomRef, {
+                            status: 'waiting',
+                            currentPainter: null,
+                            currentWordObj: null,
+                            roundStartTime: null,
+                            wordQueue: words,
+                            players: onlyTeacher
+                        });
+
+                        // 1. 清空答題與聊天紀錄 (messages)
+                        try {
+                            const msgColRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${code}/messages`);
+                            const msgSnap = await getDocs(msgColRef);
+                            for (const msgDoc of msgSnap.docs) {
+                                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${code}/messages`, msgDoc.id));
+                            }
+                        } catch(err) { console.error("Clear messages error", err); }
+
+                        // 2. 系統廣播重置通知
+                        const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${code}/messages`);
+                        await addDoc(msgRef, { uid: 'system', name: '系統', text: `🔄 房間已由教師重置！狀態已恢復為等待開始，所有學生與答題紀錄已全部清空。`, isSystem: true, timestamp: Date.now() });
+
+                        // 3. 清空畫布筆畫
+                        const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${code}/strokes`);
+                        await addDoc(strokesRef, { action: 'clear', timestamp: Date.now() });
+
+                        ui.showToast(`房間 ${code} 已成功重置（學生與紀錄已全部清空）！`, 'success');
+                    } catch(e) {
+                        console.error(e);
+                        ui.showToast('重置房間失敗', 'error');
+                    }
+                });
+            },
+
+            closeRoomFromDashboard: async (code) => {
+                ui.showConfirm(`確定要強制關閉房間 ${code} 嗎？所有連線將會中斷。`, async () => {
+                    try {
+                        const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code);
+                        await updateDoc(roomRef, { status: 'ended' });
+                        ui.showToast(`房間 ${code} 已關閉！`, 'success');
+                    } catch(e) { ui.showToast('關閉失敗', 'error'); }
+                });
+            },
+
+            kickAllPlayersFromRoom: async (code) => {
+                ui.showConfirm(`確定要將房間 ${code} 的所有學生玩家踢出嗎？`, async () => {
+                    try {
+                        const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code);
+                        const snap = await getDoc(roomRef);
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            // 只保留教師，濾掉所有學生
+                            const onlyTeacher = data.players.filter(p => p.isTeacher || p.uid === data.host);
+                            await updateDoc(roomRef, { players: onlyTeacher });
+                            
+                            const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${code}/messages`);
+                            await addDoc(msgRef, { uid: 'system', name: '系統', text: `🧹 教師已一鍵清空所有學生玩家！`, isSystem: true, timestamp: Date.now() });
+                            ui.showToast(`已清空房間 ${code} 的所有學生。`, 'success');
+                        }
+                    } catch(e) {
+                        console.error(e);
+                        ui.showToast('踢出玩家失敗', 'error');
+                    }
+                });
+            },
+
+            startGame: async () => {
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                const snap = await getDoc(roomRef);
+                const data = snap.data();
+                
+                const students = data.players.filter(p => !p.isTeacher);
+                const isFirstStudent = students.length > 0 && students[0].uid === currentUser.uid;
+
+                if(!app.isTeacher && !isFirstStudent) return;
+
+                if(students.length === 0) {
+                    ui.showToast('需要至少一名學生加入才能開始遊戲！', 'warning'); return;
+                }
+
+                await updateDoc(roomRef, { status: 'playing' });
+                app.nextRound(roomRef, data);
+                
+                const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                const starterName = app.isTeacher ? '教師' : app.playerName;
+                await addDoc(msgRef, { uid: 'system', name: '系統', text: `🚀 ${starterName} 已按下開始遊戲！`, isSystem: true, timestamp: Date.now() });
+            },
+
+            skipWord: async () => {
+                if (app.isAnsweringTransition) return;
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                const snap = await getDoc(roomRef);
+                const data = snap.data();
+                
+                const students = data.players.filter(p => !p.isTeacher);
+                const isFirstStudent = students.length > 0 && students[0].uid === currentUser.uid;
+
+                if(!app.isTeacher && !isFirstStudent) return;
+                
+                const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                await addDoc(msgRef, { uid: 'system', name: '系統', text: `⏭ 已強制跳過本題，進入下一題！原題目是「${data.currentWordObj?.word || ''}」`, isSystem: true, timestamp: Date.now() });
+                app.nextRound(roomRef, data);
+            },
+
+            endRoom: async () => {
+                if(!app.isTeacher) return;
+                ui.showConfirm('確定要手動結束並關閉這個房間嗎？', async () => {
+                    const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                    await updateDoc(roomRef, { status: 'ended' });
+                    
+                    const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                    await addDoc(msgRef, { uid: 'system', name: '系統', text: `⏹ 教師已手動結束並關閉房間！`, isSystem: true, timestamp: Date.now() });
+                });
+            },
+
+            // 重新開始遊戲 (房內操作)
+            restartGame: async () => {
+                if(!app.isTeacher) return;
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                const snap = await getDoc(roomRef);
+                const data = snap.data();
+                
+                const topic = data.topic;
+                if (!topic || !app.questionBanks[topic] || app.questionBanks[topic].length === 0) {
+                    ui.showToast('找不到原始題庫或題庫已空，無法重新開始！', 'error'); 
+                    return;
+                }
+
+                ui.showConfirm('確定要重新開始遊戲嗎？這將會重置房間狀態、清空學生、清空畫布與答題紀錄！', async () => {
+                    // 重新從題庫抽題並打亂順序
+                    const words = [...app.questionBanks[topic]].sort(() => Math.random() - 0.5);
+                    // 清空所有學生，僅保留教師管理員
+                    const onlyTeacher = (data.players || []).filter(p => p.isTeacher || p.uid === data.host);
+
+                    await updateDoc(roomRef, {
+                        status: 'waiting',
+                        currentPainter: null,
+                        currentWordObj: null,
+                        roundStartTime: null,
+                        wordQueue: words,
+                        players: onlyTeacher
+                    });
+
+                    // 清空歷史答題與聊天紀錄
+                    try {
+                        const msgColRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                        const msgSnap = await getDocs(msgColRef);
+                        for (const msgDoc of msgSnap.docs) {
+                            await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`, msgDoc.id));
+                        }
+                    } catch(err) { console.error("Clear messages error", err); }
+
+                    // 系統廣播通知
+                    const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                    await addDoc(msgRef, { uid: 'system', name: '系統', text: `🔄 遊戲已由教師重新開始，所有學生與答題紀錄已全部清空！等待重新啟動...`, isSystem: true, timestamp: Date.now() });
+                    
+                    // 清空畫布
+                    const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/strokes`);
+                    await addDoc(strokesRef, { action: 'clear', timestamp: Date.now() });
+                });
+            },
+
+            nextRound: async (roomRef, currentData) => {
+                const queue = currentData.wordQueue || [];
+                if (queue.length === 0) {
+                    await updateDoc(roomRef, { status: 'finished', roundStartTime: null });
+                    const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                    await addDoc(msgRef, { uid: 'system', name: '系統', text: `🏆 所有題目均已完成，遊戲結算！等待教師重新開始或關閉房間。`, isSystem: true, timestamp: Date.now() });
+                    return;
+                }
+
+                const nextWord = queue[0];
+                const newQueue = queue.slice(1);
+
+                // 嚴格篩選出題者：僅限學生參與輪流出題，教師絕對不出題
+                const students = currentData.players.filter(p => !p.isTeacher && p.uid !== currentData.host);
+                let nextPainterUid = null;
+                if (students.length > 0) {
+                    if (currentData.currentPainter === null) {
+                        nextPainterUid = students[0].uid;
+                    } else {
+                        const availableStudents = students.filter(s => s.uid !== currentData.currentPainter);
+                        if (availableStudents.length > 0) {
+                            const randIndex = Math.floor(Math.random() * availableStudents.length);
+                            nextPainterUid = availableStudents[randIndex].uid;
+                        } else {
+                            nextPainterUid = students[0].uid; 
+                        }
+                    }
+                } else {
+                    nextPainterUid = null;
+                }
+
+                await updateDoc(roomRef, {
+                    currentPainter: nextPainterUid,
+                    currentWordObj: nextWord,
+                    roundStartTime: Date.now(), // 記錄每題開始時間
+                    wordQueue: newQueue
+                });
+
+                if (nextPainterUid) {
+                    const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                    const painterName = currentData.players.find(p => p.uid === nextPainterUid)?.name || '學生';
+                    await addDoc(msgRef, { uid: 'system', name: '系統', text: `✏️ 輪到 ${painterName} 畫圖了！`, isSystem: true, timestamp: Date.now() });
+                }
+                
+                const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/strokes`);
+                await addDoc(strokesRef, { action: 'clear', timestamp: Date.now() });
+            },
+
+            listenRoomState: () => {
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                const unsub = onSnapshot(roomRef, (snap) => {
+                    if(!snap.exists()) { app.leaveRoom(); ui.showToast('房間已關閉', 'warning'); return; }
+                    const data = snap.data();
+                    
+                    // 若玩家是學生且不在名單內（被教師踢出），強制離開房間
+                    if (!app.isTeacher && data.players && !data.players.some(p => p.uid === currentUser.uid)) {
+                        app.leaveRoom();
+                        ui.showToast('您已被教師請出房間。', 'warning');
+                        return;
+                    }
+
+                    const students = data.players.filter(p => !p.isTeacher);
+                    const isFirstStudent = students.length > 0 && students[0].uid === currentUser.uid;
+                    const canControl = app.isTeacher || isFirstStudent;
+
+                    // 渲染排行榜：學生依分數排序，教師若在房間則置底或標明（不計入競爭排行榜）
+                    const pList = document.getElementById('player-list');
+                    const sortedStudents = [...students].sort((a,b) => b.score - a.score);
+                    const teachers = data.players.filter(p => p.isTeacher);
+                    const hasAnyScore = sortedStudents.some(p => (p.score || 0) > 0);
+
+                    let listHtml = sortedStudents.map((p, idx) => {
+                        const isPainter = (p.uid === data.currentPainter && data.status === 'playing');
+                        let rankIcon = '👤';
+                        if (hasAnyScore && (p.score || 0) > 0) {
+                            rankIcon = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}.`));
+                        }
+                        return `<li class="flex justify-between items-center bg-black/20 px-2 py-1 rounded">
+                            <span class="truncate">
+                                ${rankIcon} ${isPainter ? '🖌️ ' : ''}${p.name}
+                                ${isPainter ? ' <span class="text-pop-yellow font-black">(繪圖中)</span>' : ''}
+                            </span>
+                            <span class="text-pop-yellow font-bold shrink-0 ml-1">${p.score || 0} pt</span>
+                        </li>`;
+                    }).join('');
+
+                    if (teachers.length > 0) {
+                        teachers.forEach(t => {
+                            listHtml += `<li class="flex justify-between items-center bg-white/20 px-2 py-0.5 rounded text-xs opacity-80 border-t border-white/20 mt-1">
+                                <span>👩‍🏫 ${t.name} (管理員)</span>
+                                <span class="text-white/80">監控中</span>
+                            </li>`;
+                        });
+                    }
+
+                    pList.innerHTML = listHtml;
+
+                    // 處理房間真正關閉 (ended) 的狀況
+                    if (data.status === 'ended') {
+                        app.clearRoundTimer();
+                        document.getElementById('word-hint-area').innerText = '房間已由教師手動關閉！';
+                        document.getElementById('word-hint-area').className = "text-center font-black text-2xl md:text-4xl my-2 tracking-widest text-pop-red h-12 flex items-center justify-center";
+                        document.getElementById('canvas-overlay').style.display = 'block'; 
+                        document.getElementById('teacher-controls').style.display = 'none';
+                        document.getElementById('drawing-tools').style.display = 'none';
+                        document.getElementById('game-timer').innerText = '⏳ 0s';
+                        return;
+                    }
+
+                    // 處理遊戲題目出完結算 (finished) 的狀況，保留按鈕讓教師操作
+                    if (data.status === 'finished') {
+                        app.clearRoundTimer();
+                        document.getElementById('word-hint-area').innerText = '🎉 遊戲已結算完成！';
+                        document.getElementById('word-hint-area').className = "text-center font-black text-2xl md:text-4xl my-2 tracking-widest text-pop-blue h-12 flex items-center justify-center";
+                        document.getElementById('canvas-overlay').style.display = 'block'; 
+                        document.getElementById('drawing-tools').style.display = 'none';
+                        document.getElementById('game-timer').innerText = '🏆 結算';
+                        
+                        if (canControl) {
+                            document.getElementById('teacher-controls').style.display = 'flex';
+                            document.getElementById('btn-start-game').classList.add('hidden');
+                            document.getElementById('btn-skip-word').classList.add('hidden');
+                            document.getElementById('btn-end-room').style.display = app.isTeacher ? 'inline-flex' : 'none';
+                            document.getElementById('btn-restart-game').classList.remove('hidden');
+                            document.getElementById('btn-restart-game').style.display = app.isTeacher ? 'inline-flex' : 'none';
+                        } else {
+                            document.getElementById('teacher-controls').style.display = 'none';
+                        }
+                        return;
+                    }
+
+                    if (data.status === 'waiting') {
+                        app.clearRoundTimer();
+                        const durationText = data.drawDuration === 0 ? '不限時' : (data.drawDuration ? `${data.drawDuration}s` : '60s');
+                        document.getElementById('game-timer').innerText = `⏳ ${durationText}`;
+                        document.getElementById('drawing-tools').style.display = 'none';
+                        document.getElementById('canvas-overlay').style.display = 'block';
+
+                        const hintEl = document.getElementById('word-hint-area');
+                        if (canControl) {
+                            hintEl.innerText = app.isTeacher ? '👩‍🏫 等待學生加入，點擊「▶ 開始遊戲」' : '等待其他玩家加入，點擊開始';
+                            hintEl.classList.replace('text-pop-red', 'text-pop-blue');
+                            document.getElementById('teacher-controls').style.display = 'flex';
+                            document.getElementById('btn-start-game').classList.remove('hidden');
+                            document.getElementById('btn-skip-word').classList.add('hidden');
+                            document.getElementById('btn-restart-game').classList.add('hidden');
+                            document.getElementById('btn-end-room').style.display = app.isTeacher ? 'inline-flex' : 'none';
+                        } else {
+                            hintEl.innerText = '等待室長開始遊戲...';
+                            hintEl.classList.replace('text-pop-red', 'text-pop-blue');
+                            document.getElementById('teacher-controls').style.display = 'none';
+                        }
+                    }
+
+                    if (data.status === 'playing') {
+                        if (canControl) {
+                            document.getElementById('teacher-controls').style.display = 'flex';
+                            document.getElementById('btn-start-game').classList.add('hidden');
+                            document.getElementById('btn-skip-word').classList.remove('hidden');
+                            document.getElementById('btn-restart-game').classList.add('hidden');
+                            document.getElementById('btn-end-room').style.display = app.isTeacher ? 'inline-flex' : 'none';
+                        } else {
+                            document.getElementById('teacher-controls').style.display = 'none';
+                        }
+
+                        // 提示文字更新
+                        const hintEl = document.getElementById('word-hint-area');
+                        const isMyTurn = data.currentPainter === currentUser.uid && !app.isTeacher;
+                        
+                        if (data.currentWordObj) {
+                            if (app.isTeacher) {
+                                const pName = data.players ? (data.players.find(p => p.uid === data.currentPainter)?.name || '學生') : '學生';
+                                hintEl.innerText = `題目：${data.currentWordObj.word} (${pName} 繪圖中)`;
+                                hintEl.className = "text-center font-black text-xl md:text-3xl my-2 tracking-widest text-pop-pink h-12 flex items-center justify-center";
+                            } else if (isMyTurn) {
+                                hintEl.innerText = `你的題目：${data.currentWordObj.word}`;
+                                hintEl.className = "text-center font-black text-2xl md:text-4xl my-2 tracking-widest text-pop-red h-12 flex items-center justify-center";
+                            } else {
+                                const w = data.currentWordObj.word;
+                                hintEl.innerText = `猜測：${'O '.repeat(w.length)}`;
+                                hintEl.className = "text-center font-black text-2xl md:text-4xl my-2 tracking-widest text-pop-blue h-12 flex items-center justify-center";
+                            }
+                        }
+
+                        // 每題計時倒數器邏輯
+                        app.clearRoundTimer();
+                        const duration = typeof data.drawDuration === 'number' ? data.drawDuration : 60;
+                        const startTime = data.roundStartTime || Date.now();
+
+                        const updateCountdown = () => {
+                            if (duration === 0) {
+                                // 不限時
+                                document.getElementById('game-timer').innerText = `⏳ ♾️ 不限時`;
+                                document.getElementById('drawing-tools').style.display = isMyTurn ? 'flex' : 'none';
+                                document.getElementById('canvas-overlay').style.display = isMyTurn ? 'none' : 'block';
+                                return;
+                            }
+
+                            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                            const remaining = Math.max(0, duration - elapsedSeconds);
+
+                            document.getElementById('game-timer').innerText = `⏳ ${remaining}s`;
+
+                            if (remaining <= 0) {
+                                // 時間到：時間結束，禁止繼續繪圖（鎖定畫布），等待玩家答對或教師強制換題
+                                document.getElementById('game-timer').innerText = `⏰ 時間到`;
+                                document.getElementById('drawing-tools').style.display = 'none';
+                                document.getElementById('canvas-overlay').style.display = 'block'; // 遮罩鎖定畫布
+                                if (isMyTurn) {
+                                    hintEl.innerText = `⏰ 作畫時間結束！等待同學猜出答案「${data.currentWordObj?.word || ''}」...`;
+                                    hintEl.className = "text-center font-black text-lg md:text-2xl my-2 tracking-widest text-pop-red h-12 flex items-center justify-center";
+                                }
+                            } else {
+                                // 還有時間：繪圖者可畫圖，非繪圖者遮罩
+                                document.getElementById('drawing-tools').style.display = isMyTurn ? 'flex' : 'none';
+                                document.getElementById('canvas-overlay').style.display = isMyTurn ? 'none' : 'block';
+                            }
+                        };
+
+                        updateCountdown();
+                        if (duration > 0) {
+                            app.roundTimerInterval = setInterval(updateCountdown, 1000);
+                        }
+                    }
+                }, (err) => console.error("Room listener error", err));
+                app.listeners.push(unsub);
+            },
+
+            listenMessages: () => {
+                const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                const unsub = onSnapshot(msgRef, (snap) => {
+                    const container = document.getElementById('chat-messages');
+                    const msgs = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                    let html = '';
+                    msgs.forEach(d => {
+                        const color = d.isSystem ? 'text-pop-red' : (d.uid === currentUser.uid ? 'text-pop-blue' : 'text-black');
+                        html += `<div class="${color}"><strong>${d.name}:</strong> ${d.text}</div>`;
+                    });
+                    container.innerHTML = html;
+                    container.scrollTop = container.scrollHeight;
+                }, (err) => console.error("Msg listener error", err));
+                app.listeners.push(unsub);
+            },
+
+            sendMessage: async (text) => {
+                if(!text || !app.currentRoomId || app.isAnsweringTransition) return;
+                const msgRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${app.currentRoomId}/messages`);
+                await addDoc(msgRef, {
+                    uid: currentUser.uid,
+                    name: app.playerName,
+                    text: text,
+                    isSystem: false,
+                    timestamp: Date.now()
+                });
+
+                const roomRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', app.currentRoomId);
+                const snap = await getDoc(roomRef);
+                const rData = snap.data();
+                
+                if (rData.status === 'playing' && rData.currentPainter !== currentUser.uid && !app.isTeacher) { 
+                    const ansObj = rData.currentWordObj;
+                    if (!ansObj) return;
+
+                    const isCorrect = text.includes(ansObj.word) || (ansObj.synonyms && ansObj.synonyms.some(s => text.includes(s)));
+                    
+                    if (isCorrect && !app.isAnsweringTransition) {
+                        app.isAnsweringTransition = true;
+                        
+                        // 1. 系統聊天廣播
+                        await addDoc(msgRef, { uid: 'system', name: '系統', text: `🎉 ${app.playerName} 猜對了！答案是「${ansObj.word}」`, isSystem: true, timestamp: Date.now() });
+                        
+                        // 2. 加分
+                        const newPlayers = rData.players.map(p => p.uid === currentUser.uid ? {...p, score: p.score + 10} : p);
+                        await updateDoc(roomRef, { players: newPlayers });
+                        
+                        // 3. 彈出全螢幕歡慶提示
+                        app.showCorrectAnswerOverlay(app.playerName, ansObj.word);
+
+                        // 4. 等待 3 秒後自動切換下一題
+                        setTimeout(async () => {
+                            try {
+                                const currentSnap = await getDoc(roomRef);
+                                if (currentSnap.exists() && currentSnap.data().status === 'playing') {
+                                    app.nextRound(roomRef, currentSnap.data());
+                                }
+                            } finally {
+                                app.isAnsweringTransition = false;
+                            }
+                        }, 3000);
+                    }
+                }
+            }
+        };
+
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            app.sendMessage(input.value.trim());
+            input.value = '';
+        });
+
+        // ==========================================
+        // Canvas 繪圖即時同步模組
+        // ==========================================
+        const canvasApp = {
+            canvas: null,
+            ctx: null,
+            isDrawing: false,
+            currentColor: '#000000',
+            currentStroke: [], 
+            unsub: null,
+            roomId: null,
+            
+            init: (roomId) => {
+                canvasApp.roomId = roomId;
+                canvasApp.canvas = document.getElementById('drawing-canvas');
+                canvasApp.ctx = canvasApp.canvas.getContext('2d', { willReadFrequently: true });
+                canvasApp.resize();
+                window.addEventListener('resize', canvasApp.resize);
+
+                canvasApp.ctx.lineCap = 'round';
+                canvasApp.ctx.lineJoin = 'round';
+                canvasApp.ctx.lineWidth = 5;
+
+                canvasApp.canvas.addEventListener('mousedown', canvasApp.startDraw);
+                canvasApp.canvas.addEventListener('mousemove', canvasApp.draw);
+                window.addEventListener('mouseup', canvasApp.endDraw);
+                
+                canvasApp.canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); canvasApp.startDraw(e.touches[0]); }, {passive: false});
+                canvasApp.canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); canvasApp.draw(e.touches[0]); }, {passive: false});
+                window.addEventListener('touchend', canvasApp.endDraw);
+
+                canvasApp.listenStrokes();
+            },
+
+            deinit: () => {
+                window.removeEventListener('resize', canvasApp.resize);
+                window.removeEventListener('mouseup', canvasApp.endDraw);
+                window.removeEventListener('touchend', canvasApp.endDraw);
+                if(canvasApp.unsub) canvasApp.unsub();
+            },
+
+            resize: () => {
+                const container = document.getElementById('canvas-container');
+                canvasApp.canvas.width = container.clientWidth;
+                canvasApp.canvas.height = container.clientHeight;
+            },
+
+            setColor: (c) => canvasApp.currentColor = c,
+
+            getPoint: (e) => {
+                const rect = canvasApp.canvas.getBoundingClientRect();
+                return {
+                    x: (e.clientX - rect.left) / canvasApp.canvas.width,
+                    y: (e.clientY - rect.top) / canvasApp.canvas.height
+                };
+            },
+
+            startDraw: (e) => {
+                const roomOverlay = document.getElementById('canvas-overlay').style.display;
+                if(roomOverlay === 'block') return; 
+                
+                canvasApp.isDrawing = true;
+                canvasApp.currentStroke = [canvasApp.getPoint(e)];
+                canvasApp.ctx.beginPath();
+                canvasApp.ctx.strokeStyle = canvasApp.currentColor;
+                const p = canvasApp.currentStroke[0];
+                canvasApp.ctx.moveTo(p.x * canvasApp.canvas.width, p.y * canvasApp.canvas.height);
+            },
+
+            draw: (e) => {
+                if (!canvasApp.isDrawing) return;
+                const pt = canvasApp.getPoint(e);
+                canvasApp.currentStroke.push(pt);
+                canvasApp.ctx.lineTo(pt.x * canvasApp.canvas.width, pt.y * canvasApp.canvas.height);
+                canvasApp.ctx.stroke();
+            },
+
+            endDraw: async () => {
+                if (!canvasApp.isDrawing) return;
+                canvasApp.isDrawing = false;
+                
+                if (canvasApp.currentStroke.length > 0) {
+                    try {
+                        const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${canvasApp.roomId}/strokes`);
+                        await addDoc(strokesRef, {
+                            color: canvasApp.currentColor,
+                            points: canvasApp.currentStroke,
+                            timestamp: Date.now()
+                        });
+                    } catch(e) { console.error("Stroke Sync Error", e); }
+                }
+                canvasApp.currentStroke = [];
+            },
+
+            listenStrokes: () => {
+                const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${canvasApp.roomId}/strokes`);
+                canvasApp.unsub = onSnapshot(strokesRef, (snap) => {
+                    canvasApp.ctx.clearRect(0, 0, canvasApp.canvas.width, canvasApp.canvas.height);
+                    
+                    const allStrokes = [];
+                    snap.docs.forEach(doc => allStrokes.push(doc.data()));
+                    allStrokes.sort((a,b)=>a.timestamp - b.timestamp); 
+
+                    let lastClearIndex = -1;
+                    for (let i = allStrokes.length - 1; i >= 0; i--) {
+                        if (allStrokes[i].action === 'clear') {
+                            lastClearIndex = i;
+                            break;
+                        }
+                    }
+                    const validStrokes = lastClearIndex === -1 ? allStrokes : allStrokes.slice(lastClearIndex + 1);
+
+                    validStrokes.forEach(stroke => {
+                        if(stroke.action === 'clear' || !stroke.points || stroke.points.length === 0) return;
+                        canvasApp.ctx.beginPath();
+                        canvasApp.ctx.strokeStyle = stroke.color;
+                        canvasApp.ctx.lineWidth = 5;
+                        canvasApp.ctx.lineCap = 'round';
+                        canvasApp.ctx.lineJoin = 'round';
+
+                        const first = stroke.points[0];
+                        canvasApp.ctx.moveTo(first.x * canvasApp.canvas.width, first.y * canvasApp.canvas.height);
+                        
+                        for(let i=1; i<stroke.points.length; i++) {
+                            const p = stroke.points[i];
+                            canvasApp.ctx.lineTo(p.x * canvasApp.canvas.width, p.y * canvasApp.canvas.height);
+                        }
+                        canvasApp.ctx.stroke();
+                    });
+                }, (err) => console.error("Listen Strokes Error", err));
+            },
+
+            clearCanvas: async (isManual = false) => {
+                if(isManual) {
+                    if (!canvasApp.roomId) return;
+                    try {
+                        const strokesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', `rooms/${canvasApp.roomId}/strokes`);
+                        await addDoc(strokesRef, { action: 'clear', timestamp: Date.now() });
+                        ui.showToast('畫布已清空！', 'success');
+                    } catch(e) {
+                        console.error(e);
+                        ui.showToast('清空失敗，請檢查網路連線', 'error');
+                    }
+                }
+            }
+        };
+        
+        window.canvasApp = canvasApp;
+
+        // ==========================================
+        // 初始化啟動
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 新增：全域監聽使用者互動，以重置閒置計時器
+            ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, () => {
+                    if (app && app.currentRoomId) app.startIdleTimer();
+                });
+            });
+
+            const success = await initFirebase();
+            if(!success) {
+                ui.switchView('view-lobby');
+            }
+        });
+
+    </script>
+</body>
+</html>

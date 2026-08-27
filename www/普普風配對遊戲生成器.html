@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>普普風配對遊戲生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Shrikhand&display=swap');
+        .pop-pink { background-color: #FF69B4; }
+        .pop-yellow { background-color: #FFD700; }
+        .pop-blue { background-color: #00BFFF; }
+        .pop-green { background-color: #32CD32; }
+        .pop-red { background-color: #FF4500; }
+        .pop-purple { background-color: #9370DB; }
+        h1, h2, .font-pop { font-family: 'Shrikhand', cursive; text-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        body { background-image: linear-gradient(45deg, #FF69B4, #FFD700, #00BFFF); animation: bg-anim 15s ease infinite; background-size: 300% 300%; }
+        @keyframes bg-anim { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .btn-style { transition: all 0.2s ease-in-out; box-shadow: 6px 6px 0px rgba(0,0,0,0.2); border: 3px solid black; }
+        .btn-style:hover { transform: translateY(-2px); box-shadow: 8px 8px 0px rgba(0,0,0,0.3); }
+        .panel { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 4px solid white; }
+        .question-row:hover { background-color: #FFF8DC; }
+        .question-row { transition: background-color 0.15s; }
+        #batch-textarea { font-family: monospace; font-size: 14px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-white min-h-screen flex flex-col items-center">
+    <div class="fixed top-4 right-4 text-xs font-pop text-black opacity-50">Made by 阿剛老師</div>
+
+    <!-- 標題 -->
+    <div class="text-center mb-8 mt-4">
+        <h1 class="text-4xl md:text-5xl font-pop text-black mb-2">普普風配對遊戲生成器</h1>
+        <p class="text-lg text-black/70 font-bold">建立你的專屬題庫，一鍵下載可直接遊玩的 HTML 檔案</p>
+    </div>
+
+    <div class="w-full max-w-4xl space-y-6">
+
+        <!-- 1. 設定遊戲標題 -->
+        <div class="panel">
+            <h2 class="text-2xl font-bold text-black mb-3 flex items-center gap-2">
+                <span class="pop-pink text-white px-3 py-1 rounded-lg text-lg">1</span>
+                設定遊戲標題
+            </h2>
+            <input type="text" id="game-title" value="普普風配對遊戲"
+                class="w-full p-3 rounded-lg bg-gray-100 text-gray-800 text-xl font-bold focus:outline-none focus:ring-4 focus:ring-pop-pink border-2 border-gray-300 transition-all"
+                placeholder="輸入遊戲標題，例如：成語配對小達人">
+        </div>
+
+        <!-- 2. 單筆新增題目 -->
+        <div class="panel">
+            <h2 class="text-2xl font-bold text-black mb-3 flex items-center gap-2">
+                <span class="pop-blue text-white px-3 py-1 rounded-lg text-lg">2</span>
+                單筆新增題目
+            </h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="single-word" placeholder="左欄（題目）"
+                    class="flex-1 p-3 rounded-lg bg-gray-100 text-gray-800 focus:outline-none focus:ring-4 focus:ring-pop-blue border-2 border-gray-300 transition-all">
+                <input type="text" id="single-match" placeholder="右欄（答案）"
+                    class="flex-1 p-3 rounded-lg bg-gray-100 text-gray-800 focus:outline-none focus:ring-4 focus:ring-pop-blue border-2 border-gray-300 transition-all">
+                <button id="add-single-btn"
+                    class="btn-style pop-green text-white py-3 px-6 rounded-xl text-lg font-bold whitespace-nowrap">
+                    ＋ 新增
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. 批次貼上題目 -->
+        <div class="panel">
+            <h2 class="text-2xl font-bold text-black mb-3 flex items-center gap-2">
+                <span class="pop-purple text-white px-3 py-1 rounded-lg text-lg">3</span>
+                批次貼上題目
+            </h2>
+            <p class="text-sm text-gray-600 mb-2">每行一組，用 <kbd class="bg-gray-200 px-1 rounded">Tab</kbd> 或 <kbd class="bg-gray-200 px-1 rounded">逗號</kbd> 分隔</p>
+            <textarea id="batch-textarea" rows="6"
+                class="w-full p-3 rounded-lg bg-gray-100 text-gray-800 focus:outline-none focus:ring-4 focus:ring-pop-purple border-2 border-gray-300 transition-all"
+                placeholder="亡羊補牢	比喻出了問題及時補救&#10;畫蛇添足	比喻做多餘的事&#10;掩耳盜鈴	比喻自欺欺人"></textarea>
+            <button id="batch-add-btn"
+                class="btn-style pop-purple text-white py-3 px-6 rounded-xl text-lg font-bold mt-3">
+                批次匯入
+            </button>
+
+            <!-- AI 提示詞產生器 -->
+            <div class="mt-4 p-4 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50/50">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-bold text-black flex items-center gap-2">
+                        <span class="text-xl">✨</span> 用 AI 生成題庫內容
+                    </h3>
+                    <button id="toggle-prompt-btn" class="text-sm text-blue-600 hover:text-blue-800 font-bold underline">
+                        展開
+                    </button>
+                </div>
+                <div id="prompt-panel" class="hidden space-y-3">
+                    <p class="text-sm text-gray-600">選擇用途，取得對應的 AI 提示詞。複製後貼到 ChatGPT / Gemini / Claude 等 AI 工具，將產生的結果貼回上方批次貼上區。</p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">選擇用途</label>
+                            <select id="prompt-category"
+                                class="w-full p-3 rounded-lg bg-white text-gray-800 border-2 border-gray-300 focus:outline-none focus:ring-4 focus:ring-pop-purple">
+                                <option value="idiom">成語學習</option>
+                                <option value="en-vocab">英文單字</option>
+                                <option value="cn-en">中英翻譯</option>
+                                <option value="zhuyin">注音練習</option>
+                                <option value="math">數學配對</option>
+                                <option value="science">自然科學</option>
+                                <option value="history">歷史人物與事件</option>
+                                <option value="geography">地理國名與首都</option>
+                                <option value="poetry">古詩對應作者</option>
+                                <option value="custom">自訂（自行編輯）</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">題目數量</label>
+                            <select id="prompt-count"
+                                class="w-full p-3 rounded-lg bg-white text-gray-800 border-2 border-gray-300 focus:outline-none focus:ring-4 focus:ring-pop-purple">
+                                <option value="6">6 題</option>
+                                <option value="10" selected>10 題</option>
+                                <option value="15">15 題</option>
+                                <option value="20">20 題</option>
+                                <option value="30">30 題</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-sm font-bold text-gray-700">提示詞（可自行編輯）</label>
+                            <button id="copy-prompt-btn" class="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-lg transition-all">
+                                複製提示詞
+                            </button>
+                        </div>
+                        <textarea id="prompt-preview" rows="6"
+                            class="w-full p-3 rounded-lg bg-white text-gray-800 text-sm border-2 border-gray-300 focus:outline-none focus:ring-4 focus:ring-pop-purple font-mono leading-relaxed"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 題庫列表 -->
+        <div class="panel">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-2xl font-bold text-black flex items-center gap-2">
+                    <span class="pop-yellow text-black px-3 py-1 rounded-lg text-lg">4</span>
+                    題庫內容
+                </h2>
+                <span id="question-count" class="text-sm font-bold text-gray-600">共 0 題</span>
+            </div>
+            <div id="question-list-wrapper" class="max-h-80 overflow-y-auto rounded-xl border-2 border-gray-300">
+                <table class="w-full text-left">
+                    <thead class="sticky top-0 bg-gray-200 text-gray-700 text-sm">
+                        <tr>
+                            <th class="py-2 px-3 w-12">#</th>
+                            <th class="py-2 px-3">左欄（題目）</th>
+                            <th class="py-2 px-3">右欄（答案）</th>
+                            <th class="py-2 px-3 w-16 text-center">刪除</th>
+                        </tr>
+                    </thead>
+                    <tbody id="question-list" class="text-gray-800 text-sm"></tbody>
+                </table>
+                <div id="empty-hint" class="py-8 text-center text-gray-400 font-bold">尚無題目，請新增或批次貼上</div>
+            </div>
+            <div class="flex justify-end mt-3">
+                <button id="clear-all-btn"
+                    class="btn-style pop-red text-white py-2 px-5 rounded-xl text-base font-bold">
+                    清空全部
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. 生成配對遊戲 -->
+        <div class="panel text-center">
+            <h2 class="text-2xl font-bold text-black mb-4 flex items-center justify-center gap-2">
+                <span class="pop-red text-white px-3 py-1 rounded-lg text-lg">5</span>
+                生成配對遊戲
+            </h2>
+            <p class="text-gray-600 mb-4">點擊後將直接生成 HTML 網頁並自動儲存至伺服器「html/配對遊戲」資料夾中</p>
+            <button id="download-btn"
+                class="btn-style pop-red text-white py-4 px-12 rounded-2xl text-2xl font-bold">
+                🚀 直接生成並儲存遊戲
+            </button>
+            <div id="save-status-box" class="mt-4 hidden p-4 rounded-xl border-2 border-green-400 bg-green-50 text-green-800">
+                <div id="save-status-msg" class="font-bold text-lg mb-2"></div>
+                <div class="flex justify-center gap-3">
+                    <a id="open-game-link" href="#" target="_blank" class="btn-style pop-blue text-white py-2 px-6 rounded-xl font-bold inline-block">
+                        🎮 立即開啟遊戲
+                    </a>
+                    <button id="backup-download-btn" class="btn-style pop-yellow text-black py-2 px-6 rounded-xl font-bold inline-block">
+                        💾 下載備份檔
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="h-12"></div>
+
+    <script>
+    (() => {
+        // ---- State ----
+        let questions = []; // [{word, match}]
+        let lastGeneratedHtml = '';
+        let lastGeneratedTitle = '';
+
+        // ---- DOM ----
+        const gameTitle = document.getElementById('game-title');
+        const singleWord = document.getElementById('single-word');
+        const singleMatch = document.getElementById('single-match');
+        const addSingleBtn = document.getElementById('add-single-btn');
+        const batchTextarea = document.getElementById('batch-textarea');
+        const batchAddBtn = document.getElementById('batch-add-btn');
+        const questionList = document.getElementById('question-list');
+        const questionCount = document.getElementById('question-count');
+        const emptyHint = document.getElementById('empty-hint');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const saveStatusBox = document.getElementById('save-status-box');
+        const saveStatusMsg = document.getElementById('save-status-msg');
+        const openGameLink = document.getElementById('open-game-link');
+        const backupDownloadBtn = document.getElementById('backup-download-btn');
+        const togglePromptBtn = document.getElementById('toggle-prompt-btn');
+        const promptPanel = document.getElementById('prompt-panel');
+        const promptCategory = document.getElementById('prompt-category');
+        const promptCount = document.getElementById('prompt-count');
+        const promptPreview = document.getElementById('prompt-preview');
+        const copyPromptBtn = document.getElementById('copy-prompt-btn');
+
+        // ---- Prompt Templates ----
+        const promptTemplates = {
+            idiom: {
+                label: '成語學習',
+                template: (n) => `請幫我生成 ${n} 組「成語與解釋」的配對題庫，用於記憶配對遊戲。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：四字成語
+- 右欄：該成語的白話文解釋（15~25字）
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+亡羊補牢	比喻出了問題及時補救，仍能防止繼續受損。
+畫蛇添足	比喻做多餘的事，反而壞了原本的效果。
+掩耳盜鈴	比喻自欺欺人。
+
+請直接輸出配對內容：`
+            },
+            'en-vocab': {
+                label: '英文單字',
+                template: (n) => `請幫我生成 ${n} 組「英文單字與中文翻譯」的配對題庫，用於記憶配對遊戲。選擇日常生活常用詞彙。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：英文單字
+- 對應的中文翻譯
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+apple	蘋果
+book	書
+happy	快樂的
+
+請直接輸出配對內容：`
+            },
+            'cn-en': {
+                label: '中英翻譯',
+                template: (n) => `請幫我生成 ${n} 組「中文詞語與英文翻譯」的配對題庫，用於記憶配對遊戲。選擇國中程度常用詞彙。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：中文詞語
+- 右欄：對應英文單字或片語
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+學校	school
+老師	teacher
+功課	homework
+
+請直接輸出配對內容：`
+            },
+            zhuyin: {
+                label: '注音練習',
+                template: (n) => `請幫我生成 ${n} 組「注音符號與對應國字」的配對題庫，用於注音符號學習配對遊戲。適合小學低年級學生。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：注音符號（如 ㄅ、ㄆ、ㄇ）
+- 右欄：對應的國字（如 八、拍、猫）
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+ㄅ	八
+ㄆ	拍
+ㄇ	猫
+
+請直接輸出配對內容：`
+            },
+            math: {
+                label: '數學配對',
+                template: (n) => `請幫我生成 ${n} 組「數學算式與答案」的配對題庫，用於數學練習配對遊戲。混合加減乘除，難度適合小學中高年級。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：數學算式（如 3+5、12-7、4×6、24÷3）
+- 右欄：答案（純數字）
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+3+5	8
+12-7	5
+4×6	24
+24÷3	8
+
+請直接輸出配對內容：`
+            },
+            science: {
+                label: '自然科學',
+                template: (n) => `請幫我生成 ${n} 組「科學概念與說明」的配對題庫，用於自然科學學習配對遊戲。涵蓋國小自然科學常見主題。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：科學名詞或概念（如：光合作用、水的三態）
+- 右欄：簡要解釋（15~25字）
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+光合作用	植物利用陽光將二氧化碳和水轉化為養分
+水的三態	水可分為固態、液態、氣態三種狀態
+地心引力	地球會吸引物體向中心靠攏的力
+
+請直接輸出配對內容：`
+            },
+            history: {
+                label: '歷史人物與事件',
+                template: (n) => `請幫我生成 ${n} 組「歷史人物與相關事件」的配對題庫，用於歷史學習配對遊戲。選擇台灣或中國歷史重要人物。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：歷史人物名稱
+- 右欄：該人物最著名的事蹟（15~25字）
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+鄭成功	驅逐荷蘭人，收復台灣
+孔子	創辦私學，提倡有教無類
+諸葛亮	輔佐劉備，草船借箭
+
+請直接輸出配對內容：`
+            },
+            geography: {
+                label: '地理國名與首都',
+                template: (n) => `請幫我生成 ${n} 組「國家與首都」的配對題庫，用於地理學習配對遊戲。選擇各洲代表性國家。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：國家名稱
+- 右欄：該國首都名稱
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+日本	東京
+法國	巴黎
+美國	華盛頓
+
+請直接輸出配對內容：`
+            },
+            poetry: {
+                label: '古詩對應作者',
+                template: (n) => `請幫我生成 ${n} 組「古詩詩句與作者」的配對題庫，用於古詩學習配對遊戲。選擇國語文課本常見古詩。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：古詩名稱或首句（如：靜夜思、春曉）
+- 右欄：作者姓名
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+範例格式：
+靜夜思	李白
+春曉	孟浩然
+憫農詩	李紳
+
+請直接輸出配對內容：`
+            },
+            custom: {
+                label: '自訂',
+                template: (n) => `請幫我生成 ${n} 組配對題庫，用於記憶配對遊戲。
+
+格式要求（嚴格遵守）：
+- 每行一組，中間用 Tab 鍵分隔
+- 左欄：題目
+- 右欄：對應答案
+- 不要加任何標題、編號、說明文字
+- 不要加多餘的空行
+
+請直接輸出配對內容：`
+            }
+        };
+
+        function updatePromptPreview() {
+            const cat = promptCategory.value;
+            const count = parseInt(promptCount.value);
+            const tpl = promptTemplates[cat];
+            promptPreview.value = tpl.template(count);
+        }
+
+        togglePromptBtn.addEventListener('click', () => {
+            const hidden = promptPanel.classList.contains('hidden');
+            promptPanel.classList.toggle('hidden');
+            togglePromptBtn.textContent = hidden ? '收合' : '展開';
+            if (hidden) updatePromptPreview();
+        });
+
+        promptCategory.addEventListener('change', updatePromptPreview);
+        promptCount.addEventListener('change', updatePromptPreview);
+
+        copyPromptBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(promptPreview.value).then(() => {
+                const orig = copyPromptBtn.textContent;
+                copyPromptBtn.textContent = '已複製！';
+                copyPromptBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyPromptBtn.classList.add('bg-blue-600');
+                setTimeout(() => {
+                    copyPromptBtn.textContent = orig;
+                    copyPromptBtn.classList.remove('bg-blue-600');
+                    copyPromptBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 1500);
+            });
+        });
+        function render() {
+            questionList.innerHTML = '';
+            questionCount.textContent = `共 ${questions.length} 題`;
+            emptyHint.style.display = questions.length === 0 ? 'block' : 'none';
+            questions.forEach((q, i) => {
+                const tr = document.createElement('tr');
+                tr.className = 'question-row border-b border-gray-200';
+                tr.innerHTML = `
+                    <td class="py-2 px-3 font-bold text-gray-400">${i + 1}</td>
+                    <td class="py-2 px-3 font-bold">${escapeHtml(q.word)}</td>
+                    <td class="py-2 px-3 text-gray-600">${escapeHtml(q.match)}</td>
+                    <td class="py-2 px-3 text-center">
+                        <button class="del-btn text-red-500 hover:text-red-700 font-bold text-lg" data-idx="${i}" title="刪除">✕</button>
+                    </td>`;
+                questionList.appendChild(tr);
+            });
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ---- Add single ----
+        function addSingle() {
+            const w = singleWord.value.trim();
+            const m = singleMatch.value.trim();
+            if (!w || !m) return;
+            questions.push({ word: w, match: m });
+            singleWord.value = '';
+            singleMatch.value = '';
+            singleWord.focus();
+            render();
+        }
+
+        addSingleBtn.addEventListener('click', addSingle);
+        singleMatch.addEventListener('keydown', e => { if (e.key === 'Enter') addSingle(); });
+        singleWord.addEventListener('keydown', e => { if (e.key === 'Enter') singleMatch.focus(); });
+
+        // ---- Batch add ----
+        batchAddBtn.addEventListener('click', () => {
+            const text = batchTextarea.value.trim();
+            if (!text) return;
+            const lines = text.split('\n');
+            let added = 0;
+            lines.forEach(line => {
+                const parts = line.split(/[\t,]/).map(s => s.trim()).filter(s => s.length > 0);
+                if (parts.length === 2) {
+                    questions.push({ word: parts[0], match: parts[1] });
+                    added++;
+                }
+            });
+            batchTextarea.value = '';
+            render();
+            if (added > 0) alert(`成功匯入 ${added} 題`);
+        });
+
+        // ---- Delete one ----
+        questionList.addEventListener('click', e => {
+            if (e.target.classList.contains('del-btn')) {
+                questions.splice(parseInt(e.target.dataset.idx), 1);
+                render();
+            }
+        });
+
+        // ---- Clear all ----
+        clearAllBtn.addEventListener('click', () => {
+            if (questions.length === 0) return;
+            if (!confirm('確定要清空所有題目嗎？')) return;
+            questions = [];
+            render();
+        });
+
+        // ================================================================
+        // Generate & Save: direct save to html/配對遊戲
+        // ================================================================
+        downloadBtn.addEventListener('click', async () => {
+            if (questions.length === 0) {
+                alert('請先新增至少一組題目！');
+                return;
+            }
+            const title = gameTitle.value.trim() || '普普風配對遊戲';
+            const textareaContent = questions.map(q => `${q.word}\t${q.match}`).join('\n');
+            const html = buildGameHtml(title, textareaContent);
+
+            lastGeneratedHtml = html;
+            lastGeneratedTitle = title;
+
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ 正在生成並儲存中...';
+
+            try {
+                const response = await fetch('/saveQuiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        category: '配對遊戲',
+                        html: html
+                    })
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    if (res.status === 'success') {
+                        saveStatusMsg.innerHTML = `🎉 <strong>${escapeHtml(res.filename)}</strong> 已成功生成並儲存至 <code>html/配對遊戲/</code>！`;
+                        openGameLink.href = res.url || `html/配對遊戲/${encodeURIComponent(res.filename)}`;
+                        saveStatusBox.classList.remove('hidden');
+                        saveStatusBox.scrollIntoView({ behavior: 'smooth' });
+                        alert(`🎉 遊戲已成功生成並儲存至「html/配對遊戲/${res.filename}」！`);
+                    } else {
+                        throw new Error(res.message || '儲存失敗');
+                    }
+                } else {
+                    throw new Error(`伺服器回應錯誤 (${response.status})`);
+                }
+            } catch (err) {
+                console.warn('後端儲存失敗，改為本地下載：', err);
+                alert(`⚠️ 自動儲存至伺服器失敗（${err.message}），將改為直接下載檔案！`);
+                downloadFile(title + '.html', html, 'text/html;charset=utf-8');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = '🚀 直接生成並儲存遊戲';
+            }
+        });
+
+        backupDownloadBtn.addEventListener('click', () => {
+            if (!lastGeneratedHtml) {
+                alert('尚未生成遊戲！');
+                return;
+            }
+            downloadFile((lastGeneratedTitle || '普普風配對遊戲') + '.html', lastGeneratedHtml, 'text/html;charset=utf-8');
+        });
+
+        function downloadFile(filename, content, mimeType) {
+            const blob = new Blob(['\ufeff' + content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ---- Game HTML template ----
+        function buildGameHtml(title, textareaContent) {
+            return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeAttr(title)}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Shrikhand&display=swap');
+        .pop-pink { background-color: #FF69B4; }
+        .pop-yellow { background-color: #FFD700; }
+        .pop-blue { background-color: #00BFFF; }
+        .pop-green { background-color: #32CD32; }
+        .pop-red { background-color: #FF4500; }
+        .pop-purple { background-color: #9370DB; }
+        h1, h2, .font-pop { font-family: 'Shrikhand', cursive; text-shadow: 4px 4px 0px rgba(0,0,0,0.2); }
+        @font-face { font-family: 'ㄅ注音芫荽 Regular'; src: url('https://kentxchang-goedutw.github.io/web/BpmfIansui-Regular_0.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        .use-zhuyin { font-family: 'ㄅ注音芫荽 Regular', sans-serif !important; }
+        body { background-image: linear-gradient(45deg, #FF69B4, #FFD700, #00BFFF); animation: background-animate 15s ease infinite; background-size: 300% 300%; }
+        @keyframes background-animate { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; cursor: pointer; box-shadow: 8px 8px 0px rgba(0,0,0,0.2); border: 4px solid black; text-align: center; }
+        .card:hover { transform: translateY(-5px); box-shadow: 12px 12px 0px rgba(0,0,0,0.3); }
+        .card.matched { animation: matched-pop 0.5s forwards; }
+        @keyframes matched-pop { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:1} 100%{transform:scale(0);opacity:0} }
+        .card.unmatched { animation: unmatched-shake 0.5s; }
+        @keyframes unmatched-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+        .game-board { display: grid; gap: 16px; }
+        .btn-style { transition: all 0.2s ease-in-out; box-shadow: 6px 6px 0px rgba(0,0,0,0.2); border: 3px solid black; }
+        .btn-style:hover { transform: translateY(-2px); box-shadow: 8px 8px 0px rgba(0,0,0,0.3); }
+        .mode-button { filter: brightness(0.8); }
+        .mode-button.active { filter: brightness(1.2); }
+        #whac-a-mole-question { min-height: 8rem; }
+        .mole-hole { position: relative; background-color: #6d4c41; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 4px solid black; }
+        .mole-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; cursor: pointer; border: none; box-shadow: none; border-radius: 50%; }
+        .mole-card.popped { opacity: 1; visibility: visible; }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-preserve-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .transform-rotate-y-180 { transform: rotateY(180deg); }
+        #flashcard-back { transform: rotateY(180deg); }
+        #flashcard-container { cursor: pointer; }
+    </style>
+</head>
+<body class="p-8 text-white min-h-screen flex flex-col items-center">
+    <div class="fixed top-4 right-4 text-xs font-pop text-black opacity-70">Made by 阿剛老師</div>
+    <div id="game-options" class="w-full max-w-4xl mx-auto bg-white/20 backdrop-blur-lg rounded-3xl p-6 shadow-xl border-4 border-white mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0 lg:space-x-8">
+            <div class="flex justify-center items-center lg:justify-start lg:w-1/3">
+                <span class="text-xl font-bold text-black mr-4 whitespace-nowrap">注音字體開關:</span>
+                <label for="zhuyin-toggle" class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" value="" id="zhuyin-toggle" class="sr-only peer">
+                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pop-pink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pop-pink"></div>
+                </label>
+            </div>
+            <div class="w-full lg:w-2/3 text-center lg:text-right">
+                <h2 class="text-2xl font-bold text-black mb-4 lg:hidden">選擇遊戲模式</h2>
+                <div class="flex flex-col sm:flex-row justify-center lg:justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+                    <button class="mode-button btn-style pop-pink text-white py-3 px-6 rounded-xl text-lg font-bold" data-mode="flashcard">翻卡練習</button>
+                    <button class="mode-button btn-style pop-blue text-white py-3 px-6 rounded-xl text-lg font-bold" data-mode="random-match">隨機配對</button>
+                    <button class="mode-button btn-style pop-green text-white py-3 px-6 rounded-xl text-lg font-bold" data-mode="whac-a-mole">打地鼠</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="input-area-container" class="w-full max-w-4xl bg-white/20 backdrop-blur-lg rounded-3xl p-6 shadow-xl border-4 border-white mb-8 hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
+            <div class="w-full">
+                <h2 class="text-2xl font-bold text-black mb-2">貼上你的題目</h2>
+                <textarea id="question-input" rows="5" class="w-full p-3 rounded-lg bg-gray-100 text-gray-800 focus:outline-none focus:ring-4 focus:ring-pop-blue border-2 border-gray-300 transition-all" placeholder="每行一組，例如：&#10;蘋果,apple&#10;香蕉&#9;banana&#10;...">${escapeHtml(textareaContent)}</textarea>
+            </div>
+            <div class="flex-shrink-0">
+                <button id="generate-btn" class="btn-style pop-red text-white py-3 px-6 rounded-xl text-lg font-bold">產生題目</button>
+            </div>
+        </div>
+    </div>
+    <div id="game-container" class="w-full max-w-4xl bg-white/20 backdrop-blur-lg rounded-3xl p-6 shadow-xl border-4 border-white">
+        <div id="flashcard-area" class="hidden flex flex-col items-center">
+            <div id="card-status" class="text-xl font-bold text-black mb-4"></div>
+            <div id="flashcard-container" class="w-full max-w-md h-64 md:h-80 perspective-1000">
+                <div id="flashcard-card" class="relative w-full h-full transform-style-preserve-3d transition-transform duration-500 shadow-2xl rounded-xl border-4 border-black">
+                    <div id="flashcard-front" class="absolute w-full h-full backface-hidden flex items-center justify-center pop-yellow rounded-xl p-4 text-black text-3xl font-bold">正面內容</div>
+                    <div id="flashcard-back" class="absolute w-full h-full backface-hidden transform-rotate-y-180 flex items-center justify-center pop-blue rounded-xl p-4 text-white text-3xl font-bold">反面內容</div>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-2 sm:space-x-4 mt-6">
+                <button id="prev-card-btn" class="btn-style pop-red text-white py-2 px-4 rounded-xl text-base font-bold" disabled>上一頁</button>
+                <button id="speak-btn" class="btn-style pop-green text-white py-2 px-4 rounded-xl text-base font-bold">播音 🔊</button>
+                <button id="next-card-btn" class="btn-style pop-red text-white py-2 px-4 rounded-xl text-base font-bold">下一頁</button>
+            </div>
+        </div>
+        <div id="game-info" class="text-center mb-4 text-2xl font-bold text-black rounded-xl p-2 border-2 border-black inline-block"></div>
+        <div id="whac-a-mole-question" class="text-center text-4xl font-bold text-black mb-6 flex items-center justify-center hidden pop-yellow rounded-xl p-4 border-4 border-black"></div>
+        <div id="game-board" class="game-board justify-center"></div>
+        <div id="status-message" class="text-center text-3xl font-pop mt-4 text-black"></div>
+        <div class="flex justify-center mt-6">
+            <button id="restart-btn" class="btn-style pop-red text-white py-3 px-6 rounded-xl text-lg font-bold hidden">重新開始</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputAreaContainer = document.getElementById('input-area-container');
+            const questionInput = document.getElementById('question-input');
+            const generateBtn = document.getElementById('generate-btn');
+            const gameBoard = document.getElementById('game-board');
+            const statusMessage = document.getElementById('status-message');
+            const gameInfo = document.getElementById('game-info');
+            const restartBtn = document.getElementById('restart-btn');
+            const modeButtons = document.querySelectorAll('.mode-button');
+            const whacAMoleQuestion = document.getElementById('whac-a-mole-question');
+            const body = document.body;
+            const zhuyinToggle = document.getElementById('zhuyin-toggle');
+            const flashcardArea = document.getElementById('flashcard-area');
+            const flashcardContainer = document.getElementById('flashcard-container');
+            const flashcardCard = document.getElementById('flashcard-card');
+            const flashcardFront = document.getElementById('flashcard-front');
+            const flashcardBack = document.getElementById('flashcard-back');
+            const cardStatus = document.getElementById('card-status');
+            const prevCardBtn = document.getElementById('prev-card-btn');
+            const nextCardBtn = document.getElementById('next-card-btn');
+            const speakBtn = document.getElementById('speak-btn');
+            let words=[],shuffledWords=[],flippedCards=[],matchedCount=0,canFlip=true,gameMode='flashcard',pairedItems=[],currentQuestion=null,questionIndex=0,moleInterval=null,moleTimeout=null,activeMoles=[];
+            let cardIndex=0,isFlipped=false,startTime=null,timerInterval=null;
+            const cardColors=['pop-pink','pop-yellow','pop-blue','pop-green','pop-red','pop-purple'];
+            const gameContainer=document.getElementById('game-container');
+            function showStatus(m,bg){statusMessage.innerText=m;statusMessage.classList.remove('pop-yellow','pop-green','pop-red','pop-blue','bg-pop-yellow','bg-pop-green','bg-pop-red','bg-pop-blue');statusMessage.classList.add('text-black');if(bg){statusMessage.classList.add(bg,'px-4','py-2','rounded-xl','font-bold')}else if(m===''){statusMessage.classList.remove('px-4','py-2','rounded-xl','font-bold')}}
+            function formatTime(s){const m=Math.floor(s/60);return \`\${m.toString().padStart(2,'0')}:\${Math.floor(s%60).toString().padStart(2,'0')}\`}
+            function startTimer(){stopTimer();startTime=Date.now();gameInfo.innerText="時間: 00:00";gameInfo.classList.remove('hidden');timerInterval=setInterval(()=>{gameInfo.innerText=\`時間: \${formatTime((Date.now()-startTime)/1000)}\`},1000)}
+            function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
+            function speakText(text){if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=/[a-zA-Z]/.test(text)?'en-US':'zh-TW';const v=window.speechSynthesis.getVoices().find(v=>v.lang.includes(u.lang));if(v)u.voice=v;window.speechSynthesis.speak(u)}else{showStatus('瀏覽器不支援語音播報功能。','pop-red')}}
+            function clearTimers(){stopTimer();if(moleInterval){clearInterval(moleInterval);moleInterval=null}if(moleTimeout){clearTimeout(moleTimeout);moleTimeout=null}activeMoles.forEach(m=>{m.classList.remove('popped');m.removeEventListener('click',handleWhacAMoleClick)});activeMoles=[]}
+            function parseInput(){const t=questionInput.value.trim();if(!t){showStatus('請先輸入題目內容！','pop-blue');return[]}return t.split('\\n').reduce((acc,line)=>{const p=line.split(/[\\t,]/).map(s=>s.trim()).filter(s=>s.length>0);if(p.length===2)acc.push({id:acc.length,word:p[0],match:p[1]});return acc},[])}
+            function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+            function startGame(mode){gameMode=mode;words=parseInput();clearTimers();gameBoard.innerHTML='';gameInfo.innerText='';gameInfo.classList.add('hidden');whacAMoleQuestion.classList.add('hidden');flashcardArea.classList.add('hidden');showStatus('','');restartBtn.classList.add('hidden');if(words.length===0)return;modeButtons.forEach(b=>b.classList.remove('active'));document.querySelector(\`[data-mode="\${mode}"]\`).classList.add('active');matchedCount=0;canFlip=true;if(gameMode==='random-match')startRandomMatchGame();else if(gameMode==='whac-a-mole')startWhacAMoleGame();else if(gameMode==='flashcard')startFlashcardGame()}
+            function startFlashcardGame(){gameBoard.style.gridTemplateColumns='1fr';flashcardArea.classList.remove('hidden');gameInfo.classList.add('hidden');pairedItems=[...words];cardIndex=0;isFlipped=false;if(pairedItems.length===0){showStatus('請先輸入有效的配對題目！','pop-red');return}updateFlashcardDisplay()}
+            function updateFlashcardDisplay(){if(pairedItems.length===0)return;const c=pairedItems[cardIndex];flashcardFront.innerText=c.word;flashcardBack.innerText=c.match;isFlipped=false;flashcardCard.style.transform='rotateY(0deg)';cardStatus.innerText=\`第 \${cardIndex+1} / \${pairedItems.length} 張卡\`;prevCardBtn.disabled=cardIndex===0;nextCardBtn.disabled=cardIndex===pairedItems.length-1;flashcardFront.style.fontSize=Math.min(30,180/Math.sqrt(c.word.length))+'px';flashcardBack.style.fontSize=Math.min(30,180/Math.sqrt(c.match.length))+'px'}
+            function flipCard(){isFlipped=!isFlipped;flashcardCard.style.transform=isFlipped?'rotateY(180deg)':'rotateY(0deg)'}
+            function navigateCard(d){const n=cardIndex+d;if(n>=0&&n<pairedItems.length){cardIndex=n;updateFlashcardDisplay()}}
+            function handleSpeakClick(){const c=pairedItems[cardIndex];speakText(isFlipped?c.match:c.word)}
+            prevCardBtn.addEventListener('click',()=>navigateCard(-1));nextCardBtn.addEventListener('click',()=>navigateCard(1));flashcardContainer.addEventListener('click',flipCard);speakBtn.addEventListener('click',handleSpeakClick);
+            function startRandomMatchGame(){whacAMoleQuestion.classList.add('hidden');gameBoard.innerHTML='';const all=[];words.forEach(p=>{all.push({id:p.id,word:p.word});all.push({id:p.id,word:p.match})});shuffledWords=shuffle(all);shuffledWords.forEach((item,index)=>{const card=document.createElement('div');card.classList.add('card','flex','items-center','justify-center','text-center','p-4','rounded-lg','text-black','text-base','font-bold','select-none','h-32','sm:h-40');card.dataset.index=index;card.dataset.id=item.id;card.innerText=item.word;card.style.fontSize=Math.min(20,160/Math.sqrt(item.word.length))+'px';card.classList.add(cardColors[Math.floor(Math.random()*cardColors.length)]);card.addEventListener('click',handleRandomMatchClick);gameBoard.appendChild(card)});gameBoard.style.gridTemplateColumns='repeat(4,minmax(100px,1fr))';startTimer()}
+            function handleRandomMatchClick(){if(!canFlip)return;const c=this;if(flippedCards.includes(c)||c.classList.contains('matched'))return;flippedCards.push(c);c.classList.remove(...cardColors);c.classList.add('pop-yellow','text-black');c.removeEventListener('click',handleRandomMatchClick);if(flippedCards.length===2){canFlip=false;const[a,b]=flippedCards;if(a.dataset.id===b.dataset.id){setTimeout(()=>{a.classList.add('matched');b.classList.add('matched');flippedCards=[];canFlip=true;matchedCount+=2;if(matchedCount===shuffledWords.length)endGame(true)},500)}else{setTimeout(()=>{a.classList.remove('pop-yellow','text-black');b.classList.remove('pop-yellow','text-black');a.classList.add(cardColors[Math.floor(Math.random()*cardColors.length)]);b.classList.add(cardColors[Math.floor(Math.random()*cardColors.length)]);a.addEventListener('click',handleRandomMatchClick);b.addEventListener('click',handleRandomMatchClick);flippedCards=[];canFlip=true},1000)}}}
+            function startWhacAMoleGame(){whacAMoleQuestion.classList.remove('hidden');gameBoard.innerHTML='';pairedItems=shuffle([...words]);questionIndex=0;if(pairedItems.length===0){endGame(false);return}gameBoard.style.gridTemplateColumns='repeat(3,1fr)';for(let i=0;i<9;i++){const h=document.createElement('div');h.classList.add('mole-hole','h-32','w-32','sm:h-40','sm:w-40');gameBoard.appendChild(h)}startTimer();updateWhacAMoleGame()}
+            function updateWhacAMoleGame(){if(questionIndex>=pairedItems.length){endGame(true);return}canFlip=true;showStatus('','');currentQuestion=pairedItems[questionIndex];whacAMoleQuestion.innerText=currentQuestion.word;startMoleLoop()}
+            function startMoleLoop(){clearTimers();const holes=document.querySelectorAll('.mole-hole');const interval=Math.random()*1000+1000;moleInterval=setInterval(()=>{activeMoles.forEach(m=>m.classList.remove('popped'));activeMoles=[];const all=words.map(i=>({id:i.id,word:i.match}));const wrong=all.filter(i=>i.id!==currentQuestion.id);const sw=shuffle(wrong);const ans=shuffle([{id:currentQuestion.id,word:currentQuestion.match},sw.length>0?sw[Math.floor(Math.random()*sw.length)]:{id:-1,word:'錯誤答案'}]);const hi=[];while(hi.length<2){const ri=Math.floor(Math.random()*holes.length);if(!hi.includes(ri))hi.push(ri)}hi.forEach((idx,i)=>{const h=holes[idx];const mc=document.createElement('div');mc.classList.add('card','mole-card','flex','items-center','justify-center','p-4','font-bold','select-none','pop-purple');mc.dataset.id=ans[i].id;mc.innerText=ans[i].word;mc.style.fontSize=Math.min(20,160/Math.sqrt(ans[i].word.length))+'px';const ex=h.querySelector('.mole-card');if(ex)ex.removeEventListener('click',handleWhacAMoleClick);h.innerHTML='';h.appendChild(mc);setTimeout(()=>mc.classList.add('popped'),10);activeMoles.push(mc);mc.addEventListener('click',handleWhacAMoleClick)});moleTimeout=setTimeout(()=>{activeMoles.forEach(m=>m.classList.remove('popped'));activeMoles=[]},2000)},interval)}
+            function handleWhacAMoleClick(){if(!canFlip||activeMoles.length===0)return;const c=this;if(parseInt(c.dataset.id)===currentQuestion.id){canFlip=false;clearTimers();showStatus('答對了！🎉','pop-green');c.classList.remove('popped');setTimeout(()=>{questionIndex++;updateWhacAMoleGame()},1000)}else{showStatus('打錯了！❌','pop-red');c.classList.add('unmatched');setTimeout(()=>{c.classList.remove('unmatched');showStatus('','')},500)}}
+            function endGame(isWin){stopTimer();canFlip=false;let msg='';if(isWin){const t=formatTime((Date.now()-startTime)/1000);msg=\`恭喜你，全部配對成功！🎉 總耗時: \${t}\`;whacAMoleQuestion.classList.add('hidden');gameBoard.innerHTML='';showStatus(msg,'pop-green');gameInfo.innerText=\`最終時間: \${t}\`}else{whacAMoleQuestion.classList.add('hidden');msg='遊戲結束。';showStatus(msg,'pop-red');gameInfo.innerText='';gameInfo.classList.add('hidden')}restartBtn.classList.remove('hidden')}
+            zhuyinToggle.addEventListener('change',e=>{e.target.checked?body.classList.add('use-zhuyin'):body.classList.remove('use-zhuyin')});
+            generateBtn.addEventListener('click',()=>{gameContainer.style.display='block';startGame(gameMode)});
+            restartBtn.addEventListener('click',()=>startGame(gameMode));
+            modeButtons.forEach(b=>b.addEventListener('click',()=>startGame(b.dataset.mode)));
+            modeButtons.forEach(b=>b.classList.remove('active'));
+            document.querySelector('[data-mode="flashcard"]').classList.add('active');
+            gameMode='flashcard';
+            if(questionInput.value.trim().length>0){gameContainer.style.display='block';setTimeout(()=>startGame('flashcard'),100)}else{showStatus('請先輸入題目內容！','pop-blue')}
+        });
+    <\/script>
+</body>
+</html>`;
+        }
+
+        function escapeAttr(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -492,7 +492,7 @@ SCREENSHOT_INJECTION_HTML = """
 <div id="sc-toast"></div>
 
 <!-- 浮動截圖按鈕 -->
-<button id="floatingScreenshotBtn" title="截取當前畫面並繳交作業">
+<button id="floatingScreenshotBtn" title="截取畫面並繳交作業">
   <span>📸</span> 截圖繳交作業
 </button>
 
@@ -506,6 +506,15 @@ SCREENSHOT_INJECTION_HTML = """
     <!-- 截圖預覽 -->
     <div class="sc-preview-box">
       <img id="scPreviewImg" class="sc-preview-img" alt="截圖預覽">
+    </div>
+
+    <!-- 截圖方式選單 -->
+    <div class="sc-form-group">
+      <label class="sc-form-label">截圖範圍模式：</label>
+      <select id="scModeSelect" class="sc-form-control">
+        <option value="viewport" selected>👀 當下畫面看到的部份截圖（預設）</option>
+        <option value="full">📜 全網頁完整頁面長截圖</option>
+      </select>
     </div>
 
     <div class="sc-form-group">
@@ -575,18 +584,44 @@ SCREENSHOT_INJECTION_HTML = """
   async function takeScreenshot() {
     const btn = document.getElementById('floatingScreenshotBtn');
     const modal = document.getElementById('screenshotModalOverlay');
+    const modeSelect = document.getElementById('scModeSelect');
+    const mode = modeSelect ? modeSelect.value : 'viewport';
+
     btn.style.display = 'none';
     modal.style.display = 'none';
 
     await loadQuestions();
 
     try {
-      const canvas = await html2canvas(document.documentElement, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        scale: window.devicePixelRatio || 1
-      });
+      let canvas;
+      if (mode === 'viewport') {
+        // 當下畫面看到的部份截圖 (可見視區 Viewport)
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const width = window.innerWidth || document.documentElement.clientWidth;
+        const height = window.innerHeight || document.documentElement.clientHeight;
+
+        canvas = await html2canvas(document.documentElement, {
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          x: scrollX,
+          y: scrollY,
+          width: width,
+          height: height,
+          windowWidth: width,
+          windowHeight: height,
+          scale: window.devicePixelRatio || 1
+        });
+      } else {
+        // 全網頁完整頁面長截圖
+        canvas = await html2canvas(document.documentElement, {
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          scale: window.devicePixelRatio || 1
+        });
+      }
 
       btn.style.display = 'flex';
       canvas.toBlob(function(blob) {
@@ -603,6 +638,12 @@ SCREENSHOT_INJECTION_HTML = """
 
   document.getElementById('floatingScreenshotBtn').addEventListener('click', takeScreenshot);
   document.getElementById('scBtnRetake').addEventListener('click', takeScreenshot);
+  
+  const scModeSelect = document.getElementById('scModeSelect');
+  if (scModeSelect) {
+    scModeSelect.addEventListener('change', takeScreenshot);
+  }
+
   document.getElementById('scBtnCancel').addEventListener('click', function() {
     document.getElementById('screenshotModalOverlay').style.display = 'none';
   });
@@ -1174,6 +1215,50 @@ class MyHandler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_response(500)
                 self.send_header("Content-type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}, ensure_ascii=False).encode("utf-8"))
+        elif self.path == "/saveQuiz":
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length).decode('utf-8')
+                json_data = json.loads(post_data) if post_data else {}
+                title = json_data.get("title", "未命名測驗").strip()
+                html_content = json_data.get("html", "").strip()
+                category = json_data.get("category", "").strip()
+
+                if not html_content:
+                    raise ValueError("HTML 內容不可為空")
+
+                # 清理檔案名稱與目錄名稱中的不合法字元
+                safe_title = "".join(c for c in title if c not in r'\/:*?"<>|').strip()
+                if not safe_title:
+                    safe_title = "地圖測驗" if category else "閱讀測驗"
+                filename = f"{safe_title}.html"
+
+                folder_name = "".join(c for c in category if c not in r'\/:*?"<>|').strip() if category else "閱讀測驗"
+                quiz_dir = os.path.join(get_base_path(), "www", "html", folder_name)
+                if not os.path.exists(quiz_dir):
+                    os.makedirs(quiz_dir, exist_ok=True)
+
+                quiz_file_path = os.path.join(quiz_dir, filename)
+                with open(quiz_file_path, "w", encoding="utf-8") as f:
+                    f.write(html_content)
+
+                rel_url = f"html/{folder_name}/{filename}"
+                self.send_response(200)
+                self.send_header("Content-type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "status": "success",
+                    "message": f"測驗網頁已成功直接生成並儲存至『html/{folder_name}/{filename}』！",
+                    "filename": filename,
+                    "url": rel_url
+                }, ensure_ascii=False).encode("utf-8"))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"status": "error", "message": str(e)}, ensure_ascii=False).encode("utf-8"))
         else:

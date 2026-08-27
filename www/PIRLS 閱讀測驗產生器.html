@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIRLS 閱讀測驗產生器</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md py-6 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-white text-emerald-600 p-2.5 rounded-xl shadow-inner text-2xl">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-wide">PIRLS 閱讀測驗產生器</h1>
+          <p class="text-xs text-emerald-100 mt-1">結合 AI 智慧命題，自動產出含 PIRLS 四大認知層次的互動閱讀測驗網頁，並自動發布儲存於區網目錄</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleApiKeyModal()" class="bg-emerald-500/30 hover:bg-emerald-500/50 px-3.5 py-2 rounded-xl text-xs border border-emerald-400/30 flex items-center gap-2 transition-all">
+          <i class="fa-solid fa-key"></i>
+          <span id="api-key-status-text">設定 Gemini API Key</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl w-full mx-auto p-4 md:p-6 flex-grow">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Generate Controls (Left Panel) -->
+      <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6 flex flex-col gap-5">
+        <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold flex items-center gap-2 text-slate-700">
+              <i class="fa-solid fa-sliders text-emerald-500"></i>
+              測驗命題與設計
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">請選擇命題模式、輸入內容並設定偏好。</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+            <i class="fa-solid fa-folder-tree mr-1"></i>自動存入 html/閱讀測驗
+          </span>
+        </div>
+
+        <!-- Mode Selection Container -->
+        <div class="flex flex-col gap-1.5">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">選擇命題模式</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="mode-topic" type="button" onclick="setMode('topic')" class="py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-1">
+              <i class="fa-solid fa-lightbulb"></i> 指定主題 AI
+            </button>
+            <button id="mode-text" type="button" onclick="setMode('text')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-medium text-xs md:text-sm transition-all flex items-center justify-center gap-1 hover:border-slate-300">
+              <i class="fa-solid fa-file-lines"></i> 自訂文章 AI
+            </button>
+            <button id="mode-manual" type="button" onclick="setMode('manual')" class="py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-medium text-xs md:text-sm transition-all flex items-center justify-center gap-1 hover:border-slate-300">
+              <i class="fa-solid fa-keyboard"></i> 手動命題
+            </button>
+          </div>
+        </div>
+
+        <!-- Word Count Target (Conditional for AI Topic Mode) -->
+        <div id="word-count-wrapper" class="flex flex-col gap-1.5 bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-semibold text-slate-600">AI 文章預期生成字數</span>
+            <span id="word-count-display" class="text-sm font-bold text-emerald-600">約 600 字</span>
+          </div>
+          <input type="range" id="input-word-count" min="300" max="1500" step="100" value="600" oninput="updateWordCountDisplay(this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600">
+          <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+            <span>短篇 (300字)</span>
+            <span>中篇 (600字)</span>
+            <span>長篇 (1000字)</span>
+            <span>深度分析 (1500字)</span>
+          </div>
+        </div>
+
+        <!-- Title Input (Conditional for Manual Mode) -->
+        <div id="manual-title-wrapper" class="hidden flex flex-col gap-1.5">
+          <label for="input-quiz-title" class="text-sm font-semibold text-slate-600">
+            測驗文章標題 <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="input-quiz-title" placeholder="例如：三年級國語閱讀測驗：神奇的昆蟲世界" 
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm">
+        </div>
+
+        <!-- Manual Content Type Switcher (Conditional for Manual Mode) -->
+        <div id="manual-content-type-wrapper" class="hidden flex flex-col gap-1.5">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">選擇文本來源</span>
+          <div class="grid grid-cols-2 gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+            <button id="type-manual-text" type="button" onclick="setManualType('text')" class="py-2 px-3 rounded-lg font-bold text-xs transition-all bg-white text-slate-700 shadow-sm">
+              貼上純文字
+            </button>
+            <button id="type-manual-image" type="button" onclick="setManualType('image')" class="py-2 px-3 rounded-lg font-medium text-xs transition-all text-slate-500 hover:text-slate-700">
+              上傳圖片/照片
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Text/Topic -->
+        <div id="text-input-wrapper" class="flex flex-col gap-1.5">
+          <label id="content-label" for="input-content" class="text-sm font-semibold text-slate-600">
+            <span>文章主題名稱 <span class="text-red-500">*</span></span>
+          </label>
+          <textarea id="input-content" rows="6" 
+            placeholder="例如輸入主題：『台灣黑熊的生態保育與生存危機』" 
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm resize-none"></textarea>
+        </div>
+
+        <!-- Image Upload Block (Conditional for Manual Mode + Image Type) -->
+        <div id="image-upload-wrapper" class="hidden flex flex-col gap-1.5">
+          <span class="text-sm font-semibold text-slate-600">上傳文本圖片 <span class="text-red-500">*</span></span>
+          <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-emerald-500 transition-colors bg-slate-50 relative cursor-pointer" onclick="triggerImageFileSelect()">
+            <input type="file" id="image-file-input" accept="image/*" class="hidden" onchange="processSelectedImage(this)">
+            <div id="upload-prompt" class="flex flex-col items-center gap-2">
+              <i class="fa-regular fa-image text-3xl text-slate-400"></i>
+              <span class="text-xs text-slate-500 font-medium">點擊此處或拖曳圖片檔案至此上傳</span>
+              <span class="text-[10px] text-slate-400">(支援 JPG, PNG, GIF 等格式，將自動壓縮轉成內建 Base64)</span>
+            </div>
+            <div id="image-preview-container" class="hidden flex flex-col items-center gap-2">
+              <img id="image-preview" src="" class="max-h-[160px] rounded-lg shadow-sm border border-slate-200">
+              <span class="text-[10px] text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> 圖片載入完成，已封裝 Base64</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Questions Input Block (Conditional for Manual Mode) -->
+        <div id="manual-questions-wrapper" class="hidden flex flex-col gap-1.5">
+          <label for="input-questions" class="text-sm font-semibold text-slate-600 flex justify-between items-center">
+            <span>手動貼上題庫資料 <span class="text-red-500">*</span></span>
+            <span class="text-[10px] text-slate-400">題目, 答案(1-4或a-d), 選項A, 選項B, 選項C, 選項D, 層次1-4(選填)</span>
+          </label>
+          <textarea id="input-questions" rows="6" 
+            placeholder="範例格式（每行一題，用逗號或Tab分隔）：&#10;IU 小時候寄住親戚家時最常練習的是什麼？, 2, 舞蹈, 唱歌, 繪畫, 寫作, 1&#10;讓 IU 一夕爆紅的重要歌曲是哪一首？, c, Celebrity, 迷兒, 好日子, Palette, 1" 
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-mono"></textarea>
+        </div>
+
+        <!-- Gemini AI API Key & Model Settings Card -->
+        <div class="bg-emerald-50/60 border border-emerald-200/80 p-4 rounded-xl flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-key text-emerald-600"></i>
+              Gemini API 設定 (AI 命題必備)
+            </h3>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-emerald-700 hover:text-emerald-900 underline font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> 免費申請 API Key
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div class="md:col-span-8 relative">
+              <input type="password" id="custom-api-key-input-inline" 
+                placeholder="請在此貼上您的 Gemini API Key (AIzaSy...)" 
+                class="w-full pl-3.5 pr-20 py-2 border border-slate-200 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-mono">
+              <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs px-1 py-0.5">
+                <i id="btn-toggle-eye" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div class="md:col-span-4 flex gap-2">
+              <select id="select-gemini-model" class="w-full py-2 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash (推薦)</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro (深度命題)</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between text-[11px] pt-0.5">
+            <span id="api-key-status-hint" class="text-slate-500 flex items-center gap-1">
+              <i class="fa-solid fa-circle-exclamation text-amber-500"></i> 請輸入 API Key 即可啟動 AI 自動命題
+            </span>
+            <button type="button" onclick="testApiKeyConnection()" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-md shadow-2xs transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-vial text-emerald-600"></i> 測試連線
+            </button>
+          </div>
+        </div>
+
+        <!-- Advanced Options -->
+        <div class="bg-slate-50 p-4 rounded-xl flex flex-col gap-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">測驗偏好設定</h3>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="pref-zhuyin" class="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500" checked>
+            <label for="pref-zhuyin" class="text-sm text-slate-600 cursor-pointer select-none">
+              產生的測驗網頁預設開啟「注音字型」
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button id="generate-btn" onclick="startGeneration()" 
+          class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span id="btn-action-text">一鍵生成並自動儲存閱讀測驗</span>
+        </button>
+
+        <!-- Logging/Status -->
+        <div id="status-panel" class="hidden border border-slate-100 bg-slate-50 rounded-xl p-4 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">生成狀態監控</span>
+            <span id="spinner" class="animate-spin text-emerald-600 text-sm"><i class="fa-solid fa-circle-notch"></i></span>
+          </div>
+          <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 5%"></div>
+          </div>
+          <p id="status-text" class="text-xs text-slate-500 italic">正在初始化任務...</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Features & Quick Guide -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        
+        <!-- Auto-save Storage Status Card -->
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-slate-200 rounded-2xl p-5 md:p-6 border border-slate-700 flex flex-col gap-3 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-sm">自動發布與儲存目錄</h3>
+              <p class="text-xs text-slate-400 mt-0.5">點擊生成後，系統將自動以「文章標題.html」命名並存入：</p>
+            </div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400 flex items-center gap-2">
+            <i class="fa-regular fa-file-code"></i>
+            <span>www/html/閱讀測驗/【標題】.html</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            儲存完成後，學生可直接從首頁的檔案瀏覽器或指定連結直接開啟作答！
+          </p>
+        </div>
+
+        <!-- AI Prompt Copier Box (Shows on manual mode) -->
+        <div id="manual-prompt-helper" class="hidden bg-slate-900 text-slate-300 rounded-2xl p-5 md:p-6 border border-slate-800 flex flex-col justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-comments-dollar text-yellow-400"></i>
+              AI 題庫生成提示詞複製器
+            </h3>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              將此提示詞複製到外部 AI 工具（如 Gemini），它會依據您的文章輸出符合格式的 10 題 PIRLS 認知層次題庫，您可以直接複製貼回左側！
+            </p>
+          </div>
+          
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] font-mono text-emerald-400 max-h-[140px] overflow-y-auto leading-relaxed">
+            請根據我提供的文章，設計 10 題符合 PIRLS 四個認知理解層次的選擇題。請嚴格遵守以下格式輸出，不需任何前言、後記、Markdown 標記或額外說明。
+            每一行代表一題，使用「半形逗號」或「Tab」分隔各個欄位。
+            格式：題目,正確答案編號(1-4),選項A,選項B,選項C,選項D,認知層次(1-4),詳解解析。
+          </div>
+
+          <button id="copy-prompt-btn" onclick="copyAiPromptText()"
+            class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs shadow-md shadow-sky-950/20">
+            <i class="fa-solid fa-copy"></i>
+            <span>複製 AI 題庫生成提示詞</span>
+          </button>
+        </div>
+
+        <!-- Feature Description Box (Normal state) -->
+        <div id="normal-features-box" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6">
+          <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-sparkles text-amber-500"></i>
+            PIRLS 閱讀測驗特色
+          </h3>
+          <div class="flex flex-col gap-4 text-xs text-slate-600 leading-relaxed">
+            <div class="flex gap-3">
+              <span class="text-emerald-600 text-base mt-0.5"><i class="fa-solid fa-circle-check"></i></span>
+              <div>
+                <h4 class="font-bold text-slate-700 text-sm">PIRLS 四大認知理解層次</h4>
+                <p class="text-slate-400 mt-1">涵蓋「提取訊息（3題）」、「推論訊息（3題）」、「詮釋整合（2題）」與「比較評估（2題）」四大層次，全方位診斷閱讀理解能力。</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-emerald-600 text-base mt-0.5"><i class="fa-solid fa-circle-check"></i></span>
+              <div>
+                <h4 class="font-bold text-slate-700 text-sm">注音字體切換</h4>
+                <p class="text-slate-400 mt-1">內建「ㄅ注音芫荽 Regular」字型，一鍵切換注音模式，非常適合國小低中年級閱讀練習。</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="text-emerald-600 text-base mt-0.5"><i class="fa-solid fa-circle-check"></i></span>
+              <div>
+                <h4 class="font-bold text-slate-700 text-sm">即時評分與成績圖卡</h4>
+                <p class="text-slate-400 mt-1">交卷後自動計算各層次得分率與詳解說明，並支援一鍵下載個人專屬測驗成績圖卡 (PNG)。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result View Panel (Shows after successful generation) -->
+    <div id="result-panel" class="hidden bg-emerald-50/40 border border-emerald-100 rounded-2xl p-5 md:p-6 flex flex-col gap-5 mt-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-100 pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-green-500"></i>
+            🎉 測驗網頁生成並已自動儲存成功！
+          </h2>
+          <p id="save-location-info" class="text-xs text-slate-500 mt-1">檔案已自動存至 www/html/閱讀測驗/ 中，您可以點擊預覽或直接在新分頁開啟。</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <a id="btn-open-newtab" href="#" target="_blank" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            開啟測驗網頁
+          </a>
+          <button onclick="downloadHtml()" class="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-download"></i>
+            備份下載 HTML
+          </button>
+        </div>
+      </div>
+
+      <!-- Realtime Preview iframe -->
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+          <i class="fa-solid fa-desktop"></i> 即時預覽與作答體驗測試
+        </span>
+        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-inner h-[650px] relative">
+          <iframe id="preview-iframe" class="w-full h-full border-none"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- API Key Modal -->
+  <div id="apikey-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+          <i class="fa-solid fa-key text-emerald-500"></i>
+          設定 Gemini API Key
+        </h3>
+        <button onclick="toggleApiKeyModal()" class="text-slate-400 hover:text-slate-600 text-lg">×</button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-2.5">
+        <p>請輸入您的 Google Gemini API Key 以啟用 AI 自動出題功能：</p>
+        <div class="relative">
+          <input type="password" id="custom-api-key-input" placeholder="貼上您的 Gemini API Key (AIzaSy...)" 
+            class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-mono">
+        </div>
+        <p class="text-[11px] text-slate-400">
+          * 尚未取得 API Key？可前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-emerald-600 underline font-bold">Google AI Studio</a> 免費申請。
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-2 text-xs pt-2">
+        <button onclick="toggleApiKeyModal()" class="px-4 py-2 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors">取消</button>
+        <button onclick="saveApiKey()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center gap-1.5">
+          <i class="fa-solid fa-floppy-disk"></i> 儲存設定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-800 text-slate-400 text-center py-6 px-4 border-t border-slate-700 text-xs mt-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+      <div>
+        <span class="text-slate-300">PIRLS 閱讀測驗產生器</span> &copy; 2026
+      </div>
+      <div class="flex items-center gap-4">
+        <span>Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener" class="text-emerald-400 font-bold hover:underline">阿剛老師</a></span>
+        <span>本作品採用 CC BY-NC-SA 4.0 授權</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Area -->
+  <div id="local-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl z-50 flex items-center gap-2 border border-slate-700">
+    <i class="fa-solid fa-circle-info text-emerald-400"></i>
+    <span id="toast-message">提示訊息</span>
+  </div>
+
+  <textarea id="ai-prompt-holder" class="hidden">你是一個國語文閱讀與命題專家。請根據我提供的文章，設計 10 題符合 PIRLS 四個認知理解層次的選擇題。
+請嚴格遵守以下格式輸出，不需任何前言、後記、Markdown 標記或額外說明。
+每一行代表一題，使用「半形逗號」或「Tab」分隔各個欄位。
+
+格式規範：
+題目, 正確答案選項代號(1, 2, 3, 或 4), 選項A, 選項B, 選項C, 選項D, 認知層次代號(1, 2, 3, 或 4), 詳解
+
+PIRLS 認知理解層次說明：
+- 1: 提取訊息 (第 1-3 題)
+- 2: 推論訊息 (第 4-6 題)
+- 3: 詮釋整合 (第 7-8 題)
+- 4: 比較評估 (第 9-10 題)
+
+範例輸出格式（請完全比照此結構輸出 10 行）：
+IU小時候寄住親戚家時最常練習的是什麼？,2,舞蹈,唱歌,繪畫,寫作,1,文中提到她反覆練唱。
+讓IU一夕爆紅的重要歌曲是哪一首？,3,〈Celebrity〉,〈迷兒〉,〈好日子〉,〈Palette〉,1,三段高音的〈好日子〉帶來轉折點。</textarea>
+
+  <!-- Script Code Block -->
+  <script>
+    let generatedHtmlCode = "";
+    let generatedTitle = "閱讀測驗";
+    let currentMode = "topic"; // "topic", "text", or "manual"
+    let manualContentType = "text"; // "text" or "image"
+    let uploadedImageBase64 = ""; // Base64 image storage
+
+    function getApiKey() {
+      return localStorage.getItem('custom_api_key') || localStorage.getItem('gemini_api_key') || "";
+    }
+
+    function getSelectedModel() {
+      return localStorage.getItem('gemini_model') || "gemini-2.5-flash";
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('custom-api-key-input-inline');
+      const eyeIcon = document.getElementById('btn-toggle-eye');
+      if (input.type === "password") {
+        input.type = "text";
+        eyeIcon.className = "fa-regular fa-eye-slash";
+      } else {
+        input.type = "password";
+        eyeIcon.className = "fa-regular fa-eye";
+      }
+    }
+
+    function toggleApiKeyModal() {
+      const modal = document.getElementById('apikey-modal');
+      const input = document.getElementById('custom-api-key-input');
+      if (modal.classList.contains('hidden')) {
+        input.value = getApiKey();
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function saveApiKey() {
+      const input = document.getElementById('custom-api-key-input');
+      const val = input.value.trim();
+      localStorage.setItem('custom_api_key', val);
+      syncApiKeyUI();
+      toggleApiKeyModal();
+      showLocalToast(val ? "✅ API Key 已成功儲存！" : "⚠️ 已清除 API Key。");
+    }
+
+    function syncApiKeyUI() {
+      const key = getApiKey();
+      const textEl = document.getElementById('api-key-status-text');
+      const inlineInput = document.getElementById('custom-api-key-input-inline');
+      const statusHint = document.getElementById('api-key-status-hint');
+      const modelSelect = document.getElementById('select-gemini-model');
+
+      if (inlineInput) inlineInput.value = key;
+      if (modelSelect) modelSelect.value = getSelectedModel();
+
+      if (key) {
+        if (textEl) textEl.textContent = `API Key 已就緒 (${key.slice(0, 4)}...${key.slice(-4)})`;
+        if (statusHint) {
+          statusHint.innerHTML = `<span class="text-emerald-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-check text-green-600"></i> API Key 已設定完畢 (${key.slice(0, 4)}...${key.slice(-4)})</span>`;
+        }
+      } else {
+        if (textEl) textEl.textContent = "設定 Gemini API Key";
+        if (statusHint) {
+          statusHint.innerHTML = `<span class="text-amber-700 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation text-amber-500"></i> 請輸入 API Key 即可啟動 AI 自動命題</span>`;
+        }
+      }
+    }
+
+    async function testApiKeyConnection() {
+      const key = getApiKey();
+      if (!key) {
+        showLocalToast("⚠️ 請先在輸入框中貼上 Gemini API Key！");
+        return;
+      }
+
+      const model = getSelectedModel();
+      showLocalToast(`🔍 正在測試連線至 ${model} ...`);
+
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Hi" }] }]
+          })
+        });
+
+        if (response.ok) {
+          showLocalToast("🎉 Gemini API Key 連線測試成功！可正常使用 AI 命題。");
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.error?.message || `狀態碼: ${response.status}`;
+          showLocalToast(`❌ API 連線失敗：${errMsg}`);
+        }
+      } catch (err) {
+        showLocalToast(`❌ 連線發生錯誤：${err.message}`);
+      }
+    }
+
+    // Toggle Mode
+    function setMode(mode) {
+      currentMode = mode;
+      const btnTopic = document.getElementById('mode-topic');
+      const btnText = document.getElementById('mode-text');
+      const btnManual = document.getElementById('mode-manual');
+      
+      const wordCountWrapper = document.getElementById('word-count-wrapper');
+      const label = document.getElementById('content-label');
+      const textarea = document.getElementById('input-content');
+      const textInputWrapper = document.getElementById('text-input-wrapper');
+      
+      // Manual special fields
+      const manualTitleWrapper = document.getElementById('manual-title-wrapper');
+      const manualContentTypeWrapper = document.getElementById('manual-content-type-wrapper');
+      const manualQuestionsWrapper = document.getElementById('manual-questions-wrapper');
+      const imageUploadWrapper = document.getElementById('image-upload-wrapper');
+      const manualPromptHelper = document.getElementById('manual-prompt-helper');
+      const normalFeaturesBox = document.getElementById('normal-features-box');
+      const btnActionText = document.getElementById('btn-action-text');
+
+      // Reset all buttons style
+      [btnTopic, btnText, btnManual].forEach(btn => {
+        btn.className = "py-2.5 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-medium text-xs md:text-sm transition-all flex items-center justify-center gap-1 hover:border-slate-300";
+      });
+
+      // Hide manual fields by default
+      manualTitleWrapper.classList.add('hidden');
+      manualContentTypeWrapper.classList.add('hidden');
+      manualQuestionsWrapper.classList.add('hidden');
+      imageUploadWrapper.classList.add('hidden');
+      manualPromptHelper.classList.add('hidden');
+      normalFeaturesBox.classList.remove('hidden');
+      textInputWrapper.classList.remove('hidden');
+
+      if (mode === 'topic') {
+        btnTopic.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-1";
+        wordCountWrapper.classList.remove('hidden');
+        label.innerHTML = '<span>文章主題名稱 <span class="text-red-500">*</span></span>';
+        textarea.placeholder = "例如輸入主題：『台灣黑熊的生態保育與生存危機』";
+        btnActionText.textContent = "一鍵生成並自動儲存閱讀測驗";
+      } else if (mode === 'text') {
+        btnText.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-1";
+        wordCountWrapper.classList.add('hidden');
+        label.innerHTML = '<span>貼上自訂文章文本 <span class="text-red-500">*</span></span>';
+        textarea.placeholder = "請在此直接貼上您準備好的文章文本內容...";
+        btnActionText.textContent = "一鍵生成並自動儲存閱讀測驗";
+      } else if (mode === 'manual') {
+        btnManual.className = "py-2.5 px-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-1";
+        wordCountWrapper.classList.add('hidden');
+        
+        // Show manual fields
+        manualTitleWrapper.classList.remove('hidden');
+        manualContentTypeWrapper.classList.remove('hidden');
+        manualQuestionsWrapper.classList.remove('hidden');
+        manualPromptHelper.classList.remove('hidden');
+        normalFeaturesBox.classList.add('hidden');
+        
+        setManualType(manualContentType);
+        btnActionText.textContent = "即時封裝並自動儲存手動命題";
+      }
+    }
+
+    function setManualType(type) {
+      manualContentType = type;
+      const btnText = document.getElementById('type-manual-text');
+      const btnImage = document.getElementById('type-manual-image');
+      const textInputWrapper = document.getElementById('text-input-wrapper');
+      const imageUploadWrapper = document.getElementById('image-upload-wrapper');
+      const label = document.getElementById('content-label');
+      const textarea = document.getElementById('input-content');
+
+      if (type === 'text') {
+        btnText.className = "py-2 px-3 rounded-lg font-bold text-xs transition-all bg-white text-slate-700 shadow-sm";
+        btnImage.className = "py-2 px-3 rounded-lg font-medium text-xs transition-all text-slate-500 hover:text-slate-700";
+        textInputWrapper.classList.remove('hidden');
+        imageUploadWrapper.classList.add('hidden');
+        label.innerHTML = '<span>貼上自訂文章文本 <span class="text-red-500">*</span></span>';
+        textarea.placeholder = "請輸入此閱讀測驗之文章內容，供學生閱讀。";
+      } else {
+        btnText.className = "py-2 px-3 rounded-lg font-medium text-xs transition-all text-slate-500 hover:text-slate-700";
+        btnImage.className = "py-2 px-3 rounded-lg font-bold text-xs transition-all bg-white text-slate-700 shadow-sm";
+        textInputWrapper.classList.add('hidden');
+        imageUploadWrapper.classList.remove('hidden');
+      }
+    }
+
+    function triggerImageFileSelect() {
+      document.getElementById('image-file-input').click();
+    }
+
+    function processSelectedImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showLocalToast("❌ 請上傳有效的圖片檔案。");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const max_dim = 800;
+          if (width > max_dim || height > max_dim) {
+            if (width > height) {
+              height *= max_dim / width;
+              width = max_dim;
+            } else {
+              width *= max_dim / height;
+              height = max_dim;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.82);
+          
+          document.getElementById('image-preview').src = uploadedImageBase64;
+          document.getElementById('upload-prompt').classList.add('hidden');
+          document.getElementById('image-preview-container').classList.remove('hidden');
+          showLocalToast("✅ 圖片文本已載入並優化完畢！");
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateWordCountDisplay(val) {
+      document.getElementById('word-count-display').textContent = `約 ${val} 字`;
+    }
+
+    function copyTextToClipboard(textToCopy, successMessage) {
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = textToCopy;
+      tempTextArea.style.position = 'fixed';
+      tempTextArea.style.top = '-9999px';
+      tempTextArea.style.left = '-9999px';
+      tempTextArea.style.width = '2em';
+      tempTextArea.style.height = '2em';
+      tempTextArea.style.padding = '0';
+      tempTextArea.style.border = 'none';
+      tempTextArea.style.outline = 'none';
+      tempTextArea.style.boxShadow = 'none';
+      tempTextArea.style.background = 'transparent';
+      
+      document.body.appendChild(tempTextArea);
+      tempTextArea.focus();
+      tempTextArea.select();
+      tempTextArea.setSelectionRange(0, 999999);
+
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showLocalToast(successMessage);
+        } else {
+          showLocalToast("❌ 複製失敗，請手動複製。");
+        }
+      } catch (err) {
+        showLocalToast("❌ 您的瀏覽器不支援快捷複製。");
+      }
+      document.body.removeChild(tempTextArea);
+    }
+
+    function copyAiPromptText() {
+      const prompt = document.getElementById('ai-prompt-holder').value;
+      copyTextToClipboard(prompt, "✅ AI 題庫出題提示詞已成功複製到剪貼簿！");
+    }
+
+    function showLocalToast(msg) {
+      const toast = document.getElementById('local-toast');
+      const text = document.getElementById('toast-message');
+      text.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+
+    function updateProgress(percentage, text) {
+      const bar = document.getElementById('progress-bar');
+      const label = document.getElementById('status-text');
+      if (bar) bar.style.width = percentage + "%";
+      if (label) label.textContent = text;
+    }
+
+    function parseManualQuestions(rawText) {
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const parsed = [];
+      
+      lines.forEach((line, index) => {
+        const delimiter = line.includes('\t') ? '\t' : ',';
+        const parts = line.split(delimiter).map(p => p.trim());
+        
+        if (parts.length >= 6) {
+          const qText = parts[0];
+          const ansRaw = parts[1].toLowerCase();
+          
+          let answerIndex = 0;
+          if (ansRaw === '1' || ansRaw === 'a') answerIndex = 0;
+          else if (ansRaw === '2' || ansRaw === 'b') answerIndex = 1;
+          else if (ansRaw === '3' || ansRaw === 'c') answerIndex = 2;
+          else if (ansRaw === '4' || ansRaw === 'd') answerIndex = 3;
+          
+          const options = [parts[2], parts[3], parts[4], parts[5]];
+          
+          let levelVal = 1;
+          if (parts[6]) {
+            const parsedNum = parseInt(parts[6]);
+            if (parsedNum >= 1 && parsedNum <= 4) {
+              levelVal = parsedNum;
+            }
+          }
+          
+          const explanation = parts[7] || `正確答案是：${options[answerIndex]}`;
+          
+          parsed.push({
+            l: levelVal,
+            q: qText,
+            a: options,
+            c: answerIndex,
+            e: explanation
+          });
+        }
+      });
+      return parsed;
+    }
+
+    // Local standalone template builder for quiz HTML
+    function buildLocalManualHtml(title, articleHtml, questionsJsonStr, needsZhuyin) {
+      return `<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+<script src="https://cdn.tailwindcss.com"><\/script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+@font-face {
+  font-family: 'ㄅ注音芫荽 Regular';
+  src: url('https://kentxchang-goedutw.github.io/web/BpmfIansui-Regular_0.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.3s ease;
+}
+.use-zhuyin {
+  font-family: 'ㄅ注音芫荽 Regular', sans-serif !important;
+}
+.use-zhuyin .question-list button,
+.use-zhuyin #toggleZhuyinButton,
+.use-zhuyin select {
+  font-family: 'ㄅ注音芫荽 Regular', sans-serif !important;
+}
+.question-option:hover {
+  background-color: #f0fdf4;
+}
+</style>
+</head>
+<body class="${needsZhuyin ? 'use-zhuyin' : ''} bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between pb-8">
+
+<!-- Header Controls -->
+<header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md p-4 sticky top-0 z-50">
+  <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-graduation-cap text-lg"></i>
+      <h1 class="text-sm md:text-base font-bold tracking-wide truncate max-w-[200px] md:max-w-none">${title}</h1>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <select id="font-selector" class="bg-white/10 text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white">
+        <option value="default" class="text-slate-800" ${!needsZhuyin ? 'selected' : ''}>標準中文字體</option>
+        <option value="zhuyin" class="text-slate-800" ${needsZhuyin ? 'selected' : ''}>ㄅ芫荽注音字體</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col gap-6">
+  
+  <!-- Student Name Block -->
+  <section class="bg-amber-50 border-l-4 border-amber-500 rounded-2xl p-4 md:p-5 shadow-sm flex flex-col gap-3">
+    <h2 class="text-sm font-bold text-amber-800 flex items-center gap-1.5">
+      <i class="fa-solid fa-user-graduate"></i>
+      🧑‍🎓 填寫受測資訊 (必填)
+    </h2>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+      <label for="student-name" class="text-xs font-bold text-slate-500 whitespace-nowrap">受測學生姓名：</label>
+      <input type="text" id="student-name" placeholder="請輸入您的姓名或座號..." 
+        class="flex-grow px-3.5 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors text-sm">
+    </div>
+  </section>
+
+  <!-- Reading Text Block -->
+  <section class="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-sm">
+    <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-book-open text-emerald-500"></i>
+      閱讀文本內容
+    </h2>
+    <div class="text-slate-600 leading-relaxed text-sm md:text-base tracking-wide whitespace-pre-wrap">
+      ${articleHtml}
+    </div>
+  </section>
+
+  <!-- Questions Form Block -->
+  <section class="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-sm">
+    <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-square-poll-horizontal text-emerald-500"></i>
+      PIRLS 閱讀理解能力測驗
+    </h2>
+    <form id="quiz-form" class="flex flex-col gap-6">
+      <div id="qgrid" class="flex flex-col gap-6">
+        <!-- Dynamic Questions list loaded here -->
+      </div>
+      
+      <button type="button" onclick="grade()" 
+        class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 text-base">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>提交答案評分</span>
+      </button>
+    </form>
+  </section>
+
+  <!-- Analysis and scoreboard (亮色系清爽卡片風格) -->
+  <section id="result" class="hidden bg-white text-slate-800 rounded-2xl p-5 md:p-6 shadow-xl border-2 border-emerald-500/30 flex flex-col gap-6">
+    <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+      <h3 class="text-lg font-black text-emerald-800 flex items-center gap-2">
+        <i class="fa-solid fa-square-poll-vertical text-emerald-600"></i>
+        閱讀測驗成績報告單
+      </h3>
+      <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">測驗完成</span>
+    </div>
+
+    <!-- 4 Levels score boxes -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="score-matrix-container">
+      <!-- Dynamic scores render here -->
+    </div>
+
+    <!-- Detailed explanations list -->
+    <div class="flex flex-col gap-3">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+        <i class="fa-solid fa-list-check text-emerald-600"></i> 各題答題詳情與詳解
+      </h4>
+      <div id="details" class="flex flex-col gap-2.5">
+        <!-- Explanations render here -->
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2.5 flex-wrap justify-end pt-2 border-t border-slate-100">
+      <button id="downloadBtn" type="button" 
+        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 text-xs">
+        <i class="fa-solid fa-image"></i> 下載成績圖卡 (PNG)
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center py-6 px-4 text-xs text-slate-400">
+  <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div>Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener" class="text-emerald-600 font-bold hover:underline">阿剛老師</a></div>
+    <div>本作品採用 CC BY-NC-SA 4.0 國際授權條款</div>
+  </div>
+</footer>
+
+<div id="custom-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl z-50 flex items-center gap-2 border border-slate-700">
+  <i class="fa-solid fa-circle-info text-amber-400"></i>
+  <span id="toast-message">提示訊息</span>
+</div>
+
+<!-- Scripts Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+<script>
+const desc = ["提取訊息", "推論訊息", "詮釋整合", "比較評估"];
+const qs = JSON.parse(decodeURIComponent('${encodeURIComponent(questionsJsonStr)}'));
+
+(function render() {
+  let h = "", n = 1;
+  const levels = [1, 2, 3, 4];
+  
+  levels.forEach(l => {
+    const levelQs = qs.filter(o => o.l === l);
+    if (levelQs.length === 0) return;
+    
+    h += \`<div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
+      <h3 class="text-xs font-bold text-slate-400 tracking-wider">層級 \${l}：\${desc[l-1]}</h3>\`;
+      
+    levelQs.forEach(o => {
+      const globalIndex = qs.indexOf(o);
+      h += \`<div class="question flex flex-col gap-2.5" id="q\${globalIndex}">
+        <div class="text-sm font-bold text-slate-700 leading-relaxed">\${n++}. \${o.q}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">\`;
+        
+      o.a.forEach((optionText, k) => {
+        h += \`<label class="question-option flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-lg cursor-pointer text-xs font-semibold text-slate-600 transition-colors select-none">
+          <input type="radio" name="q\${globalIndex}" value="\${k}" class="accent-emerald-600">
+          \${optionText}
+        </label>\`;
+      });
+      
+      h += \`</div></div>\`;
+    });
+    h += \`</div>\`;
+  });
+  
+  document.getElementById("qgrid").innerHTML = h;
+})();
+
+// Font Switcher
+document.getElementById('font-selector').addEventListener('change', function() {
+  const selectedValue = this.value;
+  if (selectedValue === 'zhuyin') {
+    document.body.classList.add('use-zhuyin');
+  } else {
+    document.body.classList.remove('use-zhuyin');
+  }
+});
+
+// Toast system
+function showCustomToast(msg) {
+  const toast = document.getElementById('custom-toast');
+  const text = document.getElementById('toast-message');
+  text.textContent = msg;
+  toast.classList.remove('hidden');
+  setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+}
+
+// Grade test submission
+function grade() {
+  const nameVal = document.getElementById('student-name').value.trim();
+  if (!nameVal) {
+    showCustomToast("⚠️ 請務必輸入您的姓名再進行提交！");
+    return;
+  }
+
+  let correctCount = 0;
+  let totalCount = qs.length;
+  
+  const totalByLevel = [0, 0, 0, 0];
+  const correctByLevel = [0, 0, 0, 0];
+  let detailHtml = "";
+
+  qs.forEach((o, i) => {
+    const rs = document.querySelectorAll(\`input[name=q\${i}]\`);
+    rs.forEach(r => {
+      const parent = r.parentElement;
+      parent.className = "question-option flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-lg cursor-pointer text-xs font-semibold text-slate-600 transition-colors select-none";
+      const existingMark = parent.querySelector('.option-mark');
+      if (existingMark) parent.removeChild(existingMark);
+    });
+
+    const selectedRadio = [...rs].find(r => r.checked);
+    const isCorrect = selectedRadio && parseInt(selectedRadio.value) === o.c;
+    
+    totalByLevel[o.l - 1]++;
+    if (isCorrect) {
+      correctByLevel[o.l - 1]++;
+      correctCount++;
+    }
+
+    const correctAnsText = (o.a && o.a[o.c]) ? o.a[o.c] : "選項有誤";
+
+    detailHtml += \`<div class="p-3.5 rounded-xl border flex flex-col gap-1 text-xs \${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'}">
+      <div class="font-bold flex items-center gap-1.5 text-sm">
+        \${isCorrect ? '<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span class="text-emerald-700">第 ' + (i+1) + ' 題：答對</span>' : '<i class="fa-solid fa-circle-xmark text-rose-600 text-base"></i> <span class="text-rose-700">第 ' + (i+1) + ' 題：答錯</span>'}
+      </div>
+      <div class="text-slate-700 mt-1 font-semibold">正確答案：\${correctAnsText}</div>
+      <div class="text-slate-600 italic mt-0.5 font-normal bg-white/70 p-2 rounded-lg border border-slate-100">解析：\${o.e}</div>
+    </div>\`;
+
+    rs.forEach(r => {
+      const parent = r.parentElement;
+      if (parseInt(r.value) === o.c) {
+        parent.classList.add('border-emerald-500', 'bg-emerald-50');
+        const mk = document.createElement('span');
+        mk.className = 'option-mark ml-auto text-emerald-600 font-bold';
+        mk.innerHTML = '✔';
+        parent.appendChild(mk);
+      } else if (r.checked) {
+        parent.classList.add('border-rose-500', 'bg-rose-50');
+        const mk = document.createElement('span');
+        mk.className = 'option-mark ml-auto text-rose-600 font-bold';
+        mk.innerHTML = '✘';
+        parent.appendChild(mk);
+      }
+    });
+  });
+
+  let matrixHtml = "";
+  for (let i = 0; i < 4; i++) {
+    const lTotal = totalByLevel[i] || 0;
+    const lCorrect = correctByLevel[i] || 0;
+    const lRate = lTotal > 0 ? Math.round(lCorrect / lTotal * 100) : 0;
+    
+    matrixHtml += \`<div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center flex flex-col gap-1 shadow-2xs">
+      <span class="text-[11px] text-slate-500 font-bold tracking-wider">層級 \${i+1}：\${desc[i]}</span>
+      <span class="text-xl font-black text-emerald-600">\${lCorrect} / \${lTotal}</span>
+      <span class="text-[11px] font-semibold \${lRate >= 60 ? 'text-emerald-700' : 'text-rose-600'}">答對率 \${lRate}%</span>
+    </div>\`;
+  }
+  
+  matrixHtml += \`<div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-center flex flex-col gap-1 shadow-sm col-span-2 md:col-span-4 text-white">
+    <span class="text-xs text-emerald-100 font-bold tracking-wider">總測驗理解成果統計</span>
+    <span class="text-2xl font-black">\${correctCount} / \${totalCount} 題</span>
+    <span class="text-xs text-emerald-100 font-semibold">全方位答對率 \${Math.round(correctCount/totalCount*100)}%</span>
+  </div>\`;
+
+  document.getElementById('score-matrix-container').innerHTML = matrixHtml;
+  document.getElementById('details').innerHTML = detailHtml;
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Download Results as PNG
+document.getElementById('downloadBtn').addEventListener('click', function() {
+  const resultBlock = document.getElementById('result');
+  html2canvas(resultBlock, { backgroundColor: '#ffffff', scale: 2 }).then(function(canvas) {
+    const link = document.createElement('a');
+    link.download = 'PIRLS_測驗結果_' + (document.getElementById("student-name").value || "學生") + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+});
+<\/script>
+</body>
+</html>`;
+    }
+
+    // Auto save quiz to backend web_exe2.py
+    async function autoSaveQuizToBackend(title, htmlContent) {
+      try {
+        const response = await fetch('/saveQuiz', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: title,
+            html: htmlContent
+          })
+        });
+        
+        if (response.ok) {
+          const res = await response.json();
+          if (res.status === 'success') {
+            document.getElementById('save-location-info').textContent = `✅ ${res.message}`;
+            const openBtn = document.getElementById('btn-open-newtab');
+            if (openBtn) {
+              openBtn.href = res.url || `html/閱讀測驗/${title}.html`;
+            }
+            showLocalToast(`💾 已自動儲存至『html/閱讀測驗/${title}.html』！`);
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn("無法透過後端 API 自動存檔，將提供前端下載：", e);
+      }
+      return false;
+    }
+
+    // Generation Task Process Router
+    async function startGeneration() {
+      const needsZhuyin = document.getElementById('pref-zhuyin').checked;
+
+      if (currentMode === 'manual') {
+        const manualTitle = document.getElementById('input-quiz-title').value.trim() || "手動命題閱讀測驗";
+        const manualQuestionsText = document.getElementById('input-questions').value.trim();
+        
+        let manualArticleHtml = "";
+        if (manualContentType === 'text') {
+          const textContent = document.getElementById('input-content').value.trim();
+          if (!textContent) {
+            showLocalToast("⚠️ 請先輸入文章文本內容！");
+            return;
+          }
+          manualArticleHtml = textContent.split('\n').filter(p => p.trim()).map(p => `<p class="mb-4 leading-relaxed">${p.trim()}</p>`).join('');
+        } else {
+          if (!uploadedImageBase64) {
+            showLocalToast("⚠️ 請先點選上傳一張文本圖片！");
+            return;
+          }
+          manualArticleHtml = `<img src="${uploadedImageBase64}" class="w-full h-auto max-w-full rounded-xl shadow-md border border-slate-200" style="display:block; margin: 10px auto;">`;
+        }
+
+        if (!manualQuestionsText) {
+          showLocalToast("⚠️ 請先輸入您的自訂題庫資料！");
+          return;
+        }
+
+        const parsedQs = parseManualQuestions(manualQuestionsText);
+        if (parsedQs.length === 0) {
+          showLocalToast("❌ 題庫格式解析失敗！請確認每行欄位以半形逗號或 Tab 分開。");
+          return;
+        }
+
+        const statusPanel = document.getElementById('status-panel');
+        const genBtn = document.getElementById('generate-btn');
+        statusPanel.classList.remove('hidden');
+        genBtn.disabled = true;
+
+        updateProgress(30, "正在解析題庫並封裝檔案...");
+        
+        setTimeout(async () => {
+          updateProgress(70, "整合注音字體與測驗引擎...");
+          
+          generatedTitle = manualTitle;
+          const parsedQsJsonStr = JSON.stringify(parsedQs);
+          
+          generatedHtmlCode = buildLocalManualHtml(manualTitle, manualArticleHtml, parsedQsJsonStr, needsZhuyin);
+          
+          const iframe = document.getElementById('preview-iframe');
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(generatedHtmlCode);
+          doc.close();
+
+          updateProgress(90, "正在自動儲存至後端閱讀測驗目錄...");
+          await autoSaveQuizToBackend(manualTitle, generatedHtmlCode);
+
+          updateProgress(100, "網頁生成並儲存完成！");
+          showLocalToast("🎉 您的手動命題測驗網頁已成功生成並自動儲存！");
+          
+          genBtn.disabled = false;
+          statusPanel.classList.add('hidden');
+          
+          const resultPanel = document.getElementById('result-panel');
+          resultPanel.classList.remove('hidden');
+          resultPanel.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+
+        return;
+      }
+
+      // AI Generation Path
+      const inputVal = document.getElementById('input-content').value.trim();
+      const targetWordCount = document.getElementById('input-word-count').value;
+
+      if (!inputVal) {
+        showLocalToast("⚠️ 請先輸入文章主題或指定的自訂文本內容！");
+        return;
+      }
+
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        showLocalToast("⚠️ 請先點擊右上角設定 Gemini API Key！");
+        toggleApiKeyModal();
+        return;
+      }
+
+      const statusPanel = document.getElementById('status-panel');
+      const genBtn = document.getElementById('generate-btn');
+      const resultPanel = document.getElementById('result-panel');
+
+      statusPanel.classList.remove('hidden');
+      genBtn.disabled = true;
+      genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      resultPanel.classList.add('hidden');
+
+      try {
+        updateProgress(15, "正在建立與 Gemini 智慧模型之連線...");
+        
+        const systemPrompt = "你是一個深耕教育、兼具國語文閱讀理解專家特質的 AI 助手。請根據使用者指定的設定，生成對應的文章文本，並設計 10 題完全符合 PIRLS（促進國際閱讀素養調查）四個認知理解層次的選擇題。請嚴格遵循 JSON Schema 格式輸出。";
+        
+        let contentInstruction = "";
+        if (currentMode === "topic") {
+          contentInstruction = `【任務一：原創寫作文章】\n請根據主題「${inputVal}」，原創寫作一篇段落分明、具高度可讀性與啟發性，且總字數約為「${targetWordCount}」字的完整故事或科普文章。必須返回合適的 HTML <p class="mb-4 leading-relaxed">...</p> 段落標籤包覆之文章。`;
+        } else {
+          contentInstruction = `【任務一：文章排版整理】\n請直接採用以下提供之長篇文章，並整理成適合網頁渲染的 HTML <p class="mb-4 leading-relaxed">...</p> 段落標籤結構：\n\n"${inputVal}"`;
+        }
+
+        const userPrompt = `${contentInstruction}
+
+【任務二：設計 PIRLS 四層次理解測驗】
+請為本文章設計剛好 10 題高畫質選擇題，每個層次題數分配如下：
+- 第一層「提取訊息」（設為 1）：共 3 題（第 1-3 題）
+- 第二層「推論訊息」（設為 2）：共 3 題（第 4-6 題）
+- 第三層「詮釋整合」（設為 3）：共 2 題（第 7-8 題）
+- 第四層「比較評估」（設為 4）：共 2 題（第 9-10 題）
+
+每題必須包含題目、4個具誘答力的單選選項、正確選項索引 (0-3)、以及該題針對其 PIRLS 思考維度的深度解析。
+請將結果完整填入符合 schema 要求之 JSON 物件中。`;
+
+        const payloadData = {
+          contents: [{
+            parts: [{ text: userPrompt }]
+          }],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                title: { type: "STRING" },
+                article: { type: "STRING", description: "用 HTML <p class=\"mb-4 leading-relaxed\">...</p> 標籤包裝排版好的完整文章文本" },
+                questions: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      l: { type: "INTEGER", description: "PIRLS 層次編號 1, 2, 3, 或 4" },
+                      q: { type: "STRING", description: "題目敘述" },
+                      a: {
+                        type: "ARRAY",
+                        items: { type: "STRING" },
+                        description: "選項陣列，固定4個字串"
+                      },
+                      c: { type: "INTEGER", description: "正確選項在陣列中的索引 (0, 1, 2, 或 3)" },
+                      e: { type: "STRING", description: "詳細解析說明" }
+                    },
+                    required: ["l", "q", "a", "c", "e"]
+                  }
+                }
+              },
+              required: ["title", "article", "questions"]
+            }
+          }
+        };
+
+        const selectedModel = getSelectedModel();
+        updateProgress(40, `正在調用 ${selectedModel} 撰寫文章並設計 10 題認知層次考題...`);
+        
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+        
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payloadData)
+        });
+
+        if (!response.ok) {
+          throw new Error(`API 連線失敗，狀態碼: ${response.status} (請檢查 API Key 是否正確)`);
+        }
+
+        const responseData = await response.json();
+
+        updateProgress(75, "已取得 AI 題庫，正將其代入測驗模組中...");
+
+        if (responseData && responseData.candidates?.[0]?.content?.parts?.[0]?.text) {
+          const jsonText = responseData.candidates[0].content.parts[0].text;
+          const parsedResult = JSON.parse(jsonText);
+          
+          const aiTitle = parsedResult.title || "PIRLS 閱讀理解測驗";
+          const aiArticle = parsedResult.article;
+
+          let safeQuestions = [];
+          if (Array.isArray(parsedResult.questions)) {
+            safeQuestions = parsedResult.questions.map(q => {
+              let lvl = parseInt(q.l) || 1;
+              if (lvl < 1) lvl = 1;
+              if (lvl > 4) lvl = 4;
+              
+              let correctIdx = parseInt(q.c) || 0;
+              if (correctIdx >= 1 && correctIdx <= 4 && (!q.a || q.a.length === 4)) {
+                 if (correctIdx === 4) correctIdx = 3;
+              }
+              if (correctIdx < 0 || correctIdx > 3) correctIdx = 0;
+              
+              let options = Array.isArray(q.a) ? q.a : ["選項A", "選項B", "選項C", "選項D"];
+              while(options.length < 4) {
+                  options.push("無選項");
+              }
+              
+              return {
+                l: lvl,
+                q: q.q || "未提供題目",
+                a: options.slice(0, 4),
+                c: correctIdx,
+                e: q.e || "無提供解析"
+              };
+            });
+          } else {
+            throw new Error("AI 數據結構不完整，未能正確生成題目。");
+          }
+
+          const aiQuestionsJsonStr = JSON.stringify(safeQuestions);
+          generatedTitle = aiTitle;
+          
+          generatedHtmlCode = buildLocalManualHtml(aiTitle, aiArticle, aiQuestionsJsonStr, needsZhuyin);
+
+          const iframe = document.getElementById('preview-iframe');
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(generatedHtmlCode);
+          doc.close();
+
+          updateProgress(90, "正在自動儲存至後端閱讀測驗目錄...");
+          await autoSaveQuizToBackend(aiTitle, generatedHtmlCode);
+
+          updateProgress(100, "測驗網頁打包與儲存完成！");
+          showLocalToast("🎉 測驗網頁已成功生成並自動發布！");
+          
+          resultPanel.classList.remove('hidden');
+          resultPanel.scrollIntoView({ behavior: 'smooth' });
+
+        } else {
+          throw new Error("模型回傳了無效的格式，請再試一次。");
+        }
+
+      } catch (err) {
+        console.error(err);
+        showLocalToast("❌ 生成失敗：" + err.message);
+        updateProgress(5, "發生錯誤，任務已終止");
+      } finally {
+        genBtn.disabled = false;
+        genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        setTimeout(() => {
+          statusPanel.classList.add('hidden');
+        }, 3000);
+      }
+    }
+
+    function downloadHtml() {
+      if (!generatedHtmlCode) {
+        showLocalToast("❌ 尚未生成任何檔案，請先執行生成！");
+        return;
+      }
+      const blob = new Blob([generatedHtmlCode], { type: 'text/html;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${generatedTitle}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showLocalToast("💾 測驗網頁備份下載成功！");
+    }
+
+    window.onload = function() {
+      setMode('topic');
+      syncApiKeyUI();
+
+      // 即時輸入自動儲存 Key
+      const inlineKeyInput = document.getElementById('custom-api-key-input-inline');
+      if (inlineKeyInput) {
+        let debounceTimer;
+        inlineKeyInput.addEventListener('input', function() {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            const val = inlineKeyInput.value.trim();
+            localStorage.setItem('custom_api_key', val);
+            syncApiKeyUI();
+            if (val) showLocalToast("💾 API Key 已自動儲存！");
+          }, 600);
+        });
+      }
+
+      // 模型切換自動儲存
+      const modelSelect = document.getElementById('select-gemini-model');
+      if (modelSelect) {
+        modelSelect.addEventListener('change', function() {
+          localStorage.setItem('gemini_model', this.value);
+          showLocalToast(`🤖 已切換模型為：${this.value}`);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

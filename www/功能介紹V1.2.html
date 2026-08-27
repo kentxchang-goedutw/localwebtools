@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>【教學工具推薦】WEB 區網互動教學工具箱 V1.2 大升級！免聯網本地即時互動、AI 閱讀測驗命題與配對遊戲生成器</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Shrikhand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Quicksand', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F8FAFC;
+      color: #334155;
+    }
+    .blog-container {
+      max-width: 860px;
+    }
+    .gradient-header {
+      background: linear-gradient(135deg, #FF6B8B 0%, #FF8E53 50%, #FFAE34 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    }
+    .badge-tag {
+      background: #FFF1F2;
+      color: #E11D48;
+      border: 1px solid #FFE4E6;
+    }
+    .highlight-box {
+      background: linear-gradient(to right, #F0FDF4, #ECFDF5);
+      border-left: 4px solid #10B981;
+    }
+    .github-btn {
+      background: #24292F;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .github-btn:hover {
+      background: #000000;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body class="py-8 px-4 md:py-12 md:px-6">
+
+  <!-- Blog 主文章容器 -->
+  <article class="blog-container mx-auto bg-white rounded-3xl overflow-hidden card-shadow border border-slate-100">
+
+    <!-- 文章頂部 Header 封面視覺 -->
+    <div class="gradient-header text-white p-8 md:p-12 text-center relative overflow-hidden">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold mb-4 tracking-wide">
+        <i class="fa-solid fa-sparkles text-amber-300"></i>
+        <span>智慧教育 • 課堂互動教學神器</span>
+      </div>
+
+      <h1 class="text-2xl md:text-4xl font-black leading-tight mb-4 tracking-tight">
+        WEB 區網互動教學工具箱 V1.2 大升級！<br class="hidden sm:inline">
+        免連外網、AI 自動命題、配對遊戲一鍵生成與作業即時收件
+      </h1>
+
+      <p class="text-white/90 text-sm md:text-base max-w-2xl mx-auto font-medium leading-relaxed">
+        教師電腦雙擊即可開課！iPad／平板免裝 App 掃碼即連，搶答、白板、簡報同步、AI 閱讀測驗、遊戲化學習一應俱全。
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-white/80">
+        <span><i class="fa-solid fa-user-pen mr-1"></i> 阿剛老師</span>
+        <span>•</span>
+        <span><i class="fa-solid fa-calendar-days mr-1"></i> 2026-08-27 更新</span>
+        <span>•</span>
+        <span><i class="fa-solid fa-tag mr-1"></i> V1.2 版本發布</span>
+      </div>
+    </div>
+
+    <!-- 文章主要內容區 -->
+    <div class="p-6 md:p-10 space-y-10">
+
+      <!-- 前言引導 -->
+      <section class="space-y-4 text-slate-600 leading-relaxed text-base">
+        <p>
+          在智慧課堂或研習活動中，許多老師常面臨「教室網路訊號不穩」、「學生需要註冊登入雲端帳號太繁瑣」或「欠缺簡單直覺的作業即時繳交機制」等痛點。
+        </p>
+        <p>
+          <strong>「WEB 區網互動教學工具箱」</strong> 正是為了徹底解決這些問題而生！不需要申請外部雲端資料庫（免 Firebase、免連外網），只要教師端點開程式，系統就會自動在教室 Wi-Fi 建立局域網路伺服器。學生只要拿出 iPad、平板或手機掃描大螢幕上的 QR Code，就能立刻進入課堂互動。
+        </p>
+
+        <!-- GitHub 下載與開源專案呼籲框 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          <div class="space-y-1 text-center sm:text-left">
+            <div class="font-bold text-slate-800 flex items-center gap-2 justify-center sm:justify-start">
+              <i class="fa-brands fa-github text-xl"></i>
+              <span>開源專案已於 GitHub 發布</span>
+            </div>
+            <p class="text-xs text-slate-500">歡迎點擊下方按鈕前往 GitHub 下載最新完整程式碼、給予 Star 支持或回報建議！</p>
+          </div>
+          <a href="https://github.com/kentxchang-goedutw/localwebtools" target="_blank" class="github-btn text-white px-6 py-3 rounded-xl font-bold text-sm inline-flex items-center gap-2 whitespace-nowrap shadow-md">
+            <i class="fa-brands fa-github"></i>
+            <span>前往 GitHub 下載專案</span>
+          </a>
+        </div>
+      </section>
+
+      <hr class="border-slate-100">
+
+      <!-- 核心升級亮點 1: 普普風配對遊戲生成器 -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl">
+            🎴
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-800">
+            亮點一：普普風配對遊戲生成器（多模式遊戲化學習）
+          </h2>
+        </div>
+
+        <p class="text-slate-600 text-sm leading-relaxed">
+          課堂複習成語、英文單字或自然科學定義，總是希望有生動的遊戲讓學生動手練習。本次全新整合的「普普風配對遊戲生成器」，讓老師能以最快速度產出課堂小遊戲：
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+            <div class="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-clone text-amber-600"></i>
+              <span>三大遊戲模式</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              單一題庫同時支援「<strong>翻卡練習</strong>」、「<strong>隨機配對消消樂</strong>」與「<strong>趣味打地鼠</strong>」，適合不同程度與階段的課堂教學。
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+            <div class="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i>
+              <span>AI 提示詞 & 批次匯入</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              內建成語、英文、注音、數學等 10 種 AI 提示詞範本，直接貼上文字即可秒級解析批次匯入。
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+            <div class="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-folder-tree text-amber-600"></i>
+              <span>一鍵直存伺服器</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              完全不需要下載後再手動搬移檔案！點擊按鈕直接生成並歸檔到 <code>html/配對遊戲/</code>，學生端即可在首頁立刻點選遊玩。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心升級亮點 2: PIRLS 閱讀測驗產生器 -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl">
+            📖
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-800">
+            亮點二：PIRLS 閱讀測驗產生器（結合 AI 智慧深度命題）
+          </h2>
+        </div>
+
+        <p class="text-slate-600 text-sm leading-relaxed">
+          結合 Google Gemini API，專為國語文與閱讀理解設計的智慧命題系統，能自動分析文章並產出符合國際標準的評量測驗：
+        </p>
+
+        <div class="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-3">
+          <ul class="space-y-2 text-xs md:text-sm text-slate-700">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-600 mt-1"></i>
+              <span><strong>嚴格對應 PIRLS 四大理解層次</strong>：自動生成「提取訊息 (3題)」、「推論訊息 (3題)」、「詮釋整合 (2題)」與「比較評估 (2題)」，每題附帶詳細解析。</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-600 mt-1"></i>
+              <span><strong>三種靈活命題途徑</strong>：支援指定主題由 AI 原創寫作、貼上現有長篇文章由 AI 整理排版命題，或直接手動貼上自訂題目。</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-600 mt-1"></i>
+              <span><strong>支援課本拍照上傳</strong>：若有紙本教材照片，可直接上傳圖片並自動封裝為 Base64 嵌入測驗，並自動發布儲存至 <code>html/閱讀測驗/</code>。</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 核心升級亮點 3: 互動地圖測驗與系統後端升級 -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-xl">
+            ⚡
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-800">
+            亮點三：地圖互動測驗、自動截圖外掛與後端存檔 API
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-map-location-dot text-sky-500"></i>
+              <span>互動式地圖標示測驗工具</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              教師可自訂地圖與多個地理標記點，一鍵產生地理問答與互動探索練習，並自動儲存至 <code>html/地圖測驗/</code>。
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-camera-retro text-rose-500"></i>
+              <span>教材自動掛載「浮動截圖繳交外掛」</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              所有放在 <code>www/html/</code> 內的網頁，伺服器均會自動注入「📸 截圖繳交」按鈕，學生瀏覽教材時可隨時截圖繳交至指定題號。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 完整功能一覽清單 -->
+      <section class="space-y-4">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-toolbox text-pink-500"></i>
+          <span>WEB 區網互動教學工具箱 完整功能一覽</span>
+        </h3>
+
+        <div class="overflow-hidden border border-slate-200 rounded-2xl text-xs md:text-sm">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3 w-1/3">模組名稱</th>
+                <th class="p-3">主要特色與用途</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">🙋 剛好學</td>
+                <td class="p-3">搶答、快速投票、便利貼留言牆、閱讀測驗、作品觀摩互評</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">📋 剛好白板</td>
+                <td class="p-3">多人即時協作數位白板，支援多頁切換、繪圖與清空管理</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">📊 剛好簡報</td>
+                <td class="p-3">上傳 PDF 簡報自動轉檔，教師翻頁同步至學生載具與互動反饋</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">📝 剛好測</td>
+                <td class="p-3">線上即時測驗，AI 自動出題、即時成績分析圖表與 CSV 匯出</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">🎴 配對遊戲生成器</td>
+                <td class="p-3">翻卡練習、隨機配對、打地鼠遊戲，支援 AI 提示詞與一鍵儲存</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">📖 PIRLS 閱讀測驗</td>
+                <td class="p-3">Google Gemini AI 命題，精準產出四大層次理解題目與解析</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">🎙️ 語音錄音繳交</td>
+                <td class="p-3">iPad / 瀏覽器即時錄音、秒數計時、試聽回放與分題自動收件</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">🎨 即時畫布塗鴉</td>
+                <td class="p-3">在題目底圖上即時手繪、文字框排版，完成後一鍵截圖上傳</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-slate-800">🖥️ 大螢幕展示牆</td>
+                <td class="p-3">依題號自動彙整學生作業，支援圖片放大、隨機抽籤與投影評析</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 下載與安裝指南 (Call to Action) -->
+      <section class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 md:p-8 space-y-5 text-center sm:text-left">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div class="space-y-2">
+            <h3 class="text-xl md:text-2xl font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+              <span>🚀 立即下載體驗，為您的課堂注入活力！</span>
+            </h3>
+            <p class="text-slate-300 text-xs md:text-sm max-w-xl leading-relaxed">
+              Windows 下載後只要雙擊 <code>啟動程式.bat</code>（macOS 點擊 <code>啟動程式.command</code>），系統便會自動完成所有環境檢查與設定，完全免安裝、免繁瑣配置！
+            </p>
+          </div>
+          <div class="flex-shrink-0">
+            <a href="https://github.com/kentxchang-goedutw/localwebtools" target="_blank" class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-sm inline-flex items-center gap-2.5 shadow-lg shadow-pink-500/40 hover:scale-105 transition-all">
+              <i class="fa-brands fa-github text-base"></i>
+              <span>GitHub 專案首頁與下載</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-white/10 text-[11px] text-slate-400 flex flex-wrap justify-between items-center gap-2">
+          <span>專案開源網址：<a href="https://github.com/kentxchang-goedutw/localwebtools" class="text-sky-300 hover:underline">https://github.com/kentxchang-goedutw/localwebtools</a></span>
+          <span>作者：阿剛老師 • CC BY-NC-SA 4.0</span>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 文章 Footer -->
+    <footer class="bg-slate-50 border-t border-slate-100 p-6 text-center text-xs text-slate-400">
+      <p>本文為 WEB 區網互動教學工具箱 V1.2 功能介紹，歡迎轉載分享（請註明出處）。</p>
+    </footer>
+
+  </article>
+
+</body>
+</html>

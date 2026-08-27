@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現代版二十四孝的故事：愛與陪伴的當代實踐</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+@font-face {
+  font-family: 'ㄅ注音芫荽 Regular';
+  src: url('https://kentxchang-goedutw.github.io/web/BpmfIansui-Regular_0.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.3s ease;
+}
+.use-zhuyin {
+  font-family: 'ㄅ注音芫荽 Regular', sans-serif !important;
+}
+.use-zhuyin .question-list button,
+.use-zhuyin #toggleZhuyinButton,
+.use-zhuyin select {
+  font-family: 'ㄅ注音芫荽 Regular', sans-serif !important;
+}
+.question-option:hover {
+  background-color: #f0fdf4;
+}
+</style>
+</head>
+<body class="use-zhuyin bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between pb-8">
+
+<!-- Header Controls -->
+<header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md p-4 sticky top-0 z-50">
+  <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-graduation-cap text-lg"></i>
+      <h1 class="text-sm md:text-base font-bold tracking-wide truncate max-w-[200px] md:max-w-none">現代版二十四孝的故事：愛與陪伴的當代實踐</h1>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <select id="font-selector" class="bg-white/10 text-white text-xs px-2.5 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white">
+        <option value="default" class="text-slate-800" >標準中文字體</option>
+        <option value="zhuyin" class="text-slate-800" selected>ㄅ芫荽注音字體</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-4xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col gap-6">
+  
+  <!-- Student Name Block -->
+  <section class="bg-amber-50 border-l-4 border-amber-500 rounded-2xl p-4 md:p-5 shadow-sm flex flex-col gap-3">
+    <h2 class="text-sm font-bold text-amber-800 flex items-center gap-1.5">
+      <i class="fa-solid fa-user-graduate"></i>
+      🧑‍🎓 填寫受測資訊 (必填)
+    </h2>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+      <label for="student-name" class="text-xs font-bold text-slate-500 whitespace-nowrap">受測學生姓名：</label>
+      <input type="text" id="student-name" placeholder="請輸入您的姓名或座號..." 
+        class="flex-grow px-3.5 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors text-sm">
+    </div>
+  </section>
+
+  <!-- Reading Text Block -->
+  <section class="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-sm">
+    <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-book-open text-emerald-500"></i>
+      閱讀文本內容
+    </h2>
+    <div class="text-slate-600 leading-relaxed text-sm md:text-base tracking-wide whitespace-pre-wrap">
+      <p class="mb-4 leading-relaxed">在華人文化中，「二十四孝」是傳統孝道精神的具體體現，其中不乏臥冰求鯉、嘗糞憂心等感人肺腑卻也充滿時代痕跡的故事。然而，時光流轉，社會結構與生活型態已然巨變。面對快速變遷的現代社會，我們不禁要問：現代版的「二十四孝」又該是什麼模樣？它或許不再是驚天動地的犧牲，而是蘊藏在日常點滴中的真摯關懷與智慧，重新定義了孝順的內涵。</p><p class="mb-4 leading-relaxed">小華的故事，便是現代孝道的一個縮影。他的母親年逾七旬，記憶力大不如前，經常重複講述過往的往事。小華每次回家，不論工作再忙再累，都會耐心地坐下來，放下手機，眼神專注地傾聽母親的絮語。他明白，母親需要的不是糾正，而是被傾聽、被重視的感受。他會在適當的時候輕聲回應，讓母親感受到他的陪伴與理解。這份「傾聽父母心」的耐心，正是新時代孝順情感連結的基石。</p><p class="mb-4 leading-relaxed">除了情感上的支持，小華也深知「數位陪伴」的重要性。他的父親對於智慧型手機的操作總是感到困惑，社群軟體的訊息常常錯過。小華並沒有不耐煩，反而主動為父親安裝操作更簡便的軟體，一步一步地教導。他固定每週撥出時間，為父親整理手機裡的相片、備份資料，確保他能輕鬆地與親友保持聯繫，享受數位生活帶來的便利。這份「弭平數位鴻溝」的用心，展現了現代子女為父母創造連結的努力。</p><p class="mb-4 leading-relaxed">「健康管理」更是現代孝道不可或缺的一環。隨著父母年紀增長，身體機能逐漸退化。小華會主動替父母預約健康檢查，仔細比對報告，並陪伴他們就醫，詳細詢問醫生的建議。他不僅記得父母的用藥時間與劑量，還會搜尋適合長者的健康資訊與運動方式，鼓勵父母保持積極的生活態度。他深知，父母的健康是子女最大的福氣，這份「守護父母康健」的責任感，是現代家庭中愛的體現。</p><p class="mb-4 leading-relaxed">現代孝道更強調「尊重自主」與「反哺學習」。小華的父母退休後，決定搬到鄉下老家，過著自給自足的田園生活，而非與小華同住。雖然小華曾擔心他們生活不便，但他最終選擇尊重父母的決定，並定期回去探望，協助打理農務。他了解到，真正的孝順並非一味地干預，而是讓父母有選擇生活方式的自由與尊嚴。同時，這種雙向的交流與學習——小華教父母科技，父母教小華農耕智慧——讓親子關係更為緊密，不再是單向的付出，而是互敬互愛的共同成長。</p><p class="mb-4 leading-relaxed">總而言之，現代版的二十四孝不再局限於物質供養或形式上的儀式，它更多地體現在精神層面的關懷、生活上的實質幫助、對父母意願的尊重，以及建立互惠共榮的家庭關係。它是一種更為人性化、更貼近當代生活脈絡的孝道實踐，提醒著我們，愛與陪伴才是維繫家庭溫暖、傳承倫理價值的永恆法則。</p>
+    </div>
+  </section>
+
+  <!-- Questions Form Block -->
+  <section class="bg-white rounded-2xl border border-slate-100 p-5 md:p-6 shadow-sm">
+    <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-square-poll-horizontal text-emerald-500"></i>
+      PIRLS 閱讀理解能力測驗
+    </h2>
+    <form id="quiz-form" class="flex flex-col gap-6">
+      <div id="qgrid" class="flex flex-col gap-6">
+        <!-- Dynamic Questions list loaded here -->
+      </div>
+      
+      <button type="button" onclick="grade()" 
+        class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2 text-base">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>提交答案評分</span>
+      </button>
+    </form>
+  </section>
+
+  <!-- Analysis and scoreboard -->
+  <section id="result" class="hidden bg-slate-900 text-white rounded-2xl p-5 md:p-6 shadow-xl border border-slate-800 flex flex-col gap-6">
+    <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+      <h3 class="text-base font-bold flex items-center gap-2">
+        <i class="fa-solid fa-square-poll-vertical text-emerald-400"></i>
+        您的閱讀測驗成績單
+      </h3>
+    </div>
+
+    <!-- 4 Levels score boxes -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="score-matrix-container">
+      <!-- Dynamic scores render here -->
+    </div>
+
+    <!-- Detailed explanations list -->
+    <div class="flex flex-col gap-3">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+        <i class="fa-solid fa-list-check"></i> 各題答題詳情與詳解
+      </h4>
+      <div id="details" class="flex flex-col gap-2">
+        <!-- Explanations render here -->
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2.5 flex-wrap justify-end">
+      <button id="downloadBtn" type="button" 
+        class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 text-xs">
+        <i class="fa-solid fa-image"></i> 下載成績圖卡
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center py-6 px-4 text-xs text-slate-400">
+  <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div>Made by <a href="https://kentxchang.blogspot.tw" target="_blank" rel="noopener" class="text-emerald-600 font-bold hover:underline">阿剛老師</a></div>
+    <div>本作品採用 CC BY-NC-SA 4.0 國際授權條款</div>
+  </div>
+</footer>
+
+<div id="custom-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl z-50 flex items-center gap-2 border border-slate-700">
+  <i class="fa-solid fa-circle-info text-amber-400"></i>
+  <span id="toast-message">提示訊息</span>
+</div>
+
+<!-- Scripts Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const desc = ["提取訊息", "推論訊息", "詮釋整合", "比較評估"];
+const qs = JSON.parse(decodeURIComponent('%5B%7B%22l%22%3A1%2C%22q%22%3A%22%E6%A0%B9%E6%93%9A%E6%96%87%E7%AB%A0%E5%85%A7%E5%AE%B9%EF%BC%8C%E5%B0%8F%E8%8F%AF%E7%9A%84%E6%AF%8D%E8%A6%AA%E9%9C%80%E8%A6%81%E5%B0%8F%E8%8F%AF%E5%81%9A%E4%BB%80%E9%BA%BC%EF%BC%8C%E6%89%8D%E8%83%BD%E6%84%9F%E5%8F%97%E5%88%B0%E8%A2%AB%E5%82%BE%E8%81%BD%E5%92%8C%E8%A2%AB%E9%87%8D%E8%A6%96%EF%BC%9F%22%2C%22a%22%3A%5B%22%E7%B3%BE%E6%AD%A3%E5%A5%B9%E7%9A%84%E8%A8%98%E6%86%B6%E9%8C%AF%E8%AA%A4%22%2C%22%E6%8F%90%E4%BE%9B%E5%85%B7%E9%AB%94%E7%9A%84%E7%94%9F%E6%B4%BB%E5%BB%BA%E8%AD%B0%22%2C%22%E8%80%90%E5%BF%83%E5%9C%B0%E5%9D%90%E4%B8%8B%E4%BE%86%E5%82%BE%E8%81%BD%E5%A5%B9%E7%9A%84%E7%B5%AE%E8%AA%9E%22%2C%22%E7%82%BA%E5%A5%B9%E5%AE%89%E6%8E%92%E8%B1%90%E5%AF%8C%E7%9A%84%E7%A4%BE%E4%BA%A4%E6%B4%BB%E5%8B%95%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%BA%8C%E6%AE%B5%E6%98%8E%E7%A2%BA%E6%8C%87%E5%87%BA%EF%BC%9A%E3%80%8C%E4%BB%96%E6%98%8E%E7%99%BD%EF%BC%8C%E6%AF%8D%E8%A6%AA%E9%9C%80%E8%A6%81%E7%9A%84%E4%B8%8D%E6%98%AF%E7%B3%BE%E6%AD%A3%EF%BC%8C%E8%80%8C%E6%98%AF%E8%A2%AB%E5%82%BE%E8%81%BD%E3%80%81%E8%A2%AB%E9%87%8D%E8%A6%96%E7%9A%84%E6%84%9F%E5%8F%97%E3%80%82%E3%80%8D%E5%B0%8F%E8%8F%AF%E5%9B%A0%E6%AD%A4%E3%80%8C%E8%80%90%E5%BF%83%E5%9C%B0%E5%9D%90%E4%B8%8B%E4%BE%86%EF%BC%8C%E6%94%BE%E4%B8%8B%E6%89%8B%E6%A9%9F%EF%BC%8C%E7%9C%BC%E7%A5%9E%E5%B0%88%E6%B3%A8%E5%9C%B0%E5%82%BE%E8%81%BD%E6%AF%8D%E8%A6%AA%E7%9A%84%E7%B5%AE%E8%AA%9E%E3%80%8D%E3%80%82%E6%AD%A4%E9%A1%8C%E7%9B%B4%E6%8E%A5%E5%BE%9E%E6%96%87%E7%AB%A0%E4%B8%AD%E6%8F%90%E5%8F%96%E9%97%9C%E9%8D%B5%E8%A8%8A%E6%81%AF%E3%80%82%22%7D%2C%7B%22l%22%3A1%2C%22q%22%3A%22%E5%B0%8F%E8%8F%AF%E7%82%BA%E4%BA%86%E5%B9%AB%E5%8A%A9%E7%88%B6%E8%A6%AA%E5%BC%AD%E5%B9%B3%E6%95%B8%E4%BD%8D%E9%B4%BB%E6%BA%9D%EF%BC%8C%E6%8E%A1%E5%8F%96%E4%BA%86%E5%93%AA%E4%BA%9B%E5%85%B7%E9%AB%94%E8%A1%8C%E5%8B%95%EF%BC%9F%22%2C%22a%22%3A%5B%22%E7%9B%B4%E6%8E%A5%E8%B2%B7%E6%96%B0%E6%89%8B%E6%A9%9F%E7%B5%A6%E7%88%B6%E8%A6%AA%22%2C%22%E6%95%99%E7%88%B6%E8%A6%AA%E7%8E%A9%E6%B5%81%E8%A1%8C%E7%9A%84%E6%89%8B%E9%81%8A%22%2C%22%E5%AE%89%E8%A3%9D%E6%93%8D%E4%BD%9C%E7%B0%A1%E4%BE%BF%E7%9A%84%E8%BB%9F%E9%AB%94%E4%B8%A6%E6%95%99%E5%B0%8E%EF%BC%8C%E5%AE%9A%E6%9C%9F%E6%95%B4%E7%90%86%E6%89%8B%E6%A9%9F%22%2C%22%E8%A6%81%E6%B1%82%E7%88%B6%E8%A6%AA%E8%87%AA%E8%A1%8C%E5%AD%B8%E7%BF%92%E7%B6%B2%E8%B7%AF%E7%9F%A5%E8%AD%98%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%B8%89%E6%AE%B5%E6%98%8E%E7%A2%BA%E5%AF%AB%E9%81%93%EF%BC%9A%E3%80%8C%E5%B0%8F%E8%8F%AF%E4%B8%A6%E6%B2%92%E6%9C%89%E4%B8%8D%E8%80%90%E7%85%A9%EF%BC%8C%E5%8F%8D%E8%80%8C%E4%B8%BB%E5%8B%95%E7%82%BA%E7%88%B6%E8%A6%AA%E5%AE%89%E8%A3%9D%E6%93%8D%E4%BD%9C%E6%9B%B4%E7%B0%A1%E4%BE%BF%E7%9A%84%E8%BB%9F%E9%AB%94%EF%BC%8C%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E5%9C%B0%E6%95%99%E5%B0%8E%E3%80%82%E4%BB%96%E5%9B%BA%E5%AE%9A%E6%AF%8F%E9%80%B1%E6%92%A5%E5%87%BA%E6%99%82%E9%96%93%EF%BC%8C%E7%82%BA%E7%88%B6%E8%A6%AA%E6%95%B4%E7%90%86%E6%89%8B%E6%A9%9F%E8%A3%A1%E7%9A%84%E7%9B%B8%E7%89%87%E3%80%81%E5%82%99%E4%BB%BD%E8%B3%87%E6%96%99%E3%80%8D%E3%80%82%E6%AD%A4%E9%A1%8C%E8%A6%81%E6%B1%82%E8%AE%80%E8%80%85%E5%BE%9E%E6%96%87%E6%9C%AC%E4%B8%AD%E6%89%BE%E5%87%BA%E5%85%B7%E9%AB%94%E7%9A%84%E7%B4%B0%E7%AF%80%E8%A8%8A%E6%81%AF%E3%80%82%22%7D%2C%7B%22l%22%3A1%2C%22q%22%3A%22%E6%96%87%E7%AB%A0%E4%B8%AD%E6%8F%90%E5%88%B0%EF%BC%8C%E5%B0%8F%E8%8F%AF%E7%9A%84%E7%88%B6%E6%AF%8D%E9%80%80%E4%BC%91%E5%BE%8C%E9%81%B8%E6%93%87%E4%BA%86%E5%93%AA%E7%A8%AE%E7%94%9F%E6%B4%BB%E6%96%B9%E5%BC%8F%EF%BC%9F%22%2C%22a%22%3A%5B%22%E8%88%87%E5%B0%8F%E8%8F%AF%E5%90%8C%E4%BD%8F%22%2C%22%E6%90%AC%E5%88%B0%E9%84%89%E4%B8%8B%E8%80%81%E5%AE%B6%E9%81%8E%E7%94%B0%E5%9C%92%E7%94%9F%E6%B4%BB%22%2C%22%E5%A0%B1%E5%90%8D%E6%97%85%E8%A1%8C%E5%9C%98%E7%92%B0%E9%81%8A%E4%B8%96%E7%95%8C%22%2C%22%E5%8F%83%E5%8A%A0%E5%90%84%E7%A8%AE%E7%A4%BE%E5%9C%98%E6%B4%BB%E5%8B%95%22%5D%2C%22c%22%3A1%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%BA%94%E6%AE%B5%E9%96%8B%E9%A0%AD%E6%98%8E%E7%A2%BA%E8%AA%AA%E6%98%8E%EF%BC%9A%E3%80%8C%E5%B0%8F%E8%8F%AF%E7%9A%84%E7%88%B6%E6%AF%8D%E9%80%80%E4%BC%91%E5%BE%8C%EF%BC%8C%E6%B1%BA%E5%AE%9A%E6%90%AC%E5%88%B0%E9%84%89%E4%B8%8B%E8%80%81%E5%AE%B6%EF%BC%8C%E9%81%8E%E8%91%97%E8%87%AA%E7%B5%A6%E8%87%AA%E8%B6%B3%E7%9A%84%E7%94%B0%E5%9C%92%E7%94%9F%E6%B4%BB%EF%BC%8C%E8%80%8C%E9%9D%9E%E8%88%87%E5%B0%8F%E8%8F%AF%E5%90%8C%E4%BD%8F%E3%80%82%E3%80%8D%E6%AD%A4%E9%A1%8C%E6%97%A8%E5%9C%A8%E8%80%83%E9%A9%97%E8%AE%80%E8%80%85%E8%83%BD%E5%90%A6%E7%B2%BE%E7%A2%BA%E5%9C%B0%E6%8F%90%E5%8F%96%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9B%B4%E6%8E%A5%E9%99%B3%E8%BF%B0%E7%9A%84%E4%BA%8B%E5%AF%A6%E3%80%82%22%7D%2C%7B%22l%22%3A2%2C%22q%22%3A%22%E5%B0%8F%E8%8F%AF%E9%A1%98%E6%84%8F%E8%80%90%E5%BF%83%E5%9C%B0%E5%82%BE%E8%81%BD%E6%AF%8D%E8%A6%AA%E9%87%8D%E8%A4%87%E7%9A%84%E5%BE%80%E4%BA%8B%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%8E%A8%E8%AB%96%E5%87%BA%E4%BB%96%E5%B0%8D%E6%AF%8D%E8%A6%AA%E6%8A%B1%E6%8C%81%E8%91%97%E4%BB%80%E9%BA%BC%E6%A8%A3%E7%9A%84%E6%85%8B%E5%BA%A6%EF%BC%9F%22%2C%22a%22%3A%5B%22%E8%AA%8D%E7%82%BA%E6%AF%8D%E8%A6%AA%E8%A8%98%E6%86%B6%E5%8A%9B%E5%B7%AE%E9%9C%80%E8%A6%81%E7%89%B9%E5%88%A5%E9%97%9C%E6%B3%A8%22%2C%22%E5%B8%8C%E6%9C%9B%E6%AF%8D%E8%A6%AA%E8%83%BD%E8%97%89%E6%AD%A4%E6%95%B4%E7%90%86%E6%80%9D%E7%B7%92%22%2C%22%E7%90%86%E8%A7%A3%E6%AF%8D%E8%A6%AA%E9%9C%80%E8%A6%81%E6%83%85%E6%84%9F%E9%80%A3%E7%B5%90%E8%88%87%E8%A2%AB%E9%97%9C%E6%B3%A8%22%2C%22%E6%9C%9F%E5%BE%85%E6%AF%8D%E8%A6%AA%E8%83%BD%E5%BE%9E%E4%B8%AD%E5%AD%B8%E5%88%B0%E6%96%B0%E4%BA%8B%E7%89%A9%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%BA%8C%E6%AE%B5%E6%8F%8F%E8%BF%B0%E5%B0%8F%E8%8F%AF%E3%80%8C%E8%80%90%E5%BF%83%E5%9C%B0%E5%9D%90%E4%B8%8B%E4%BE%86%EF%BC%8C%E6%94%BE%E4%B8%8B%E6%89%8B%E6%A9%9F%EF%BC%8C%E7%9C%BC%E7%A5%9E%E5%B0%88%E6%B3%A8%E5%9C%B0%E5%82%BE%E8%81%BD%E6%AF%8D%E8%A6%AA%E7%9A%84%E7%B5%AE%E8%AA%9E%E3%80%8D%EF%BC%8C%E4%B8%A6%E8%A7%A3%E9%87%8B%E4%BB%96%E3%80%8C%E6%98%8E%E7%99%BD%EF%BC%8C%E6%AF%8D%E8%A6%AA%E9%9C%80%E8%A6%81%E7%9A%84%E4%B8%8D%E6%98%AF%E7%B3%BE%E6%AD%A3%EF%BC%8C%E8%80%8C%E6%98%AF%E8%A2%AB%E5%82%BE%E8%81%BD%E3%80%81%E8%A2%AB%E9%87%8D%E8%A6%96%E7%9A%84%E6%84%9F%E5%8F%97%E3%80%8D%E3%80%82%E9%80%99%E5%8F%A5%E8%A9%B1%E7%9B%B4%E6%8E%A5%E8%A1%A8%E6%98%8E%E5%B0%8F%E8%8F%AF%E6%8E%A8%E8%AB%96%E5%87%BA%E6%AF%8D%E8%A6%AA%E7%9A%84%E7%9C%9F%E6%AD%A3%E9%9C%80%E6%B1%82%E6%98%AF%E6%83%85%E6%84%9F%E4%B8%8A%E7%9A%84%E9%80%A3%E7%B5%90%E8%88%87%E8%A2%AB%E9%97%9C%E6%B3%A8%EF%BC%8C%E8%80%8C%E9%9D%9E%E4%BF%A1%E6%81%AF%E7%9A%84%E4%BA%A4%E6%B5%81%E3%80%82%22%7D%2C%7B%22l%22%3A2%2C%22q%22%3A%22%E5%BE%9E%E5%B0%8F%E8%8F%AF%E5%8D%94%E5%8A%A9%E7%88%B6%E6%AF%8D%E9%80%B2%E8%A1%8C%E5%81%A5%E5%BA%B7%E7%AE%A1%E7%90%86%E7%9A%84%E5%A4%9A%E9%A0%85%E8%A1%8C%E5%8B%95%E4%B8%AD%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%8E%A8%E6%96%B7%E5%87%BA%E4%BB%96%E6%9C%80%E9%87%8D%E8%A6%96%E7%88%B6%E6%AF%8D%E7%9A%84%E5%93%AA%E4%B8%80%E6%96%B9%E9%9D%A2%EF%BC%9F%22%2C%22a%22%3A%5B%22%E7%B6%93%E6%BF%9F%E7%8B%80%E6%B3%81%22%2C%22%E7%A4%BE%E6%9C%83%E5%9C%B0%E4%BD%8D%22%2C%22%E8%BA%AB%E9%AB%94%E5%81%A5%E5%BA%B7%22%2C%22%E5%BF%83%E7%90%86%E8%AA%BF%E9%81%A9%E8%83%BD%E5%8A%9B%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E5%9B%9B%E6%AE%B5%E8%A9%B3%E7%B4%B0%E5%88%97%E8%88%89%E5%B0%8F%E8%8F%AF%E6%9B%BF%E7%88%B6%E6%AF%8D%E9%A0%90%E7%B4%84%E5%81%A5%E6%AA%A2%E3%80%81%E9%99%AA%E4%BC%B4%E5%B0%B1%E9%86%AB%E3%80%81%E8%A8%98%E5%BE%97%E7%94%A8%E8%97%A5%E6%99%82%E9%96%93%E3%80%81%E6%90%9C%E5%B0%8B%E5%81%A5%E5%BA%B7%E8%B3%87%E8%A8%8A%E7%AD%89%E8%A1%8C%E7%82%BA%EF%BC%8C%E4%B8%A6%E5%9C%A8%E6%AE%B5%E6%9C%AB%E7%B8%BD%E7%B5%90%EF%BC%9A%E3%80%8C%E4%BB%96%E6%B7%B1%E7%9F%A5%EF%BC%8C%E7%88%B6%E6%AF%8D%E7%9A%84%E5%81%A5%E5%BA%B7%E6%98%AF%E5%AD%90%E5%A5%B3%E6%9C%80%E5%A4%A7%E7%9A%84%E7%A6%8F%E6%B0%A3%E3%80%8D%E3%80%82%E7%94%B1%E6%AD%A4%E5%8F%AF%E6%98%8E%E7%A2%BA%E6%8E%A8%E6%96%B7%E5%87%BA%E4%BB%96%E6%9C%80%E9%87%8D%E8%A6%96%E7%9A%84%E6%98%AF%E7%88%B6%E6%AF%8D%E7%9A%84%E8%BA%AB%E9%AB%94%E5%81%A5%E5%BA%B7%E3%80%82%22%7D%2C%7B%22l%22%3A2%2C%22q%22%3A%22%E5%B0%8F%E8%8F%AF%E7%9A%84%E7%88%B6%E6%AF%8D%E9%81%B8%E6%93%87%E6%90%AC%E5%88%B0%E9%84%89%E4%B8%8B%E8%80%81%E5%AE%B6%E7%94%9F%E6%B4%BB%EF%BC%8C%E8%80%8C%E5%B0%8F%E8%8F%AF%E9%81%B8%E6%93%87%E5%B0%8A%E9%87%8D%E4%BB%96%E5%80%91%E7%9A%84%E6%B1%BA%E5%AE%9A%E4%B8%A6%E6%8F%90%E4%BE%9B%E5%8D%94%E5%8A%A9%EF%BC%8C%E9%80%99%E5%8F%8D%E6%98%A0%E4%BA%86%E7%8F%BE%E4%BB%A3%E5%AD%9D%E9%81%93%E8%A7%80%E5%BF%B5%E7%9A%84%E4%BD%95%E7%A8%AE%E8%BD%89%E8%AE%8A%EF%BC%9F%22%2C%22a%22%3A%5B%22%E5%AD%90%E5%A5%B3%E7%84%A1%E5%8A%9B%E8%B2%A0%E6%93%94%E7%88%B6%E6%AF%8D%E7%9A%84%E7%85%A7%E9%A1%A7%22%2C%22%E7%88%B6%E6%AF%8D%E5%81%8F%E5%A5%BD%E7%8D%A8%E7%AB%8B%E8%87%AA%E4%B8%BB%E7%9A%84%E7%94%9F%E6%B4%BB%22%2C%22%E5%82%B3%E7%B5%B1%E5%AD%9D%E9%81%93%E8%A7%80%E5%BF%B5%E7%9A%84%E5%BC%8F%E5%BE%AE%22%2C%22%E5%9F%8E%E9%84%89%E7%99%BC%E5%B1%95%E4%B8%8D%E5%9D%87%E7%9A%84%E7%B5%90%E6%9E%9C%22%5D%2C%22c%22%3A1%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%BA%94%E6%AE%B5%E6%8F%90%E5%8F%8A%E5%B0%8F%E8%8F%AF%E5%B0%8A%E9%87%8D%E7%88%B6%E6%AF%8D%E9%81%B8%E6%93%87%E6%90%AC%E5%88%B0%E9%84%89%E4%B8%8B%E8%80%81%E5%AE%B6%E8%80%8C%E9%9D%9E%E5%90%8C%E4%BD%8F%EF%BC%8C%E4%B8%A6%E8%AA%AA%E6%98%8E%E3%80%8C%E7%9C%9F%E6%AD%A3%E7%9A%84%E5%AD%9D%E9%A0%86%E4%B8%A6%E9%9D%9E%E4%B8%80%E5%91%B3%E5%9C%B0%E5%B9%B2%E9%A0%90%E6%88%96%E5%B0%87%E7%88%B6%E6%AF%8D%E7%B6%81%E5%9C%A8%E8%BA%AB%E9%82%8A%EF%BC%8C%E8%80%8C%E6%98%AF%E8%AE%93%E4%BB%96%E5%80%91%E6%9C%89%E9%81%B8%E6%93%87%E8%87%AA%E5%B7%B1%E7%94%9F%E6%B4%BB%E6%96%B9%E5%BC%8F%E7%9A%84%E8%87%AA%E7%94%B1%E8%88%87%E5%B0%8A%E5%9A%B4%E3%80%8D%E3%80%82%E9%80%99%E6%8E%A8%E8%AB%96%E5%87%BA%E7%88%B6%E6%AF%8D%E5%81%8F%E5%A5%BD%E7%8D%A8%E7%AB%8B%E8%87%AA%E4%B8%BB%E7%9A%84%E7%94%9F%E6%B4%BB%E6%96%B9%E5%BC%8F%EF%BC%8C%E4%B8%94%E7%8F%BE%E4%BB%A3%E5%AD%9D%E9%81%93%E6%9B%B4%E5%BC%B7%E8%AA%BF%E5%B0%8D%E9%80%99%E7%A8%AE%E8%87%AA%E4%B8%BB%E6%80%A7%E7%9A%84%E5%B0%8A%E9%87%8D%E3%80%82%22%7D%2C%7B%22l%22%3A3%2C%22q%22%3A%22%E6%96%87%E7%AB%A0%E9%80%8F%E9%81%8E%E5%B0%8F%E8%8F%AF%E7%9A%84%E6%95%85%E4%BA%8B%EF%BC%8C%E4%B8%BB%E8%A6%81%E5%82%B3%E9%81%94%E4%BA%86%E7%8F%BE%E4%BB%A3%E7%89%88%E3%80%8C%E4%BA%8C%E5%8D%81%E5%9B%9B%E5%AD%9D%E3%80%8D%E7%9A%84%E4%BD%95%E7%A8%AE%E6%A0%B8%E5%BF%83%E7%B2%BE%E7%A5%9E%EF%BC%9F%22%2C%22a%22%3A%5B%22%E5%AD%90%E5%A5%B3%E6%87%89%E7%9B%A1%E5%8A%9B%E6%BB%BF%E8%B6%B3%E7%88%B6%E6%AF%8D%E7%9A%84%E6%89%80%E6%9C%89%E7%89%A9%E8%B3%AA%E9%9C%80%E6%B1%82%22%2C%22%E5%AD%9D%E9%A0%86%E7%9A%84%E9%87%8D%E9%BB%9E%E5%9C%A8%E6%96%BC%E5%AD%90%E5%A5%B3%E7%9A%84%E7%84%A1%E7%A7%81%E5%A5%89%E7%8D%BB%22%2C%22%E5%AD%9D%E9%A0%86%E6%98%AF%E5%BB%BA%E7%AB%8B%E5%9C%A8%E7%9B%B8%E4%BA%92%E5%B0%8A%E9%87%8D%E8%88%87%E7%90%86%E8%A7%A3%E7%9A%84%E9%9B%99%E5%90%91%E9%97%9C%E4%BF%82%E4%B8%8A%22%2C%22%E5%82%B3%E7%B5%B1%E5%AD%9D%E9%81%93%E5%B7%B2%E4%B8%8D%E9%81%A9%E7%94%A8%E6%96%BC%E7%8F%BE%E4%BB%A3%E7%A4%BE%E6%9C%83%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%B5%90%E5%B0%BE%E7%B8%BD%E7%B5%90%EF%BC%9A%E3%80%8C%E5%AE%83%E6%9B%B4%E5%A4%9A%E5%9C%B0%E9%AB%94%E7%8F%BE%E5%9C%A8%E7%B2%BE%E7%A5%9E%E5%B1%A4%E9%9D%A2%E7%9A%84%E9%97%9C%E6%87%B7%E3%80%81%E7%94%9F%E6%B4%BB%E4%B8%8A%E7%9A%84%E5%AF%A6%E8%B3%AA%E5%B9%AB%E5%8A%A9%E3%80%81%E5%B0%8D%E7%88%B6%E6%AF%8D%E6%84%8F%E9%A1%98%E7%9A%84%E5%B0%8A%E9%87%8D%EF%BC%8C%E4%BB%A5%E5%8F%8A%E5%BB%BA%E7%AB%8B%E4%BA%92%E6%83%A0%E5%85%B1%E6%A6%AE%E7%9A%84%E5%AE%B6%E5%BA%AD%E9%97%9C%E4%BF%82%E3%80%82%E3%80%8D%E7%AC%AC%E4%BA%94%E6%AE%B5%E5%92%8C%E7%AC%AC%E5%85%AD%E6%AE%B5%E4%B9%9F%E7%89%B9%E5%88%A5%E5%BC%B7%E8%AA%BF%E3%80%8C%E5%B0%8A%E9%87%8D%E7%88%B6%E6%AF%8D%E9%81%B8%E6%93%87%E3%80%8D%E5%92%8C%E3%80%8C%E5%8F%8D%E5%93%BA%E5%AD%B8%E7%BF%92%E3%80%8D%E3%80%81%E3%80%8C%E4%BA%92%E5%AD%B8%E5%85%B1%E6%A6%AE%E3%80%8D%E7%9A%84%E9%9B%99%E5%90%91%E4%BA%A4%E6%B5%81%E3%80%82%E9%80%99%E4%BA%9B%E9%83%BD%E6%95%B4%E5%90%88%E8%B5%B7%E4%BE%86%E6%8C%87%E5%90%91%E4%BA%86%E7%9B%B8%E4%BA%92%E5%B0%8A%E9%87%8D%E8%88%87%E7%90%86%E8%A7%A3%E7%9A%84%E9%9B%99%E5%90%91%E9%97%9C%E4%BF%82%E3%80%82%22%7D%2C%7B%22l%22%3A3%2C%22q%22%3A%22%E6%96%87%E7%AB%A0%E4%B8%AD%E6%8F%90%E5%8F%8A%E3%80%8C%E5%BC%AD%E5%B9%B3%E6%95%B8%E4%BD%8D%E9%B4%BB%E6%BA%9D%E3%80%8D%E8%88%87%E3%80%8C%E5%AE%88%E8%AD%B7%E7%88%B6%E6%AF%8D%E5%BA%B7%E5%81%A5%E3%80%8D%EF%BC%8C%E9%80%99%E4%BA%9B%E8%A1%8C%E7%82%BA%E5%85%B1%E5%90%8C%E9%AB%94%E7%8F%BE%E4%BA%86%E7%8F%BE%E4%BB%A3%E5%AD%9D%E9%81%93%E7%9A%84%E5%93%AA%E4%B8%80%E9%87%8D%E8%A6%81%E7%89%B9%E9%BB%9E%EF%BC%9F%22%2C%22a%22%3A%5B%22%E8%BF%BD%E6%B1%82%E7%A7%91%E6%8A%80%E7%99%BC%E5%B1%95%22%2C%22%E9%87%8D%E8%A6%96%E7%88%B6%E6%AF%8D%E7%9A%84%E7%89%A9%E8%B3%AA%E4%BA%AB%E5%8F%97%22%2C%22%E7%A9%8D%E6%A5%B5%E6%87%89%E5%B0%8D%E6%99%82%E4%BB%A3%E6%8C%91%E6%88%B0%E4%B8%A6%E6%8F%90%E4%BE%9B%E5%AF%A6%E8%B3%AA%E5%B9%AB%E5%8A%A9%22%2C%22%E5%BC%B7%E8%AA%BF%E5%AD%90%E5%A5%B3%E5%B0%8D%E7%88%B6%E6%AF%8D%E7%9A%84%E7%B5%95%E5%B0%8D%E6%9C%8D%E5%BE%9E%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E3%80%8C%E5%BC%AD%E5%B9%B3%E6%95%B8%E4%BD%8D%E9%B4%BB%E6%BA%9D%E3%80%8D%E6%98%AF%E9%87%9D%E5%B0%8D%E6%95%B8%E4%BD%8D%E6%99%82%E4%BB%A3%E7%9A%84%E6%8C%91%E6%88%B0%EF%BC%8C%E8%80%8C%E3%80%8C%E5%AE%88%E8%AD%B7%E7%88%B6%E6%AF%8D%E5%BA%B7%E5%81%A5%E3%80%8D%E5%89%87%E6%98%AF%E6%87%89%E5%B0%8D%E8%80%81%E9%BD%A1%E5%8C%96%E5%B8%B6%E4%BE%86%E7%9A%84%E5%81%A5%E5%BA%B7%E6%8C%91%E6%88%B0%E3%80%82%E9%80%99%E5%85%A9%E8%80%85%E9%83%BD%E5%B1%AC%E6%96%BC%E7%82%BA%E7%88%B6%E6%AF%8D%E6%8F%90%E4%BE%9B%E3%80%8C%E7%94%9F%E6%B4%BB%E4%B8%8A%E7%9A%84%E5%AF%A6%E8%B3%AA%E5%B9%AB%E5%8A%A9%E3%80%8D%EF%BC%8C%E7%A9%8D%E6%A5%B5%E6%87%89%E5%B0%8D%E7%88%B6%E6%AF%8D%E5%9C%A8%E7%8F%BE%E4%BB%A3%E7%94%9F%E6%B4%BB%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E5%85%B7%E9%AB%94%E5%9B%B0%E9%9B%A3%EF%BC%8C%E8%80%8C%E9%9D%9E%E5%83%85%E9%99%90%E6%96%BC%E6%83%85%E6%84%9F%E6%88%96%E7%89%A9%E8%B3%AA%E3%80%82%22%7D%2C%7B%22l%22%3A4%2C%22q%22%3A%22%E6%AF%94%E8%BC%83%E5%82%B3%E7%B5%B1%E3%80%8C%E4%BA%8C%E5%8D%81%E5%9B%9B%E5%AD%9D%E3%80%8D%E8%88%87%E6%96%87%E7%AB%A0%E6%8F%8F%E8%BF%B0%E7%9A%84%E7%8F%BE%E4%BB%A3%E7%89%88%E3%80%8C%E4%BA%8C%E5%8D%81%E5%9B%9B%E5%AD%9D%E3%80%8D%EF%BC%8C%E5%85%A9%E8%80%85%E5%9C%A8%E3%80%8C%E5%AF%A6%E8%B8%90%E6%96%B9%E5%BC%8F%E3%80%8D%E4%B8%8A%E6%9C%80%E4%B8%BB%E8%A6%81%E7%9A%84%E5%8D%80%E5%88%A5%E7%82%BA%E4%BD%95%EF%BC%9F%22%2C%22a%22%3A%5B%22%E5%82%B3%E7%B5%B1%E9%87%8D%E7%89%A9%E8%B3%AA%EF%BC%8C%E7%8F%BE%E4%BB%A3%E9%87%8D%E7%B2%BE%E7%A5%9E%22%2C%22%E5%82%B3%E7%B5%B1%E5%A4%9A%E6%A5%B5%E7%AB%AF%E7%8A%A7%E7%89%B2%EF%BC%8C%E7%8F%BE%E4%BB%A3%E5%A4%9A%E6%97%A5%E5%B8%B8%E9%97%9C%E6%87%B7%E8%88%87%E9%9B%99%E5%90%91%E4%BA%92%E5%8B%95%22%2C%22%E5%82%B3%E7%B5%B1%E5%8F%AA%E8%AC%9B%E5%AD%90%E5%A5%B3%E4%BB%98%E5%87%BA%EF%BC%8C%E7%8F%BE%E4%BB%A3%E5%8F%AA%E8%AC%9B%E7%88%B6%E6%AF%8D%E7%8D%A8%E7%AB%8B%22%2C%22%E5%82%B3%E7%B5%B1%E5%BC%B7%E8%AA%BF%E5%BD%A2%E5%BC%8F%EF%BC%8C%E7%8F%BE%E4%BB%A3%E5%BC%B7%E8%AA%BF%E7%B5%90%E6%9E%9C%22%5D%2C%22c%22%3A1%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E9%96%8B%E9%A0%AD%E5%8D%B3%E6%8C%87%E5%87%BA%E5%82%B3%E7%B5%B1%E3%80%8C%E4%BA%8C%E5%8D%81%E5%9B%9B%E5%AD%9D%E3%80%8D%E6%9C%89%E3%80%8C%E8%87%A5%E5%86%B0%E6%B1%82%E9%AF%89%E3%80%81%E5%98%97%E7%B3%9E%E6%86%82%E5%BF%83%E7%AD%89%E6%84%9F%E4%BA%BA%E8%82%BA%E8%85%91%E5%8D%BB%E4%B9%9F%E5%85%85%E6%BB%BF%E6%99%82%E4%BB%A3%E7%97%95%E8%B7%A1%E7%9A%84%E6%95%85%E4%BA%8B%E3%80%8D%EF%BC%8C%E6%9A%97%E7%A4%BA%E4%BA%86%E5%85%B6%E6%A5%B5%E7%AB%AF%E7%8A%A7%E7%89%B2%E7%9A%84%E7%89%B9%E9%BB%9E%E3%80%82%E8%80%8C%E6%96%87%E7%AB%A0%E9%80%9A%E7%AF%87%E6%8F%8F%E8%BF%B0%E5%B0%8F%E8%8F%AF%E7%9A%84%E5%AD%9D%E9%A0%86%E8%A1%8C%E7%82%BA%EF%BC%8C%E5%A6%82%E5%82%BE%E8%81%BD%E3%80%81%E6%95%B8%E4%BD%8D%E9%99%AA%E4%BC%B4%E3%80%81%E5%81%A5%E5%BA%B7%E7%AE%A1%E7%90%86%E3%80%81%E5%B0%8A%E9%87%8D%E8%87%AA%E4%B8%BB%E3%80%81%E4%BA%92%E5%AD%B8%E5%85%B1%E6%A6%AE%EF%BC%8C%E9%83%BD%E6%98%AF%E6%97%A5%E5%B8%B8%E9%BB%9E%E6%BB%B4%E7%9A%84%E9%97%9C%E6%87%B7%E8%88%87%E9%9B%99%E5%90%91%E7%9A%84%E4%BA%A4%E6%B5%81%E3%80%82%E6%96%87%E7%AB%A0%E7%B5%90%E5%B0%BE%E4%B9%9F%E6%98%8E%E7%A2%BA%E6%8F%90%E5%88%B0%E3%80%8C%E5%AE%83%E4%B8%8D%E5%86%8D%E5%B1%80%E9%99%90%E6%96%BC%E7%89%A9%E8%B3%AA%E4%BE%9B%E9%A4%8A%E6%88%96%E5%BD%A2%E5%BC%8F%E4%B8%8A%E7%9A%84%E5%84%80%E5%BC%8F%EF%BC%8C%E5%AE%83%E6%9B%B4%E5%A4%9A%E5%9C%B0%E9%AB%94%E7%8F%BE%E5%9C%A8%E7%B2%BE%E7%A5%9E%E5%B1%A4%E9%9D%A2%E7%9A%84%E9%97%9C%E6%87%B7%E3%80%81%E7%94%9F%E6%B4%BB%E4%B8%8A%E7%9A%84%E5%AF%A6%E8%B3%AA%E5%B9%AB%E5%8A%A9%E3%80%81%E5%B0%8D%E7%88%B6%E6%AF%8D%E6%84%8F%E9%A1%98%E7%9A%84%E5%B0%8A%E9%87%8D%EF%BC%8C%E4%BB%A5%E5%8F%8A%E5%BB%BA%E7%AB%8B%E4%BA%92%E6%83%A0%E5%85%B1%E6%A6%AE%E7%9A%84%E5%AE%B6%E5%BA%AD%E9%97%9C%E4%BF%82%E3%80%82%E3%80%8D%E9%80%99%E6%98%8E%E7%A2%BA%E6%8C%87%E5%87%BA%E5%85%A9%E8%80%85%E5%AF%A6%E8%B8%90%E6%96%B9%E5%BC%8F%E7%9A%84%E5%B7%AE%E7%95%B0%E3%80%82%22%7D%2C%7B%22l%22%3A4%2C%22q%22%3A%22%E6%A0%B9%E6%93%9A%E6%96%87%E7%AB%A0%E5%B0%8D%E7%8F%BE%E4%BB%A3%E5%AD%9D%E9%81%93%E7%9A%84%E9%97%A1%E8%BF%B0%EF%BC%8C%E4%BD%A0%E8%AA%8D%E7%82%BA%E3%80%8C%E4%BA%92%E5%AD%B8%E5%85%B1%E6%A6%AE%E3%80%8D%E5%B0%8D%E7%8F%BE%E4%BB%A3%E8%A6%AA%E5%AD%90%E9%97%9C%E4%BF%82%E7%9A%84%E5%BD%B1%E9%9F%BF%E6%98%AF%E4%BB%80%E9%BA%BC%EF%BC%9F%22%2C%22a%22%3A%5B%22%E6%9C%83%E8%AE%93%E7%88%B6%E6%AF%8D%E7%9A%84%E6%AC%8A%E5%A8%81%E6%84%9F%E9%99%8D%E4%BD%8E%22%2C%22%E6%9C%83%E5%8A%A0%E9%87%8D%E5%AD%90%E5%A5%B3%E7%9A%84%E8%B2%A0%E6%93%94%22%2C%22%E6%9C%89%E5%8A%A9%E6%96%BC%E5%BB%BA%E7%AB%8B%E6%9B%B4%E5%B9%B3%E7%AD%89%E3%80%81%E7%B7%8A%E5%AF%86%E4%B8%94%E6%9C%89%E9%9F%8C%E6%80%A7%E7%9A%84%E5%AE%B6%E5%BA%AD%E5%83%B9%E5%80%BC%22%2C%22%E5%AE%B9%E6%98%93%E9%80%A0%E6%88%90%E4%B8%96%E4%BB%A3%E9%96%93%E7%9A%84%E8%A1%9D%E7%AA%81%22%5D%2C%22c%22%3A2%2C%22e%22%3A%22%E6%96%87%E7%AB%A0%E7%AC%AC%E4%BA%94%E6%AE%B5%E6%9C%AB%E5%B0%BE%E6%8C%87%E5%87%BA%E3%80%8C%E9%80%99%E7%A8%AE%E9%9B%99%E5%90%91%E7%9A%84%E4%BA%A4%E6%B5%81%E8%88%87%E5%AD%B8%E7%BF%92%EF%BC%8C%E8%AE%93%E8%A6%AA%E5%AD%90%E9%97%9C%E4%BF%82%E6%9B%B4%E7%82%BA%E7%B7%8A%E5%AF%86%EF%BC%8C%E4%B8%8D%E5%86%8D%E6%98%AF%E5%96%AE%E5%90%91%E7%9A%84%E4%BB%98%E5%87%BA%EF%BC%8C%E8%80%8C%E6%98%AF%E4%BA%92%E6%95%AC%E4%BA%92%E6%84%9B%E7%9A%84%E5%85%B1%E5%90%8C%E6%88%90%E9%95%B7%E3%80%82%E9%80%99%E4%BB%BD%E3%80%8E%E4%BA%92%E5%AD%B8%E5%85%B1%E6%A6%AE%E3%80%8F%E7%9A%84%E7%B2%BE%E7%A5%9E%EF%BC%8C%E4%BD%BF%E5%BE%97%E7%8F%BE%E4%BB%A3%E5%AD%9D%E9%81%93%E8%B6%85%E8%B6%8A%E4%BA%86%E5%82%B3%E7%B5%B1%E7%9A%84%E5%96%AE%E5%90%91%E4%BE%9B%E7%B5%A6%EF%BC%8C%E6%88%90%E7%82%BA%E4%B8%80%E7%A8%AE%E6%9B%B4%E7%82%BA%E8%B1%90%E5%AF%8C%E3%80%81%E6%9B%B4%E5%85%B7%E9%9F%8C%E6%80%A7%E7%9A%84%E5%AE%B6%E5%BA%AD%E5%83%B9%E5%80%BC%E3%80%82%E3%80%8D%E9%81%B8%E9%A0%852%E7%9B%B4%E6%8E%A5%E5%BC%95%E7%94%A8%E4%BA%86%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E6%A0%B8%E5%BF%83%E8%A9%95%E4%BC%B0%EF%BC%8C%E8%AA%AA%E6%98%8E%E4%BA%86%E9%80%99%E7%A8%AE%E9%9B%99%E5%90%91%E4%BA%92%E5%8B%95%E7%9A%84%E7%A9%8D%E6%A5%B5%E5%BD%B1%E9%9F%BF%E3%80%82%22%7D%5D'));
+
+(function render() {
+  let h = "", n = 1;
+  const levels = [1, 2, 3, 4];
+  
+  levels.forEach(l => {
+    const levelQs = qs.filter(o => o.l === l);
+    if (levelQs.length === 0) return;
+    
+    h += `<div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3">
+      <h3 class="text-xs font-bold text-slate-400 tracking-wider">層級 ${l}：${desc[l-1]}</h3>`;
+      
+    levelQs.forEach(o => {
+      const globalIndex = qs.indexOf(o);
+      h += `<div class="question flex flex-col gap-2.5" id="q${globalIndex}">
+        <div class="text-sm font-bold text-slate-700 leading-relaxed">${n++}. ${o.q}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+        
+      o.a.forEach((optionText, k) => {
+        h += `<label class="question-option flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-lg cursor-pointer text-xs font-semibold text-slate-600 transition-colors select-none">
+          <input type="radio" name="q${globalIndex}" value="${k}" class="accent-emerald-600">
+          ${optionText}
+        </label>`;
+      });
+      
+      h += `</div></div>`;
+    });
+    h += `</div>`;
+  });
+  
+  document.getElementById("qgrid").innerHTML = h;
+})();
+
+// Font Switcher
+document.getElementById('font-selector').addEventListener('change', function() {
+  const selectedValue = this.value;
+  if (selectedValue === 'zhuyin') {
+    document.body.classList.add('use-zhuyin');
+  } else {
+    document.body.classList.remove('use-zhuyin');
+  }
+});
+
+// Toast system
+function showCustomToast(msg) {
+  const toast = document.getElementById('custom-toast');
+  const text = document.getElementById('toast-message');
+  text.textContent = msg;
+  toast.classList.remove('hidden');
+  setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+}
+
+// Grade test submission
+function grade() {
+  const nameVal = document.getElementById('student-name').value.trim();
+  if (!nameVal) {
+    showCustomToast("⚠️ 請務必輸入您的姓名再進行提交！");
+    return;
+  }
+
+  let correctCount = 0;
+  let totalCount = qs.length;
+  
+  const totalByLevel = [0, 0, 0, 0];
+  const correctByLevel = [0, 0, 0, 0];
+  let detailHtml = "";
+
+  qs.forEach((o, i) => {
+    const rs = document.querySelectorAll(`input[name=q${i}]`);
+    rs.forEach(r => {
+      const parent = r.parentElement;
+      parent.className = "question-option flex items-center gap-2 px-3 py-2 border border-slate-200 bg-white rounded-lg cursor-pointer text-xs font-semibold text-slate-600 transition-colors select-none";
+      const existingMark = parent.querySelector('.option-mark');
+      if (existingMark) parent.removeChild(existingMark);
+    });
+
+    const selectedRadio = [...rs].find(r => r.checked);
+    const isCorrect = selectedRadio && parseInt(selectedRadio.value) === o.c;
+    
+    totalByLevel[o.l - 1]++;
+    if (isCorrect) {
+      correctByLevel[o.l - 1]++;
+      correctCount++;
+    }
+
+    const correctAnsText = (o.a && o.a[o.c]) ? o.a[o.c] : "選項有誤";
+
+    detailHtml += `<div class="p-3.5 rounded-xl border flex flex-col gap-1 text-xs ${isCorrect ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-900' : 'bg-rose-500/10 border-rose-500/20 text-rose-900'}">
+      <div class="font-bold flex items-center gap-1">
+        ${isCorrect ? '<i class="fa-solid fa-circle-check text-green-600"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-600"></i>'}
+        第 ${i+1} 題：${isCorrect ? "答對" : "答錯"}
+      </div>
+      <div class="text-slate-600 mt-1 font-medium">正確答案：${correctAnsText}</div>
+      <div class="text-slate-500 italic mt-0.5 font-normal">解析：${o.e}</div>
+    </div>`;
+
+    rs.forEach(r => {
+      const parent = r.parentElement;
+      if (parseInt(r.value) === o.c) {
+        parent.classList.add('border-emerald-500', 'bg-emerald-50');
+        const mk = document.createElement('span');
+        mk.className = 'option-mark ml-auto text-emerald-600 font-bold';
+        mk.innerHTML = '✔';
+        parent.appendChild(mk);
+      } else if (r.checked) {
+        parent.classList.add('border-rose-500', 'bg-rose-50');
+        const mk = document.createElement('span');
+        mk.className = 'option-mark ml-auto text-rose-600 font-bold';
+        mk.innerHTML = '✘';
+        parent.appendChild(mk);
+      }
+    });
+  });
+
+  let matrixHtml = "";
+  for (let i = 0; i < 4; i++) {
+    const lTotal = totalByLevel[i] || 0;
+    const lCorrect = correctByLevel[i] || 0;
+    const lRate = lTotal > 0 ? Math.round(lCorrect / lTotal * 100) : 0;
+    
+    matrixHtml += `<div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700/60 text-center flex flex-col gap-1 shadow-inner">
+      <span class="text-[10px] text-slate-400 font-bold tracking-wider">層級 ${i+1}：${desc[i]}</span>
+      <span class="text-lg font-black text-emerald-400">${lCorrect} / ${lTotal}</span>
+      <span class="text-[10px] text-slate-500">答對率 ${lRate}%</span>
+    </div>`;
+  }
+  
+  matrixHtml += `<div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-3.5 rounded-xl text-center flex flex-col gap-1 shadow-md col-span-2 md:col-span-4">
+    <span class="text-[10px] text-emerald-100 font-bold tracking-wider">總測驗理解成果統計</span>
+    <span class="text-xl font-black text-white">${correctCount} / ${totalCount} 題</span>
+    <span class="text-xs text-emerald-200">全方位答對率 ${Math.round(correctCount/totalCount*100)}%</span>
+  </div>`;
+
+  document.getElementById('score-matrix-container').innerHTML = matrixHtml;
+  document.getElementById('details').innerHTML = detailHtml;
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Download Results as PNG
+document.getElementById('downloadBtn').addEventListener('click', function() {
+  const resultBlock = document.getElementById('result');
+  html2canvas(resultBlock).then(function(canvas) {
+    const link = document.createElement('a');
+    link.download = 'PIRLS_測驗結果_' + (document.getElementById("student-name").value || "學生") + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+});
+</script>
+</body>
+</html>

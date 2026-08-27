@@ -28,6 +28,7 @@
 ```text
 WEB區網互動工具/
 ├── 啟動程式.bat                  # 一鍵啟動器（自動安裝環境並啟動程式，見下方說明）
+├── 啟動程式.command              # macOS 一鍵啟動器（雙擊執行）
 ├── web_exe2.py                  # Python 主程式（PyQt5 視窗 + 多執行緒 HTTP Server + 本地資料庫）
 ├── app_icon.png / app_icon.ico  # 應用程式與工作列圖示（不存在時會自動產生）
 ├── startup_debug.log            # 每次啟動自動寫入的除錯紀錄（啟動時間、路徑、Port 等）
@@ -45,6 +46,11 @@ WEB區網互動工具/
     ├── 02classwhiteboard.html   # 📋 剛好白板：多人即時協作數位白板
     ├── 03classppt.html          # 📊 剛好簡報：PDF 課堂簡報同步播放與即時互動問答
     ├── 04classquiz.html         # 📝 剛好測：線上測驗、AI 出題、即時成績分析與 CSV 匯出
+    ├── 普普風配對遊戲生成器.html # 🎴 普普風配對遊戲生成器：批次生成詞語配對／打地鼠／翻卡遊戲，自動存入配對遊戲目錄
+    ├── PIRLS 閱讀測驗產生器.html # 📖 PIRLS 閱讀測驗產生器：結合 AI 命題與四層次理解測驗，自動發布至閱讀測驗目錄
+    ├── 互動式地圖標示測驗練習工具.html # 🗺️ 互動式地圖標示測驗：自訂地圖標記與互動問答測驗
+    ├── Game-教室我畫你猜.html    # 🎨 你畫我猜：教室即時繪圖猜謎遊戲，AI 自動出題
+    ├── 可重播手寫板-區網版.html  # ✍️ 可重播手寫板：多頁筆跡記錄、過程逐筆動態重播、多班級作業管理
     ├── 作業呈現介面V3.html        # 大螢幕展示牆（學生作業檢視與投影評析）
     ├── 教師多檔案上傳工具.html    # 教師端批次分題上傳檔案工具
     ├── 教師設定背景圖工具.html    # 剪貼簿一鍵貼上（Ctrl+V）設定題目背景圖工具
@@ -55,7 +61,7 @@ WEB區網互動工具/
     ├── url.txt                  # 網址分享清單設定檔
     ├── questions.txt            # 題目與選單名稱清單設定檔
     ├── bg/                      # 各題號的題目背景圖片儲存目錄 (如 q1.jpg, q2.png)
-    ├── html/                    # 課堂教材 HTML 目錄（開啟時自動注入「📸 截圖繳交作業」浮動外掛）
+    ├── html/                    # 課堂教材與遊戲 HTML 目錄（含「配對遊戲」、「閱讀測驗」等子目錄，自動注入截圖外掛）
     ├── upload/                  # 學生繳交作業儲存目錄（依問題1~問題10自動分類）
     ├── data/local_db.json       # 「剛好」互動工具的本地即時資料庫（搶答、投票、便利貼、白板、簡報、測驗狀態等）
     ├── quiz/                    # 剛好測題庫，每份測驗獨立存成一個 JSON 檔（<測驗ID>.json）
@@ -73,22 +79,23 @@ WEB區網互動工具/
 ### `啟動程式.bat` 會自動幫你做的事
 
 1. **切換到程式所在資料夾**：確保無論從哪裡點擊捷徑，都能正確找到 `web_exe2.py` 與 `www/` 資料夾。
-2. **偵測系統中是否已有 Python**：優先尋找 Windows 的 `py` 啟動器，找不到才改用 `python` 指令。
-3. **如果完全沒有安裝 Python**：
-   - 自動偵測系統是否有 `winget`（Windows 內建的軟體安裝工具）。
-   - 若有，自動透過 `winget install Python.Python.3.12` 靜默安裝 Python 3.12（**需要網路連線**）。
-   - 安裝完成後會提示「請關閉此視窗並重新點兩下啟動器」（因為 Windows 需要開一個新的視窗才能讀到剛裝好的 Python 路徑）。
-   - 若系統沒有 `winget`，則會顯示錯誤訊息，請求你自行至 [python.org](https://www.python.org/downloads/) 下載安裝，並提醒務必勾選「Add python.exe to PATH」。
-4. **檢查並修復 pip**：確認 `pip` 套件管理工具可正常運作，若異常會嘗試自動修復（`ensurepip --upgrade`）。
-5. **檢查程式所需的 4 個必要套件**（`PyQt5`、`PyQtWebEngine`、`qrcode`、`Pillow`）：
+2. **偵測系統中是否有「真正可用」的 Python**：優先尋找 Windows 的 `py` 啟動器，找不到才改用 `python` 指令；並實際執行一段測試指令驗證它是不是真的能跑（而不只是「找得到檔名」）。這是為了排除 Windows 內建、完全沒裝過 Python 時也會存在的「假 `python.exe`」（App execution alias：一按下去只會跳出微軟商店，實際上什麼指令都不會執行），避免誤判成「已安裝」。
+3. **排除 Microsoft Store 版 Python**：即使偵測到的是一個「真的能執行」的 Python，若確認它是從 Microsoft Store 安裝的版本，也會直接忽略——因為這個版本會被市集沙盒限制，導致 `pip` 永遠無法正常安裝套件。
+4. **如果找不到任何可用的 Python**：
+   - 優先偵測系統是否有 `winget`（Windows 內建的軟體安裝工具），若有則自動透過 `winget install Python.Python.3.12` 靜默安裝正規版 Python（**需要網路連線**）。
+   - 若沒有 `winget`，或 `winget` 安裝失敗，會自動改用**第二種安裝方式**：直接從 python.org 下載官方安裝程式（`python-3.12.7-amd64.exe`），並以靜默模式為目前使用者安裝（`/quiet InstallAllUsers=0 PrependPath=1 Include_pip=1`），**不需要系統管理員權限**。
+   - 兩種方式都失敗才會顯示錯誤，請你自行至 [python.org](https://www.python.org/downloads/) 下載安裝，並提醒務必勾選「Add python.exe to PATH」與「pip」。
+   - 只要有任何一種方式安裝成功，會提示「請關閉此視窗並重新點兩下啟動器」（因為 Windows 需要開一個新的視窗才能讀到剛裝好的 Python 路徑），照做即可。
+5. **檢查並修復 pip**：確認 `pip` 套件管理工具可正常運作；若異常會先嘗試 `ensurepip --upgrade` 修復，並在修復後**重新驗證**是否成功；若仍失敗，會再自動下載 `get-pip.py` 補裝一次。
+6. **檢查程式所需的 4 個必要套件**（`PyQt5`、`PyQtWebEngine`、`qrcode`、`Pillow`）：
    - 若已安裝，顯示 `[OK] All required packages are already installed.` 並直接跳過安裝步驟。
-   - 若缺少，自動執行 `pip install --upgrade pip` 與 `pip install PyQt5 PyQtWebEngine qrcode Pillow`（**需要網路連線**）。
-   - 若安裝失敗，會顯示錯誤並提示可自行手動執行的安裝指令。
-6. **確認 `web_exe2.py` 是否存在**：找不到會直接顯示錯誤，提醒必須將 `.bat` 與 `web_exe2.py` 放在同一個資料夾內。
-7. **啟動主程式**：
+   - 若缺少，自動執行 `pip install --upgrade pip` 與 `pip install PyQt5 PyQtWebEngine qrcode Pillow`（**需要網路連線**）；若因權限問題失敗，會自動改用 `pip install --user` 重試一次。
+   - 若安裝仍然失敗，會顯示 pip 的實際錯誤訊息並提示可自行手動執行的安裝指令。
+7. **確認 `web_exe2.py` 是否存在**：找不到會直接顯示錯誤，提醒必須將 `.bat` 與 `web_exe2.py` 放在同一個資料夾內。
+8. **啟動主程式**：
    - 優先以 `pythonw.exe`（無命令列黑窗版本的 Python）背景啟動 `web_exe2.py`，讓桌面只會看到程式視窗、不會多出黑色終端機視窗。
    - 若找不到 `pythonw.exe`，則退而求其次以一般 `python`/`py` 指令啟動。
-8. 啟動指令送出後，`.bat` 視窗即自動關閉，接下來的操作全部在跳出的桌面應用程式視窗中進行。
+9. 啟動指令送出後，`.bat` 視窗即自動關閉，接下來的操作全部在跳出的桌面應用程式視窗中進行。
 
 > ⚠️ 第一次執行若需要自動安裝 Python 或套件，請保持網路暢通，整個流程可能需要 1～3 分鐘，請耐心等候，不要中途關閉黑色命令視窗。之後再次啟動時，由於環境已備妥，會在幾秒內直接開啟程式。
 
@@ -102,6 +109,12 @@ WEB區網互動工具/
 ---
 
 ## 🛠️ 手動啟動方式（進階／開發者）
+
+### macOS 快速啟動
+
+macOS 使用者可直接雙擊 `啟動程式.command`。它會檢查 Python 3、在專案資料夾建立獨立的 `.venv` 環境、安裝必要套件後啟動程式。若電腦尚未安裝 Python，且已安裝 [Homebrew](https://brew.sh/)，啟動器會嘗試自動安裝；否則請先從 [python.org](https://www.python.org/downloads/macos/) 安裝 Python 3 後再執行。
+
+> 若 macOS 顯示無法開啟檔案，請在 Finder 對 `啟動程式.command` 按右鍵，選擇「打開」並確認允許執行。若檔案經 pCloud、ZIP 或其他雲端同步服務取得，可能會遺失可執行權限；請先在「終端機」於本資料夾執行 `chmod +x 啟動程式.command`，再雙擊開啟。
 
 若不使用 `.bat`，也可以自行以命令列啟動，方便除錯或於 macOS / Linux 上執行：
 
@@ -184,6 +197,20 @@ python web_exe2.py
 - 點選題號標籤，系統自動讀取 `upload/` 對應目錄下的所有學生作業。
 - 提供卡片式排版、學生姓名標籤、圖片放大檢視、隨機抽籤與全螢幕投影模式，極為適合課堂公開講評。
 
+### 8. 🎴 普普風配對遊戲生成器 (`普普風配對遊戲生成器.html`)
+- **多元遊戲模式**：支援「翻卡練習」、「隨機配對」與「打地鼠」三種趣味互動模式，內建注音字體切換與語音播音支援。
+- **AI 輔助出題 & 批次匯入**：內建成語、英文單字、中英翻譯、注音練習、數學算式、自然科學等 AI 提示詞範本，可一鍵複製並批次匯入題庫。
+- **直接生成與伺服器儲存**：生成完成後直接透過後端 `/saveQuiz` API 儲存至 `www/html/配對遊戲/` 目錄中，並提供「立即開啟遊戲」與「下載備份檔」功能。
+
+### 9. 📖 PIRLS 閱讀測驗產生器 (`PIRLS 閱讀測驗產生器.html`)
+- **AI 智慧命題**：結合 Google Gemini API，支援「指定主題原創寫作」與「自訂文章命題」，精準產出符合 PIRLS 四大認知理解層次的 10 題選擇題。
+- **手動命題與圖片文本**：支援手動貼上題庫，或上傳課文照片／文本圖片（自動壓縮轉 Base64 封裝）。
+- **自動發布**：生成後自動儲存至 `www/html/閱讀測驗/` 目錄，並提供課堂即時作答與自動計分分析。
+
+### 10. 🗺️ 互動式地圖標示測驗練習工具 (`互動式地圖標示測驗練習工具.html`)
+- **地圖互動標記**：教師可自訂地圖與多個地理標記點，建立問答測驗與練習。
+- **自動存檔**：測驗網頁一鍵直接發布儲存至 `www/html/地圖測驗/` 目錄。
+
 ---
 
 ## 🗄️ 本地即時資料庫（供「剛好」系列工具使用）
@@ -210,6 +237,7 @@ python web_exe2.py
 | `POST` | `/setBg` | 設定畫布題目背景圖 | `multipart/form-data`<br>- `question`: 題號<br>- `file`: 背景圖檔案 |
 | `POST` | `/saveUrls` | 儲存「網址分享」清單至 `www/url.txt` | JSON `{"content": "..."}` 或純文字 |
 | `POST` | `/saveQuestions` | 儲存「課堂繳交」題號選單至 `www/questions.txt` | JSON `{"content": "..."}` 或純文字 |
+| `POST` | `/saveQuiz` | 儲存測驗／遊戲 HTML 檔案至指定子目錄（如 `配對遊戲`、`閱讀測驗`、`地圖測驗`） | JSON `{"title": "...", "category": "配對遊戲", "html": "..."}` |
 | `GET` | `/api/db/get?path=<doc或collection路徑>` | 讀取本地資料庫中的單一文件或整個集合 | `path=classrooms/ABCD` |
 | `GET` | `/api/db/all` | 取得整個本地資料庫的完整內容與版本號 | — |
 | `POST` | `/api/db/set` | 新增／覆寫指定路徑的文件 | JSON `{"path": "...", "data": {...}, "merge": false}` |
@@ -232,6 +260,12 @@ python web_exe2.py
   pip install PyQt5 PyQtWebEngine qrcode Pillow
   ```
   安裝完成後再重新雙擊 `啟動程式.bat` 即可。
+
+**Q2-1：新電腦第一次使用，出現「pip not found」、`ensurepip` 修復失敗、下載 `get-pip.py` 也失敗？**
+- 最常見的原因其實是**這台電腦根本沒有安裝過真正的 Python**：Windows 內建一個空殼版的 `python.exe`（App execution alias），沒裝過 Python 時只要輸入 `python` 也「找得到」、甚至能被判斷成「已安裝」，但實際上執行任何指令都沒有真正作用（原本設計用來一按就跳出微軟商店）。另一種常見情況則是誤裝了 **Microsoft Store 版的 Python**，雖然能正常顯示版本號，但執行環境被市集沙盒（sandbox）限制寫入權限，`pip`／`ensurepip` 永遠無法安裝套件成功。
+  - `啟動程式.bat` 現在會先用實際執行指令的方式驗證偵測到的 Python 是不是「真的能用」，並自動排除上述兩種情況；確認需要安裝時，會先嘗試 `winget`，若沒有 `winget` 或安裝失敗，會自動改成**直接下載 python.org 官方安裝程式並靜默安裝**（不需要系統管理員權限）。只要看到「請關閉視窗並重新雙擊啟動器」，照做即可。
+  - 若兩種自動安裝方式都失敗，才需要自行至 [python.org](https://www.python.org/downloads/) 下載官方安裝檔安裝（**不要**從 Microsoft Store 安裝），安裝時勾選「Add python.exe to PATH」與「pip」，安裝完成後重新雙擊 `啟動程式.bat`。
+  - 若確認已安裝正規版 Python 但問題依舊，多半是網路／防火牆封鎖了 `bootstrap.pypa.io`、`pypi.org` 或 `python.org`，請洽資訊人員開通網路後再試。
 
 **Q3：學生在 iPad 上錄音時出現權限提示？**
 - 首次使用請點選「允許」瀏覽器取用麥克風。如未跳出，可在 iPad 的「設定」>「Safari」>「麥克風」中確認已設為允許。
