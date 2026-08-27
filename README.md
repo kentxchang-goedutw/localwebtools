@@ -28,7 +28,6 @@
 ```text
 WEB區網互動工具/
 ├── 啟動程式.bat                  # 一鍵啟動器（自動安裝環境並啟動程式，見下方說明）
-├── 啟動程式.command              # macOS 一鍵啟動器（雙擊執行）
 ├── web_exe2.py                  # Python 主程式（PyQt5 視窗 + 多執行緒 HTTP Server + 本地資料庫）
 ├── app_icon.png / app_icon.ico  # 應用程式與工作列圖示（不存在時會自動產生）
 ├── startup_debug.log            # 每次啟動自動寫入的除錯紀錄（啟動時間、路徑、Port 等）
@@ -110,16 +109,10 @@ WEB區網互動工具/
 
 ## 🛠️ 手動啟動方式（進階／開發者）
 
-### macOS 快速啟動
-
-macOS 使用者可直接雙擊 `啟動程式.command`。它會檢查 Python 3、在專案資料夾建立獨立的 `.venv` 環境、安裝必要套件後啟動程式。若電腦尚未安裝 Python，且已安裝 [Homebrew](https://brew.sh/)，啟動器會嘗試自動安裝；否則請先從 [python.org](https://www.python.org/downloads/macos/) 安裝 Python 3 後再執行。
-
-> 若 macOS 顯示無法開啟檔案，請在 Finder 對 `啟動程式.command` 按右鍵，選擇「打開」並確認允許執行。若檔案經 pCloud、ZIP 或其他雲端同步服務取得，可能會遺失可執行權限；請先在「終端機」於本資料夾執行 `chmod +x 啟動程式.command`，再雙擊開啟。
-
-若不使用 `.bat`，也可以自行以命令列啟動，方便除錯或於 macOS / Linux 上執行：
+若不使用 `啟動程式.bat`，也可以自行以命令列啟動，方便除錯或自訂環境執行：
 
 ### 1. 執行環境需求
-- **作業系統**：Windows 10 / 11、macOS 或 Linux
+- **作業系統**：Windows 10 / 11
 - **Python 版本**：Python 3.8 以上
 
 ### 2. 安裝必要套件
